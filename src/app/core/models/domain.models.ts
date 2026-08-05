@@ -32,7 +32,7 @@ export interface User {
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  price: number | null;
   description?: string;
   isActive: boolean;
 }
@@ -41,9 +41,9 @@ export type OrderStatus = 'draft' | 'confirmed' | 'in_progress' | 'completed' | 
 
 export interface OrderItem {
   productId: string;
-  productName: string;
+  productName?: string;
   quantity: number;
-  unitPrice: number;
+  unitPrice?: number;
 }
 
 export interface Order {
@@ -52,6 +52,7 @@ export interface Order {
     id: string;
     fullName: string;
     email: string;
+    role: UserRole;
   };
   status: OrderStatus;
   totalAmount: number;

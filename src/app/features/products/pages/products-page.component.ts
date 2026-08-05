@@ -153,7 +153,7 @@ export class ProductsPageComponent {
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
-    price: [0, [Validators.required, Validators.min(0.01)]],
+    price: [null, [Validators.required, Validators.min(0.01)]],
     description: [''],
     isActive: [true]
   });
@@ -195,7 +195,7 @@ export class ProductsPageComponent {
       next: () => {
         this.loading.set(false);
         this.successMessage.set('Producto creado correctamente.');
-        this.form.reset({ name: '', price: 0, description: '', isActive: true });
+        this.form.reset({ name: '', price: null, description: '', isActive: true });
         this.loadProducts();
       },
       error: () => {
