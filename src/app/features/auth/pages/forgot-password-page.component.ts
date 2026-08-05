@@ -36,9 +36,14 @@ import { AuthService } from '../data-access/auth.service';
               id="forgotEmail"
               type="email"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('email')"
+              [class.is-valid]="isValid('email')"
               formControlName="email"
               placeholder="correo@tailorhub.com"
             />
+            @if (isInvalid('email')) {
+              <div class="invalid-feedback d-block">Ingresa un correo valido.</div>
+            }
           </div>
 
           @if (message()) {
@@ -142,8 +147,19 @@ export class ForgotPasswordPageComponent {
     email: ['', [Validators.required, Validators.email]]
   });
 
+  isInvalid(field: 'email'): boolean {
+    const control = this.form.controls[field];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  isValid(field: 'email'): boolean {
+    const control = this.form.controls[field];
+    return control.valid && (control.touched || control.dirty);
+  }
+
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

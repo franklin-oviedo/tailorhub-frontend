@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Order, OrderStatus, PaginatedResponse } from '../../../core/models/domain.models';
+import { CreateOrderPayload, Order, OrderStatus, PaginatedResponse } from '../../../core/models/domain.models';
 import { ApiConfigService } from '../../../core/services/api-config.service';
 
 export interface OrdersQuery {
@@ -22,8 +22,8 @@ export class OrdersService {
     });
   }
 
-  create(payload: Omit<Order, 'id' | 'createdAt'>): Observable<Order> {
-    return this.http.post<Order>(`${this.config.baseUrl}/orders`, payload);
+  create(payload: Omit<CreateOrderPayload, 'id' | 'createdAt'>): Observable<CreateOrderPayload> {
+    return this.http.post<CreateOrderPayload>(`${this.config.baseUrl}/orders`, payload);
   }
 
   detail(orderId: string): Observable<Order> {

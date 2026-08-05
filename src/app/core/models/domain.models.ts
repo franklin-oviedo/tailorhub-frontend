@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'employee' | 'client';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'employee' | 'client';
 
 export interface PaginationMeta {
   page: number;
@@ -32,7 +32,6 @@ export interface User {
 export interface Product {
   id: string;
   name: string;
-  sku: string;
   price: number;
   description?: string;
   isActive: boolean;
@@ -49,19 +48,36 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  customerName: string;
+  customer: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
   status: OrderStatus;
-  total: number;
+  totalAmount: number;
   storeId: string;
   createdAt: string;
   items: OrderItem[];
 }
 
+export interface CreateOrderPayload {
+  customerId: string;
+  employeeId: string;
+  items: OrderItem[];
+  notes: string;
+}
+
 export interface Appointment {
   id: string;
+  client: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
   customerName: string;
   customerPhone?: string;
   scheduledAt: string;
+  startsAt: string;
   status: 'booked' | 'cancelled';
   storeId: string;
 }

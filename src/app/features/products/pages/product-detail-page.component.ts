@@ -15,7 +15,6 @@ import { ProductsService } from '../data-access/products.service';
       <div class="th-card-body">
         @if (product(); as current) {
           <h3 class="h5 mb-1">{{ current.name }}</h3>
-          <p class="mb-1"><strong>SKU:</strong> {{ current.sku }}</p>
           <p class="mb-1"><strong>Precio:</strong> {{ current.price | currency:'USD' }}</p>
           <p class="mb-3"><strong>Descripcion:</strong> {{ current.description || 'Sin descripcion.' }}</p>
         }

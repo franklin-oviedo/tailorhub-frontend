@@ -29,14 +29,14 @@ import { OrdersService } from '../data-access/orders.service';
           @for (order of orders(); track order.id) {
             <tr>
               <td>{{ order.id }}</td>
-              <td>{{ order.customerName }}</td>
+              <td>{{ order.customer.fullName }}</td>
               <td>
                 <span class="badge text-uppercase" [class]="orderStatusClass(order.status)">
                   {{ order.status }}
                 </span>
               </td>
               <td>{{ order.createdAt | date:'short' }}</td>
-              <td>{{ order.total }}</td>
+              <td>{{ order.totalAmount }}</td>
             </tr>
           }
         </tbody>

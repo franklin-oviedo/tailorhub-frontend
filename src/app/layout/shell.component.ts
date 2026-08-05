@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { UserRole } from '../core/models/domain.models';
 import { SessionService } from '../core/services/session.service';
 import { AuthService } from '../features/auth/data-access/auth.service';
 
 interface NavItem {
   label: string;
   path: string;
-  roles: Array<'admin' | 'employee' | 'client'>;
+  roles: UserRole[];
 }
 
 @Component({
@@ -90,7 +91,7 @@ interface NavItem {
       min-height: 100dvh;
       display: grid;
       grid-template-columns: 16rem minmax(0, 1fr);
-      background: linear-gradient(160deg, #ffffff 0%, #f4f5f7 100%);
+      background: linear-gradient(160deg, #ffffff 0%, #f5f5f5 100%);
     }
 
     .sidenav {
@@ -98,7 +99,7 @@ interface NavItem {
       min-height: 100dvh;
       border-right: 1px solid color-mix(in srgb, var(--th-primary) 18%, white 82%);
       padding: 1rem;
-      background: linear-gradient(180deg, #1a2a40 0%, #22344d 100%);
+      background: linear-gradient(180deg, #264653 0%, #315b6b 100%);
       position: sticky;
       top: 0;
       z-index: 20;
@@ -131,7 +132,7 @@ interface NavItem {
     }
 
     .nav-link {
-      color: #d9d9d9;
+      color: #e6eef2;
       text-decoration: none;
       border-radius: 0.65rem;
       padding: 0.55rem 0.7rem;
@@ -144,9 +145,9 @@ interface NavItem {
     }
 
     .is-active {
-      background: var(--th-secondary);
-      color: var(--th-primary);
-      font-weight: 600;
+      background: var(--th-accent);
+      color: color-mix(in srgb, var(--th-primary) 88%, black 12%);
+      font-weight: 700;
     }
 
     .toolbar {
@@ -227,12 +228,12 @@ export class ShellComponent {
   readonly mobileNavOpen = signal(false);
 
   private readonly navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/dashboard', roles: ['client', 'employee', 'admin'] },
-    { label: 'Productos', path: '/products', roles: ['client', 'employee', 'admin'] },
-    { label: 'Pedidos', path: '/orders', roles: ['client', 'employee', 'admin'] },
-    { label: 'Citas', path: '/appointments', roles: ['client', 'employee', 'admin'] },
-    { label: 'Tiendas', path: '/stores', roles: ['admin'] },
-    { label: 'Usuarios', path: '/users', roles: ['admin'] }
+    { label: 'Dashboard', path: '/dashboard', roles: ['client', 'employee', 'manager', 'admin', 'super_admin'] },
+    { label: 'Productos', path: '/products', roles: ['client', 'employee', 'manager', 'admin', 'super_admin'] },
+    { label: 'Pedidos', path: '/orders', roles: ['client', 'employee', 'manager', 'admin', 'super_admin'] },
+    { label: 'Citas', path: '/appointments', roles: ['client', 'employee', 'manager', 'admin', 'super_admin'] },
+    { label: 'Tiendas', path: '/stores', roles: ['admin', 'super_admin'] },
+    { label: 'Usuarios', path: '/users', roles: ['manager', 'admin', 'super_admin'] }
   ];
 
   readonly visibleNavItems = computed(() => {

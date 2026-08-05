@@ -16,12 +16,30 @@ import { StoresService } from '../data-access/stores.service';
         <form [formGroup]="form" (ngSubmit)="createStore()" class="th-form-grid">
           <div>
             <label class="form-label" for="store-name">Nombre</label>
-            <input id="store-name" class="form-control th-input" formControlName="name" />
+            <input
+              id="store-name"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('name')"
+              [class.is-valid]="isValid('name')"
+              formControlName="name"
+            />
+            @if (isInvalid('name')) {
+              <div class="invalid-feedback d-block">El nombre de la tienda es obligatorio.</div>
+            }
           </div>
 
           <div>
             <label class="form-label" for="store-address">Direccion</label>
-            <input id="store-address" class="form-control th-input" formControlName="address" />
+            <input
+              id="store-address"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('address')"
+              [class.is-valid]="isValid('address')"
+              formControlName="address"
+            />
+            @if (isInvalid('address')) {
+              <div class="invalid-feedback d-block">La direccion es obligatoria.</div>
+            }
           </div>
 
           <div>
@@ -90,12 +108,23 @@ export class StoresPageComponent {
     phone: ['']
   });
 
+  isInvalid(field: 'name' | 'address' | 'phone'): boolean {
+    const control = this.form.controls[field];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  isValid(field: 'name' | 'address' | 'phone'): boolean {
+    const control = this.form.controls[field];
+    return control.valid && (control.touched || control.dirty);
+  }
+
   constructor() {
     this.load();
   }
 
   createStore(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

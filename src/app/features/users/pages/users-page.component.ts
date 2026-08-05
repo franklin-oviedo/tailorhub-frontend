@@ -28,7 +28,7 @@ import { UsersService } from '../data-access/users.service';
               <td>{{ user.fullName }}</td>
               <td>{{ user.email }}</td>
               <td>
-                <span class="badge text-uppercase" [class]="roleClass(user.role)">
+                <span [class]="roleClass(user.role)">
                   {{ user.role }}
                 </span>
               </td>
@@ -71,11 +71,13 @@ export class UsersPageComponent {
   roleClass(role: User['role']): string {
     switch (role) {
       case 'admin':
-        return 'bg-primary-subtle text-primary-emphasis border border-primary-subtle';
+        return 'th-role-badge th-role-admin';
+      case 'manager':
+        return 'th-role-badge th-role-manager';
       case 'employee':
-        return 'bg-info-subtle text-info-emphasis border border-info-subtle';
+        return 'th-role-badge th-role-employee';
       default:
-        return 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle';
+        return 'th-role-badge th-role-client';
     }
   }
 }

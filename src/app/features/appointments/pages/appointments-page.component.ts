@@ -18,7 +18,16 @@ import { AppointmentsService } from '../data-access/appointments.service';
         <form [formGroup]="form" (ngSubmit)="book()" class="th-form-grid">
           <div>
             <label class="form-label" for="appointment-customer">Nombre del cliente</label>
-            <input id="appointment-customer" class="form-control th-input" formControlName="customerName" />
+            <input
+              id="appointment-customer"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('customerName')"
+              [class.is-valid]="isValid('customerName')"
+              formControlName="customerName"
+            />
+            @if (isInvalid('customerName')) {
+              <div class="invalid-feedback d-block">El nombre del cliente es obligatorio.</div>
+            }
           </div>
 
           <div>
@@ -31,9 +40,14 @@ import { AppointmentsService } from '../data-access/appointments.service';
             <input
               id="appointment-date"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('scheduledAt')"
+              [class.is-valid]="isValid('scheduledAt')"
               formControlName="scheduledAt"
               type="datetime-local"
             />
+            @if (isInvalid('scheduledAt')) {
+              <div class="invalid-feedback d-block">Selecciona una fecha y hora valida.</div>
+            }
           </div>
 
           <div class="th-form-actions">
@@ -65,8 +79,8 @@ import { AppointmentsService } from '../data-access/appointments.service';
           <tbody>
             @for (item of appointments(); track item.id) {
               <tr>
-                <td>{{ item.customerName }}</td>
-                <td>{{ item.scheduledAt | date:'short' }}</td>
+                <td>{{ item.client.fullName }}</td>
+                <td>{{ item.startsAt | date:'short' }}</td>
                 <td>
                   <span class="badge text-uppercase" [class]="appointmentStatusClass(item.status)">
                     {{ item.status }}
@@ -98,6 +112,10 @@ import { AppointmentsService } from '../data-access/appointments.service';
       gap: 1rem;
       grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
     }
+    h2 {
+      color: white;
+      margin-top: 0;
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -113,12 +131,23 @@ export class AppointmentsPageComponent {
     scheduledAt: ['', Validators.required]
   });
 
+  isInvalid(field: 'customerName' | 'customerPhone' | 'scheduledAt'): boolean {
+    const control = this.form.controls[field];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  isValid(field: 'customerName' | 'customerPhone' | 'scheduledAt'): boolean {
+    const control = this.form.controls[field];
+    return control.valid && (control.touched || control.dirty);
+  }
+
   constructor() {
     this.load();
   }
 
   book(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

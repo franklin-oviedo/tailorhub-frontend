@@ -32,7 +32,16 @@ import { AuthService } from '../data-access/auth.service';
         <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
           <div>
             <label class="form-label" for="registerName">Nombre completo</label>
-            <input id="registerName" class="form-control th-input" formControlName="fullName" />
+            <input
+              id="registerName"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('fullName')"
+              [class.is-valid]="isValid('fullName')"
+              formControlName="fullName"
+            />
+            @if (isInvalid('fullName')) {
+              <div class="invalid-feedback d-block">Ingresa tu nombre completo.</div>
+            }
           </div>
 
           <div>
@@ -41,9 +50,14 @@ import { AuthService } from '../data-access/auth.service';
               id="registerEmail"
               type="email"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('email')"
+              [class.is-valid]="isValid('email')"
               formControlName="email"
               placeholder="correo@tailorhub.com"
             />
+            @if (isInvalid('email')) {
+              <div class="invalid-feedback d-block">Ingresa un correo valido.</div>
+            }
           </div>
 
           <div>
@@ -52,23 +66,47 @@ import { AuthService } from '../data-access/auth.service';
               id="registerPassword"
               type="password"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('password')"
+              [class.is-valid]="isValid('password')"
               formControlName="password"
               placeholder="********"
             />
+            @if (isInvalid('password')) {
+              <div class="invalid-feedback d-block">La contrasena debe tener al menos 6 caracteres.</div>
+            }
           </div>
 
           <div>
             <label class="form-label" for="registerRole">Rol</label>
-            <select id="registerRole" class="form-select th-input" formControlName="role">
+            <select
+              id="registerRole"
+              class="form-select th-input"
+              [class.is-invalid]="isInvalid('role')"
+              [class.is-valid]="isValid('role')"
+              formControlName="role"
+            >
               <option value="client">Cliente</option>
               <option value="employee">Empleado</option>
+              <option value="manager">Manager</option>
               <option value="admin">Admin</option>
             </select>
+            @if (isInvalid('role')) {
+              <div class="invalid-feedback d-block">Selecciona un rol.</div>
+            }
           </div>
 
           <div>
             <label class="form-label" for="registerStore">Store ID</label>
-            <input id="registerStore" class="form-control th-input" formControlName="storeId" />
+            <input
+              id="registerStore"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('storeId')"
+              [class.is-valid]="isValid('storeId')"
+              formControlName="storeId"
+            />
+            @if (isInvalid('storeId')) {
+              <div class="invalid-feedback d-block">Store ID es requerido.</div>
+            }
           </div>
 
           @if (errorMessage()) {
@@ -173,12 +211,23 @@ export class RegisterPageComponent {
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    role: ['client' as 'admin' | 'employee' | 'client', Validators.required],
+    role: ['client' as 'admin' | 'manager' | 'employee' | 'client', Validators.required],
     storeId: ['', Validators.required]
   });
 
+  isInvalid(field: 'fullName' | 'email' | 'password' | 'role' | 'storeId'): boolean {
+    const control = this.form.controls[field];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  isValid(field: 'fullName' | 'email' | 'password' | 'role' | 'storeId'): boolean {
+    const control = this.form.controls[field];
+    return control.valid && (control.touched || control.dirty);
+  }
+
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

@@ -7,6 +7,6 @@ export const STORES_ROUTES: Routes = [
     path: '',
     component: StoresPageComponent,
     canActivate: [roleGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['super_admin', 'admin'] }
   }
 ];

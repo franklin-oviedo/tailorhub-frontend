@@ -2,16 +2,29 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
 :root {
-	--th-primary: #1a2a40;
-	--th-secondary: #c9a227;
+	--th-primary: #264653;
+	--th-secondary: #2a9d8f;
+	--th-accent: #e9c46a;
 	--th-neutral: #d9d9d9;
 	--th-text: #333333;
 	--th-text-soft: #5e6470;
 	--th-success: #4caf50;
-	--th-error: #e53935;
+	--th-error: #e76f51;
 	--th-surface: #ffffff;
-	--th-surface-soft: #f4f5f7;
+	--th-surface-soft: #f5f5f5;
 	--th-stroke: color-mix(in srgb, var(--th-primary) 14%, white 86%);
+
+	/* Bootstrap semantic aliases */
+	--bs-primary: var(--th-primary);
+	--bs-secondary: #5f6d77;
+	--bs-success: var(--th-success);
+	--bs-danger: var(--th-error);
+	--bs-warning: var(--th-accent);
+	--bs-info: var(--th-secondary);
+	--bs-body-bg: var(--th-surface-soft);
+	--bs-body-color: var(--th-text);
+	--bs-link-color: var(--th-primary);
+	--bs-link-hover-color: color-mix(in srgb, var(--th-primary) 76%, black 24%);
 }
 
 html,
@@ -20,7 +33,7 @@ body {
 	min-height: 100%;
 	font-family: 'Montserrat', 'Segoe UI', sans-serif;
 	color: var(--th-text);
-	background: linear-gradient(165deg, #ffffff 0%, #f4f5f7 55%, #eceef2 100%);
+	background: linear-gradient(165deg, #ffffff 0%, #f5f5f5 58%, #e9edf0 100%);
 }
 
 * {
@@ -67,7 +80,7 @@ body {
 	font-weight: 700;
 	letter-spacing: 0.01em;
 	background-color: var(--th-secondary);
-	color: var(--th-primary);
+	color: #ffffff;
 	transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
@@ -75,13 +88,65 @@ body {
 	transform: translateY(-1px);
 	box-shadow: 0 10px 18px rgba(26, 42, 64, 0.22);
 	filter: saturate(1.05);
-	background-color: color-mix(in srgb, var(--th-secondary) 92%, #ffffff 8%);
-	color: var(--th-primary);
+	background-color: color-mix(in srgb, var(--th-secondary) 86%, black 14%);
+	color: #ffffff;
 }
 
 .th-btn-primary.btn:disabled {
-	background-color: color-mix(in srgb, var(--th-secondary) 42%, #ffffff 58%);
-	color: color-mix(in srgb, var(--th-primary) 62%, #ffffff 38%);
+	background-color: color-mix(in srgb, var(--th-secondary) 46%, #ffffff 54%);
+	color: color-mix(in srgb, #ffffff 70%, var(--th-primary) 30%);
+}
+
+.th-input.is-invalid,
+.th-input.ng-invalid.ng-touched,
+.th-input.ng-invalid.ng-dirty {
+	border-color: var(--th-error);
+	box-shadow: 0 0 0 0.24rem color-mix(in srgb, var(--th-error) 20%, transparent 80%);
+}
+
+.th-input.is-valid,
+.th-input.ng-valid.ng-touched,
+.th-input.ng-valid.ng-dirty {
+	border-color: var(--th-success);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--th-success) 16%, transparent 84%);
+}
+
+.invalid-feedback {
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--th-error);
+}
+
+.th-role-badge {
+	font-size: 0.74rem;
+	letter-spacing: 0.04em;
+	padding: 0.42rem 0.6rem;
+	border-radius: 999px;
+	font-weight: 700;
+}
+
+.th-role-admin {
+	background: color-mix(in srgb, var(--th-primary) 16%, white 84%);
+	color: color-mix(in srgb, var(--th-primary) 84%, black 16%);
+	border: 1px solid color-mix(in srgb, var(--th-primary) 38%, white 62%);
+}
+
+.th-role-manager {
+	background: color-mix(in srgb, var(--th-secondary) 18%, white 82%);
+	color: color-mix(in srgb, var(--th-secondary) 88%, black 12%);
+	border: 1px solid color-mix(in srgb, var(--th-secondary) 38%, white 62%);
+}
+
+.th-role-employee {
+	background: color-mix(in srgb, var(--th-accent) 36%, white 64%);
+	color: color-mix(in srgb, var(--th-primary) 82%, black 18%);
+	border: 1px solid color-mix(in srgb, var(--th-accent) 46%, white 54%);
+}
+
+.th-role-client {
+	background: color-mix(in srgb, #9eabb5 22%, white 78%);
+	color: color-mix(in srgb, var(--th-primary) 76%, black 24%);
+	border: 1px solid color-mix(in srgb, #8f9aa3 32%, white 68%);
 }
 
 .btn-outline-secondary {
@@ -204,7 +269,7 @@ mat-card {
 }
 
 .table thead th {
-	background: linear-gradient(180deg, #1a2a40 0%, #273a54 100%);
+	background: linear-gradient(180deg, #264653 0%, #2e5565 100%);
 	color: #f7f8fb;
 	font-weight: 700;
 	font-size: 0.82rem;
@@ -275,7 +340,7 @@ mat-card {
 
 .th-card-head {
 	padding: 0.95rem 1.1rem;
-	background: linear-gradient(180deg, #1a2a40 0%, #22344d 100%);
+	background: linear-gradient(180deg, #264653 0%, #2f5868 100%);
 	border-bottom: 1px solid color-mix(in srgb, var(--th-primary) 20%, white 80%);
 }
 

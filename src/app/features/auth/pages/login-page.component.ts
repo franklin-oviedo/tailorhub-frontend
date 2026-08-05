@@ -36,9 +36,14 @@ import { AuthService } from '../data-access/auth.service';
               id="loginEmail"
               type="email"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('email')"
+              [class.is-valid]="isValid('email')"
               formControlName="email"
               placeholder="correo@tailorhub.com"
             />
+            @if (isInvalid('email')) {
+              <div class="invalid-feedback d-block">Ingresa un correo valido.</div>
+            }
           </div>
 
           <div>
@@ -47,9 +52,14 @@ import { AuthService } from '../data-access/auth.service';
               id="loginPassword"
               type="password"
               class="form-control th-input"
+              [class.is-invalid]="isInvalid('password')"
+              [class.is-valid]="isValid('password')"
               formControlName="password"
               placeholder="********"
             />
+            @if (isInvalid('password')) {
+              <div class="invalid-feedback d-block">La contrasena debe tener al menos 6 caracteres.</div>
+            }
           </div>
 
           @if (errorMessage()) {
@@ -164,8 +174,19 @@ export class LoginPageComponent {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
+  isInvalid(field: 'email' | 'password'): boolean {
+    const control = this.form.controls[field];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  isValid(field: 'email' | 'password'): boolean {
+    const control = this.form.controls[field];
+    return control.valid && (control.touched || control.dirty);
+  }
+
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

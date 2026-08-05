@@ -35,7 +35,7 @@ import { SessionService } from '../../../core/services/session.service';
 
     h2,
     h3 {
-      color: var(--th-primary);
+      color: white;
       margin-top: 0;
     }
 
