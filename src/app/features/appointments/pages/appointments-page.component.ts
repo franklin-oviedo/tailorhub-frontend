@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Appointment } from '../../../core/models/domain.models';
+import { Appointment, CreateAppointment, User } from '../../../core/models/domain.models';
 import { AppointmentsService } from '../data-access/appointments.service';
+import { UsersService } from '../../users/data-access/users.service';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-appointments-page',
@@ -18,21 +20,20 @@ import { AppointmentsService } from '../data-access/appointments.service';
         <form [formGroup]="form" (ngSubmit)="book()" class="th-form-grid">
           <div>
             <label class="form-label" for="appointment-customer">Nombre del cliente</label>
-            <input
+            <select
               id="appointment-customer"
-              class="form-control th-input"
-              [class.is-invalid]="isInvalid('customerName')"
-              [class.is-valid]="isValid('customerName')"
-              formControlName="customerName"
-            />
-            @if (isInvalid('customerName')) {
+              class="form-select th-input"
+              [class.is-invalid]="isInvalid('clientId')"
+              [class.is-valid]="isValid('clientId')"
+              formControlName="clientId"
+            >
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">{{customer.fullName}}</option>
+              }
+            </select>
+            @if (isInvalid('clientId')) {
               <div class="invalid-feedback d-block">El nombre del cliente es obligatorio.</div>
             }
-          </div>
-
-          <div>
-            <label class="form-label" for="appointment-phone">Telefono</label>
-            <input id="appointment-phone" class="form-control th-input" formControlName="customerPhone" />
           </div>
 
           <div>
@@ -40,12 +41,12 @@ import { AppointmentsService } from '../data-access/appointments.service';
             <input
               id="appointment-date"
               class="form-control th-input"
-              [class.is-invalid]="isInvalid('scheduledAt')"
-              [class.is-valid]="isValid('scheduledAt')"
-              formControlName="scheduledAt"
+              [class.is-invalid]="isInvalid('startsAt')"
+              [class.is-valid]="isValid('startsAt')"
+              formControlName="startsAt"
               type="datetime-local"
             />
-            @if (isInvalid('scheduledAt')) {
+            @if (isInvalid('startsAt')) {
               <div class="invalid-feedback d-block">Selecciona una fecha y hora valida.</div>
             }
           </div>
@@ -122,21 +123,25 @@ import { AppointmentsService } from '../data-access/appointments.service';
 export class AppointmentsPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly appointmentsService = inject(AppointmentsService);
+  private readonly userService = inject(UsersService);
+  private readonly session = inject(SessionService);
 
   readonly appointments = signal<Appointment[]>([]);
+  readonly customers = signal<User[]>([]);
 
   readonly form = this.fb.nonNullable.group({
-    customerName: ['', Validators.required],
-    customerPhone: [''],
-    scheduledAt: ['', Validators.required]
+    clientId: ['', Validators.required],
+    employeeId: [this.session.user()?.id || '', Validators.required],
+    startsAt: ['', Validators.required],
+    notes: ['', Validators.maxLength(500)]
   });
 
-  isInvalid(field: 'customerName' | 'customerPhone' | 'scheduledAt'): boolean {
+  isInvalid(field: 'clientId' | 'employeeId' | 'startsAt' | 'notes'): boolean {
     const control = this.form.controls[field];
     return control.invalid && (control.touched || control.dirty);
   }
 
-  isValid(field: 'customerName' | 'customerPhone' | 'scheduledAt'): boolean {
+  isValid(field: 'clientId' | 'employeeId' | 'startsAt' | 'notes'): boolean {
     const control = this.form.controls[field];
     return control.valid && (control.touched || control.dirty);
   }
@@ -151,8 +156,18 @@ export class AppointmentsPageComponent {
       return;
     }
 
-    this.appointmentsService.create(this.form.getRawValue()).subscribe(() => {
-      this.form.reset({ customerName: '', customerPhone: '', scheduledAt: '' });
+    const raw = this.form.getRawValue();
+    const payload: CreateAppointment = {
+      clientId: raw.clientId,
+      employeeId: this.session.user()?.id || '',
+      startsAt: new Date(raw.startsAt),
+      endsAt: new Date(new Date(raw.startsAt).getTime() + 30 * 60 * 1000), // Assuming a default duration of 30 minutes
+      status: 'scheduled',
+      notes: raw.notes.trim()
+    };
+
+    this.appointmentsService.create(payload).subscribe(() => {
+      this.form.reset({ clientId: '', employeeId: this.session.user()?.id || '', startsAt: '', notes: '' });
       this.load();
     });
   }
@@ -176,5 +191,7 @@ export class AppointmentsPageComponent {
     this.appointmentsService
       .list({ page: 1, limit: 20 })
       .subscribe((response) => this.appointments.set(response.data));
+
+      this.userService.list({ role: 'client' }).subscribe((response) => this.customers.set(response.data));
   }
 }

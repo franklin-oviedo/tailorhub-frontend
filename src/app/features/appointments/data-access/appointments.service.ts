@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Appointment, PaginatedResponse } from '../../../core/models/domain.models';
+import { Appointment, CreateAppointment, PaginatedResponse } from '../../../core/models/domain.models';
 import { ApiConfigService } from '../../../core/services/api-config.service';
 
 export interface AppointmentsQuery {
@@ -24,9 +24,9 @@ export class AppointmentsService {
   }
 
   create(
-    payload: Pick<Appointment, 'customerName' | 'customerPhone' | 'scheduledAt'>
-  ): Observable<Appointment> {
-    return this.http.post<Appointment>(`${this.config.baseUrl}/appointments`, payload);
+    payload: CreateAppointment
+  ): Observable<CreateAppointment> {
+    return this.http.post<CreateAppointment>(`${this.config.baseUrl}/appointments`, payload);
   }
 
   detail(appointmentId: string): Observable<Appointment> {

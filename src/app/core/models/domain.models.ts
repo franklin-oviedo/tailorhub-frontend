@@ -61,7 +61,7 @@ export interface Order {
   items: OrderItem[];
 }
 
-export interface CreateOrderPayload {
+export interface CreateOrder {
   customerId: string;
   employeeId: string;
   items: OrderItem[];
@@ -81,4 +81,13 @@ export interface Appointment {
   startsAt: string;
   status: 'booked' | 'cancelled';
   storeId: string;
+}
+
+export interface CreateAppointment {
+  clientId: string;
+  employeeId: string;
+  startsAt: Date;
+  endsAt: Date;
+  status: 'scheduled';
+  notes: string;
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreateOrderPayload, Order, Product, User } from '../../../core/models/domain.models';
+import { CreateOrder, Order, Product, User } from '../../../core/models/domain.models';
 import { OrdersService } from '../data-access/orders.service';
 import { ProductsService } from '../../products/data-access/products.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -190,7 +190,7 @@ export class OrdersPageComponent {
       this.successMessage.set('');
   
       const raw = this.form.getRawValue();
-      const payload: CreateOrderPayload = {
+      const payload: CreateOrder = {
         customerId: raw.customerId.trim(),
         employeeId: this.session.user()?.id || '',
         items: raw.items.split(',').map((itemId) => {
