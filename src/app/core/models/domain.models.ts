@@ -25,7 +25,7 @@ export interface User {
   email: string;
   fullName: string;
   role: UserRole;
-  storeId: string;
+  store: Store;
   isActive: boolean;
 }
 

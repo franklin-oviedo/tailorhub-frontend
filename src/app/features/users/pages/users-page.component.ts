@@ -32,7 +32,7 @@ import { UsersService } from '../data-access/users.service';
                   {{ user.role }}
                 </span>
               </td>
-              <td>{{ user.storeId || '-' }}</td>
+              <td>{{ user.store.name || '-' }}</td>
             </tr>
           }
         </tbody>

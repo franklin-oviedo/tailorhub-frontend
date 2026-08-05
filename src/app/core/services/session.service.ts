@@ -15,7 +15,7 @@ export class SessionService {
   setUser(user: User): void {
     this.user.set(user);
     localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
-    this.storeContext.setStoreId(user.storeId);
+    this.storeContext.setStoreId(user.store.id);
   }
 
   clear(): void {
