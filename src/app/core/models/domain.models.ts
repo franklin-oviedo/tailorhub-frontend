@@ -12,21 +12,44 @@ export interface PaginatedResponse<T> {
   meta: PaginationMeta;
 }
 
+export interface User {
+  id: string;
+  role: UserRole;
+  store: Store;
+  employee: Employee | null;
+  customer: Customer | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Store {
   id: string;
   name: string;
+  email: string;
+  phone: string;
   address: string;
-  phone?: string;
-  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface User {
+export interface Employee {
   id: string;
+  name: string;
+  phone: string;
   email: string;
-  fullName: string;
-  role: UserRole;
-  store: Store;
-  isActive: boolean;
+  active: boolean;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Product {

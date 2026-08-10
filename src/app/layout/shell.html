@@ -1,0 +1,111 @@
+<div class="layout-container">
+
+  <!-- Mobile backdrop -->
+  @if (mobileNavOpen()) {
+    <button
+      type="button"
+      class="sidebar-backdrop d-lg-none"
+      aria-label="Cerrar menú lateral"
+      (click)="closeMobileNav()"
+    ></button>
+  }
+
+
+  <!-- Sidebar -->
+  <aside
+    class="sidenav"
+    [class.is-open]="mobileNavOpen()"
+    aria-label="Navegación principal"
+  >
+
+    <!-- Brand -->
+    <div class="brand">
+
+      <img
+        ngSrc="tailorhub.png"
+        width="180"
+        height="46"
+        priority
+        alt="TailorHub"
+        class="brand-logo"
+      />
+
+    </div>
+
+
+    <!-- Navigation -->
+    <nav aria-label="Menú principal">
+
+      @for (item of visibleNavItems(); track item.path) {
+
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+          class="nav-link"
+          (click)="closeMobileNav()"
+        >
+          {{ item.label }}
+        </a>
+
+      }
+
+    </nav>
+
+  </aside>
+
+
+  <!-- Main panel -->
+  <div class="main-panel">
+
+    <!-- Toolbar -->
+    <header class="toolbar">
+
+      <!-- Mobile menu -->
+      <button
+        type="button"
+        class="menu-button d-lg-none"
+        aria-label="Abrir menú"
+        [attr.aria-expanded]="mobileNavOpen()"
+        aria-controls="main-navigation"
+        (click)="toggleMobileNav()"
+      >
+        <span
+          class="menu-glyph"
+          aria-hidden="true"
+        >
+          ☰
+        </span>
+      </button>
+
+
+      <!-- Toolbar content -->
+      <div class="toolbar-content">
+
+        <p class="welcome">
+          {{ welcomeMessage() }}
+        </p>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()"
+        >
+          Salir
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- Page content -->
+    <main class="content">
+
+      <router-outlet />
+
+    </main>
+
+  </div>
+
+</div>
