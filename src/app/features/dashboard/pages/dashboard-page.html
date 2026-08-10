@@ -1,0 +1,384 @@
+<main class="dashboard">
+
+
+  <!-- =========================================
+       General Summary
+  ========================================== -->
+  <section
+    class="dashboard-section"
+    aria-labelledby="summary-title"
+  >
+
+    <div class="section-heading">
+
+      <h2
+        id="summary-title"
+        class="section-heading__title"
+      >
+        Resumen general
+      </h2>
+
+    </div>
+
+
+    <div class="stats-grid">
+
+      <!-- =====================================
+           Active Employees
+      ====================================== -->
+      <article class="stat-card stat-card--employees">
+
+        <div class="stat-card__icon">
+
+          <img
+            src="tailor-icon-vector.png"
+            alt=""
+            class="stat-card__image"
+          >
+
+        </div>
+
+
+        <div class="stat-card__content">
+
+          <span class="stat-card__label">
+            Empleados activos
+          </span>
+
+          <strong class="stat-card__value">
+            120
+          </strong>
+
+          <span class="stat-card__meta">
+            Personal activo
+          </span>
+
+        </div>
+
+      </article>
+
+
+      <!-- =====================================
+           Total Clients
+      ====================================== -->
+      <article class="stat-card stat-card--clients">
+
+        <div class="stat-card__icon">
+
+          <img
+            src="customer-totals.png"
+            alt=""
+            class="stat-card__image"
+          >
+
+        </div>
+
+
+        <div class="stat-card__content">
+
+          <span class="stat-card__label">
+            Clientes totales
+          </span>
+
+          <strong class="stat-card__value">
+            120
+          </strong>
+
+          <span class="stat-card__meta">
+            Clientes registrados
+          </span>
+
+        </div>
+
+      </article>
+
+
+      <!-- =====================================
+           Orders in Progress
+      ====================================== -->
+      <article class="stat-card stat-card--orders">
+
+        <div class="stat-card__icon">
+
+          <img
+            src="order-process.png"
+            alt=""
+            class="stat-card__image"
+          >
+
+        </div>
+
+
+        <div class="stat-card__content">
+
+          <span class="stat-card__label">
+            Órdenes en proceso
+          </span>
+
+          <strong class="stat-card__value">
+            120
+          </strong>
+
+          <span class="stat-card__meta">
+            Trabajos actualmente activos
+          </span>
+
+        </div>
+
+      </article>
+
+
+      <!-- =====================================
+           Completed Orders
+      ====================================== -->
+      <article class="stat-card stat-card--completed">
+
+        <div class="stat-card__icon">
+
+          <img
+            src="order-done.png"
+            alt=""
+            class="stat-card__image"
+          >
+
+        </div>
+
+
+        <div class="stat-card__content">
+
+          <span class="stat-card__label">
+            Órdenes completadas
+          </span>
+
+          <strong class="stat-card__value">
+            120
+          </strong>
+
+          <span class="stat-card__meta">
+            Trabajos finalizados
+          </span>
+
+        </div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       Quick Access
+  ========================================== -->
+  <section
+    class="dashboard-section dashboard-section--quick-access"
+    aria-labelledby="quick-access-title"
+  >
+
+    <div class="section-heading">
+
+      <h2
+        id="quick-access-title"
+        class="section-heading__title"
+      >
+        Accesos rápidos
+      </h2>
+
+    </div>
+
+
+    <div class="management-grid">
+
+
+      <!-- =====================================
+           Employees
+      ====================================== -->
+      <a
+        routerLink="/employees"
+        class="management-card"
+        aria-label="Ir a empleados"
+      >
+
+        <div class="management-card__image-wrapper">
+
+          <img
+            src="manage-employees.png"
+            alt=""
+            class="management-card__image"
+          >
+
+        </div>
+
+
+        <div class="management-card__content">
+
+          <span class="management-card__category">
+            Personal
+          </span>
+
+          <h3 class="management-card__title">
+            Empleados
+          </h3>
+
+          <p class="management-card__description">
+            Consulta y administra la información de tu equipo.
+          </p>
+
+          <span class="management-card__action">
+            Ver empleados
+
+            <span aria-hidden="true">
+              →
+            </span>
+          </span>
+
+        </div>
+
+      </a>
+
+
+      <!-- =====================================
+           Clients
+      ====================================== -->
+      <a
+        routerLink="/clients"
+        class="management-card"
+        aria-label="Ir a clientes"
+      >
+
+        <div class="management-card__image-wrapper">
+
+          <img
+            src="manage-clients.png"
+            alt=""
+            class="management-card__image"
+          >
+
+        </div>
+
+
+        <div class="management-card__content">
+
+          <span class="management-card__category">
+            Clientes
+          </span>
+
+          <h3 class="management-card__title">
+            Clientes
+          </h3>
+
+          <p class="management-card__description">
+            Consulta y administra la información de tus clientes.
+          </p>
+
+          <span class="management-card__action">
+            Ver clientes
+
+            <span aria-hidden="true">
+              →
+            </span>
+          </span>
+
+        </div>
+
+      </a>
+
+
+      <!-- =====================================
+           Orders
+      ====================================== -->
+      <a
+        routerLink="/orders"
+        class="management-card"
+        aria-label="Ir a órdenes"
+      >
+
+        <div class="management-card__image-wrapper">
+
+          <img
+            src="manage-orders.png"
+            alt=""
+            class="management-card__image"
+          >
+
+        </div>
+
+
+        <div class="management-card__content">
+
+          <span class="management-card__category">
+            Producción
+          </span>
+
+          <h3 class="management-card__title">
+            Órdenes
+          </h3>
+
+          <p class="management-card__description">
+            Consulta el estado y seguimiento de los trabajos.
+          </p>
+
+          <span class="management-card__action">
+            Ver órdenes
+
+            <span aria-hidden="true">
+              →
+            </span>
+          </span>
+
+        </div>
+
+      </a>
+
+
+      <!-- =====================================
+           Appointments
+      ====================================== -->
+      <a
+        routerLink="/appointments"
+        class="management-card"
+        aria-label="Ir a citas"
+      >
+
+        <div class="management-card__image-wrapper">
+
+          <img
+            src="manage-appointments.png"
+            alt=""
+            class="management-card__image"
+          >
+
+        </div>
+
+
+        <div class="management-card__content">
+
+          <span class="management-card__category">
+            Agenda
+          </span>
+
+          <h3 class="management-card__title">
+            Citas
+          </h3>
+
+          <p class="management-card__description">
+            Consulta y organiza las citas programadas.
+          </p>
+
+          <span class="management-card__action">
+            Ver citas
+
+            <span aria-hidden="true">
+              →
+            </span>
+          </span>
+
+        </div>
+
+      </a>
+
+    </div>
+
+  </section>
+
+</main>

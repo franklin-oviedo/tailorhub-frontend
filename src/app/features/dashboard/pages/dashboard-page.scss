@@ -1,0 +1,728 @@
+// =====================================================
+// TailorHub - Dashboard
+// UX/UI Design System
+// =====================================================
+
+
+// =====================================================
+// Design Tokens
+// =====================================================
+
+$th-primary: #264653;
+$th-secondary: #2a9d8f;
+$th-accent: #e9c46a;
+$th-error: #e76f51;
+
+$th-background: #f7f9fa;
+$th-surface: #ffffff;
+
+$th-text: #263238;
+$th-muted: #6b7780;
+
+$th-border: #e4e9ec;
+
+$th-radius-sm: 0.5rem;
+$th-radius-md: 0.75rem;
+$th-radius-lg: 1rem;
+
+$th-shadow-sm:
+  0 2px 8px rgba(38, 70, 83, 0.06);
+
+$th-shadow-md:
+  0 8px 24px rgba(38, 70, 83, 0.10);
+
+$transition: 180ms ease;
+
+
+// =====================================================
+// Dashboard
+// =====================================================
+
+.dashboard {
+  width: 100%;
+  min-height: 100%;
+
+  padding: 2rem;
+
+  box-sizing: border-box;
+
+  background: $th-background;
+  color: $th-text;
+}
+
+
+// =====================================================
+// Dashboard Header
+// =====================================================
+
+.dashboard-header {
+  margin-bottom: 2.25rem;
+
+  &__content {
+    max-width: 720px;
+  }
+
+  &__eyebrow {
+    display: inline-block;
+
+    margin-bottom: 0.5rem;
+
+    color: $th-secondary;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin: 0;
+
+    color: $th-primary;
+
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__description {
+    max-width: 650px;
+
+    margin: 0.75rem 0 0;
+
+    color: $th-muted;
+
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+}
+
+
+// =====================================================
+// Dashboard Sections
+// =====================================================
+
+.dashboard-section {
+  margin-bottom: 2.75rem;
+
+  &--quick-access {
+    margin-bottom: 0;
+  }
+}
+
+
+// =====================================================
+// Section Heading
+// =====================================================
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 1.25rem;
+
+  &__title {
+    margin: 0;
+
+    color: $th-primary;
+
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+}
+
+
+// =====================================================
+// Statistics Grid
+// =====================================================
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 1rem;
+}
+
+
+// =====================================================
+// Statistics Card
+// =====================================================
+
+.stat-card {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+  min-height: 125px;
+
+  padding: 1.25rem;
+
+  overflow: hidden;
+
+  background: $th-surface;
+
+  border: 1px solid $th-border;
+  border-radius: $th-radius-lg;
+
+  box-shadow: $th-shadow-sm;
+
+  transition:
+    transform $transition,
+    box-shadow $transition,
+    border-color $transition;
+
+
+  // -----------------------------------------------
+  // Left Accent
+  // -----------------------------------------------
+
+  &::before {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 4px;
+    height: 100%;
+
+    content: '';
+
+    background: $th-secondary;
+  }
+
+
+  // -----------------------------------------------
+  // Hover
+  // -----------------------------------------------
+
+  &:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba($th-secondary, 0.3);
+
+    box-shadow: $th-shadow-md;
+  }
+
+
+  // -----------------------------------------------
+  // Employees
+  // -----------------------------------------------
+
+  &--employees {
+
+    &::before {
+      background: $th-secondary;
+    }
+
+    .stat-card__icon {
+      background: rgba($th-secondary, 0.09);
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Clients
+  // -----------------------------------------------
+
+  &--clients {
+
+    &::before {
+      background: $th-primary;
+    }
+
+    .stat-card__icon {
+      background: rgba($th-primary, 0.08);
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Orders
+  // -----------------------------------------------
+
+  &--orders {
+
+    &::before {
+      background: $th-accent;
+    }
+
+    .stat-card__icon {
+      background: rgba($th-accent, 0.15);
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Completed
+  // -----------------------------------------------
+
+  &--completed {
+
+    &::before {
+      background: $th-secondary;
+    }
+
+    .stat-card__icon {
+      background: rgba($th-secondary, 0.09);
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Icon
+  // -----------------------------------------------
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 56px;
+
+    width: 56px;
+    height: 56px;
+
+    margin-right: 1rem;
+
+    border-radius: $th-radius-md;
+  }
+
+
+  &__image {
+    width: 36px;
+    height: 36px;
+
+    object-fit: contain;
+
+    opacity: 0.85;
+  }
+
+
+  // -----------------------------------------------
+  // Content
+  // -----------------------------------------------
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+  }
+
+
+  &__label {
+    display: block;
+
+    margin-bottom: 0.35rem;
+
+    overflow: hidden;
+
+    color: $th-muted;
+
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+
+  &__value {
+    display: block;
+
+    margin-bottom: 0.25rem;
+
+    color: $th-primary;
+
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+
+  &__meta {
+    color: $th-muted;
+
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+}
+
+
+// =====================================================
+// Quick Access Grid
+// =====================================================
+
+.management-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 1.25rem;
+}
+
+
+// =====================================================
+// Quick Access Card
+// =====================================================
+
+.management-card {
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 36%) 1fr;
+
+  min-height: 185px;
+
+  overflow: hidden;
+
+  color: inherit;
+  text-decoration: none;
+
+  background: $th-surface;
+
+  border: 1px solid $th-border;
+  border-radius: $th-radius-lg;
+
+  box-shadow: $th-shadow-sm;
+
+  transition:
+    transform $transition,
+    box-shadow $transition,
+    border-color $transition;
+
+
+  // -----------------------------------------------
+  // Hover
+  // -----------------------------------------------
+
+  &:hover {
+    transform: translateY(-3px);
+
+    border-color: rgba($th-secondary, 0.35);
+
+    box-shadow: $th-shadow-md;
+
+
+    .management-card__image {
+      transform: scale(1.06);
+    }
+
+
+    .management-card__action {
+      color: $th-secondary;
+
+      gap: 0.65rem;
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Keyboard Focus
+  // -----------------------------------------------
+
+  &:focus-visible {
+    outline: 3px solid rgba($th-secondary, 0.35);
+
+    outline-offset: 3px;
+  }
+
+
+  // -----------------------------------------------
+  // Image Wrapper
+  // -----------------------------------------------
+
+  &__image-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 185px;
+
+    overflow: hidden;
+
+    background: rgba($th-primary, 0.04);
+  }
+
+
+  // -----------------------------------------------
+  // Quick Access Image
+  // -----------------------------------------------
+
+  &__image {
+    width: 72px;
+    height: 72px;
+
+    object-fit: contain;
+
+    opacity: 0.9;
+
+    transition:
+      transform 250ms ease;
+  }
+
+
+  // -----------------------------------------------
+  // Content
+  // -----------------------------------------------
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 1.5rem;
+  }
+
+
+  &__category {
+    margin-bottom: 0.4rem;
+
+    color: $th-secondary;
+
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+
+  &__title {
+    margin: 0 0 0.5rem;
+
+    color: $th-primary;
+
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+
+  &__description {
+    margin: 0 0 1rem;
+
+    color: $th-muted;
+
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+
+  &__action {
+    display: flex;
+    align-items: center;
+
+    gap: 0.4rem;
+
+    margin-top: auto;
+
+    color: $th-primary;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    transition:
+      color $transition,
+      gap $transition;
+  }
+}
+
+
+// =====================================================
+// Tablet
+// =====================================================
+
+@media (max-width: 1100px) {
+
+  .dashboard {
+    padding: 1.5rem;
+  }
+
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .management-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+// =====================================================
+// Mobile
+// =====================================================
+
+@media (max-width: 650px) {
+
+  .dashboard {
+    padding: 1rem;
+  }
+
+
+  // -----------------------------------------------
+  // Header
+  // -----------------------------------------------
+
+  .dashboard-header {
+    margin-bottom: 1.75rem;
+
+
+    &__title {
+      font-size: 1.65rem;
+    }
+
+
+    &__description {
+      font-size: 0.85rem;
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Section Heading
+  // -----------------------------------------------
+
+  .section-heading {
+    margin-bottom: 1rem;
+
+
+    &__title {
+      font-size: 1.1rem;
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Statistics
+  // -----------------------------------------------
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+
+    gap: 0.75rem;
+  }
+
+
+  .stat-card {
+    min-height: 105px;
+
+    padding: 1rem;
+
+
+    &__icon {
+      flex-basis: 48px;
+
+      width: 48px;
+      height: 48px;
+
+      margin-right: 0.85rem;
+    }
+
+
+    &__image {
+      width: 30px;
+      height: 30px;
+    }
+
+
+    &__value {
+      font-size: 1.5rem;
+    }
+  }
+
+
+  // -----------------------------------------------
+  // Quick Access
+  // -----------------------------------------------
+
+  .management-grid {
+    gap: 1rem;
+  }
+
+
+  .management-card {
+    grid-template-columns: 1fr;
+
+
+    &__image-wrapper {
+      min-height: 120px;
+    }
+
+
+    &__image {
+      width: 70px;
+      height: 70px;
+    }
+
+
+    &__content {
+      padding: 1.25rem;
+    }
+  }
+}
+
+
+// =====================================================
+// Small Mobile
+// =====================================================
+
+@media (max-width: 400px) {
+
+  .dashboard {
+    padding: 0.75rem;
+  }
+
+
+  .stat-card {
+
+    &__icon {
+      flex-basis: 42px;
+
+      width: 42px;
+      height: 42px;
+
+      margin-right: 0.7rem;
+    }
+
+
+    &__image {
+      width: 26px;
+      height: 26px;
+    }
+
+
+    &__label {
+      font-size: 0.74rem;
+    }
+
+
+    &__value {
+      font-size: 1.35rem;
+    }
+  }
+
+
+  .management-card {
+
+    &__image-wrapper {
+      min-height: 105px;
+    }
+
+
+    &__image {
+      width: 60px;
+      height: 60px;
+    }
+  }
+}

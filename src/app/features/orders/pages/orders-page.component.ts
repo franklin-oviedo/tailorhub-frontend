@@ -29,7 +29,7 @@ import { UsersService } from '../../users/data-access/users.service';
                   formControlName="customerId"
                 >
                   @for (customer of customers(); track customer.id) {
-                  <option [value]="customer.id">{{customer.fullName}}</option>
+                  <option [value]="customer.id">{{customer.customer?.name}}</option>
                   }
                 </select>
                 @if (isInvalid('customerId')) {
@@ -159,7 +159,7 @@ export class OrdersPageComponent {
 
   readonly form = this.fb.nonNullable.group({
     customerId: ['', Validators.required],
-    employeeId: [this.session.user()?.fullName || '', Validators.required],
+    employeeId: [this.session.user()?.employee?.name || '', Validators.required],
     items: ['', Validators.required],
     notes: ['', Validators.maxLength(500)]
   });
@@ -204,7 +204,7 @@ export class OrdersPageComponent {
         next: () => {
           this.loading.set(false);
           this.successMessage.set('Orden creada correctamente.');
-          this.form.reset({ customerId: '', employeeId: this.session.user()?.fullName || '', items: '', notes: '' });
+          this.form.reset({ customerId: '', employeeId: this.session.user()?.employee?.name || '', items: '', notes: '' });
           this.loadOrders();
         },
         error: () => {
