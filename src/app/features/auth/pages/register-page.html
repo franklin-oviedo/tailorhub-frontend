@@ -1,0 +1,283 @@
+<div class="auth-page">
+
+  <!-- Panel visual -->
+  <section
+    class="mannequin-panel"
+    aria-label="TailorHub"
+  >
+    <img
+      ngSrc="maniqui.png"
+      width="350"
+      height="550"
+      priority
+      alt="Maniquí masculino con traje de sastrería"
+      class="mannequin-image"
+    />
+  </section>
+
+  <!-- Panel de registro -->
+  <section class="auth-panel">
+
+    <div class="auth-card">
+
+      <!-- Header -->
+      <div class="auth-head">
+
+        <img
+          ngSrc="tailorhub.png"
+          width="280"
+          height="72"
+          priority
+          alt="TailorHub"
+          class="auth-logo"
+        />
+
+        <h1>
+          Crear una cuenta
+        </h1>
+
+        <p class="subtitle">
+          Regístrate para comenzar a gestionar tu experiencia
+          de sastrería en TailorHub.
+        </p>
+
+      </div>
+
+      <!-- Form -->
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        class="auth-form"
+        novalidate
+      >
+
+        <!-- Full Name -->
+        <div class="form-group">
+
+          <div class="form-floating">
+
+            <input
+              id="registerName"
+              type="text"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('fullName')"
+              [class.is-valid]="isValid('fullName')"
+              formControlName="fullName"
+              placeholder="Nombre completo"
+              autocomplete="name"
+            />
+
+            <label for="registerName">
+              Nombre completo
+            </label>
+
+          </div>
+
+          @if (isInvalid('fullName')) {
+            <div
+              class="invalid-feedback d-block"
+              role="alert"
+            >
+              Ingresa tu nombre completo.
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Email -->
+        <div class="form-group">
+
+          <div class="form-floating">
+
+            <input
+              id="registerEmail"
+              type="email"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('email')"
+              [class.is-valid]="isValid('email')"
+              formControlName="email"
+              placeholder="correo@tailorhub.com"
+              autocomplete="email"
+            />
+
+            <label for="registerEmail">
+              Correo electrónico
+            </label>
+
+          </div>
+
+          @if (isInvalid('email')) {
+            <div
+              class="invalid-feedback d-block"
+              role="alert"
+            >
+              Ingresa un correo electrónico válido.
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Password -->
+        <div class="form-group">
+
+          <div class="form-floating">
+
+            <input
+              id="registerPassword"
+              type="password"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('password')"
+              [class.is-valid]="isValid('password')"
+              formControlName="password"
+              placeholder="Contraseña"
+              autocomplete="new-password"
+            />
+
+            <label for="registerPassword">
+              Contraseña
+            </label>
+
+          </div>
+
+          @if (isInvalid('password')) {
+            <div
+              class="invalid-feedback d-block"
+              role="alert"
+            >
+              La contraseña debe tener al menos 6 caracteres.
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Role -->
+        <div class="form-group">
+
+          <div class="form-floating">
+
+            <select
+              id="registerRole"
+              class="form-select th-input"
+              [class.is-invalid]="isInvalid('role')"
+              [class.is-valid]="isValid('role')"
+              formControlName="role"
+            >
+              <option value="client">
+                Cliente
+              </option>
+
+              <option value="employee">
+                Empleado
+              </option>
+
+              <option value="manager">
+                Manager
+              </option>
+
+              <option value="admin">
+                Admin
+              </option>
+            </select>
+
+            <label for="registerRole">
+              Rol
+            </label>
+
+          </div>
+
+          @if (isInvalid('role')) {
+            <div
+              class="invalid-feedback d-block"
+              role="alert"
+            >
+              Selecciona un rol.
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Store -->
+        <div class="form-group">
+
+          <div class="form-floating">
+
+            <input
+              id="registerStore"
+              type="text"
+              class="form-control th-input"
+              [class.is-invalid]="isInvalid('storeId')"
+              [class.is-valid]="isValid('storeId')"
+              formControlName="storeId"
+              placeholder="Store ID"
+            />
+
+            <label for="registerStore">
+              Store ID
+            </label>
+
+          </div>
+
+          @if (isInvalid('storeId')) {
+            <div
+              class="invalid-feedback d-block"
+              role="alert"
+            >
+              El Store ID es requerido.
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Error -->
+        @if (errorMessage()) {
+          <ngb-alert
+            type="danger"
+            [dismissible]="false"
+            class="auth-alert"
+          >
+            {{ errorMessage() }}
+          </ngb-alert>
+        }
+
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn th-btn-primary"
+          [disabled]="form.invalid || loading()"
+        >
+
+          @if (loading()) {
+            <span
+              class="spinner-border spinner-border-sm me-2"
+              aria-hidden="true"
+            ></span>
+
+            Registrando...
+          } @else {
+            Crear cuenta
+          }
+
+        </button>
+
+      </form>
+
+
+      <!-- Back to login -->
+      <a
+        routerLink="/login"
+        class="link"
+      >
+        ¿Ya tienes una cuenta? Inicia sesión
+      </a>
+
+    </div>
+
+  </section>
+
+</div>

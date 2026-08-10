@@ -1,0 +1,272 @@
+// ========================================
+// TailorHub - Design Tokens
+// ========================================
+
+:host {
+  --th-primary-dark: #264653;
+  --th-primary: #2a9d8f;
+  --th-primary-hover: #238276;
+  --th-active: #4caf50;
+  --th-background: #f5f5f5;
+  --th-surface: #ffffff;
+  --th-text: #264653;
+  --th-focus: rgba(42, 157, 143, 0.2);
+}
+
+
+// ========================================
+// Login Page
+// ========================================
+
+.login-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+
+// ========================================
+// Mannequin Panel
+// ========================================
+
+.mannequin-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100vh;
+  padding: 2rem;
+
+  background-color: var(--th-primary-dark);
+}
+
+.mannequin-image {
+  display: block;
+
+  width: min(350px, 80%);
+  height: auto;
+
+  object-fit: contain;
+}
+
+
+// ========================================
+// Login Panel
+// ========================================
+
+.login-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100vh;
+  padding: 2rem;
+
+  background-color: var(--th-background);
+}
+
+
+// ========================================
+// Login Card
+// ========================================
+
+.login-card {
+  width: min(420px, 100%);
+
+  padding: 2.5rem;
+
+  background-color: var(--th-surface);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+
+// ========================================
+// Logo
+// ========================================
+
+.login-logo {
+  display: block;
+
+  width: min(280px, 100%);
+  height: auto;
+
+  margin: 0 auto 2rem;
+}
+
+
+// ========================================
+// Title
+// ========================================
+
+.login-title {
+  margin-bottom: 0.5rem;
+
+  color: var(--th-text);
+
+  font-size: 1.75rem;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.login-subtitle {
+  margin-bottom: 1.75rem;
+
+  color: #6c757d;
+
+  font-size: 0.95rem;
+
+  text-align: center;
+}
+
+
+// ========================================
+// Form
+// ========================================
+
+.form-control {
+  border-radius: 8px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--th-primary);
+
+  box-shadow:
+    0 0 0 0.2rem var(--th-focus);
+}
+
+
+// ========================================
+// Submit Button
+// ========================================
+
+.login-submit {
+  margin-top: 0.5rem;
+
+  padding: 0.75rem 1rem;
+
+  background-color: var(--th-primary);
+  border-color: var(--th-primary);
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.login-submit:hover:not(:disabled) {
+  background-color: var(--th-primary-hover);
+  border-color: var(--th-primary-hover);
+}
+
+.login-submit:active:not(:disabled) {
+  background-color: var(--th-active);
+  border-color: var(--th-active);
+
+  transform: translateY(1px);
+}
+
+.login-submit:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+// ========================================
+// Navigation Links
+// ========================================
+
+.login-links {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-top: 1.25rem;
+}
+
+.login-links a {
+  color: var(--th-primary-dark);
+
+  font-size: 0.875rem;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.login-links a:hover {
+  color: var(--th-primary);
+  text-decoration: underline;
+}
+
+
+// ========================================
+// Responsive
+// ========================================
+
+@media (max-width: 768px) {
+
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .mannequin-panel {
+    display: none;
+  }
+
+  .login-panel {
+    min-height: 100vh;
+
+    padding: 1.5rem;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-links {
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+  }
+}
+
+
+// ========================================
+// Small Mobile
+// ========================================
+
+@media (max-width: 400px) {
+
+  .login-panel {
+    padding: 1rem;
+  }
+
+  .login-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .login-logo {
+    width: 240px;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+}

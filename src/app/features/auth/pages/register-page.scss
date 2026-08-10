@@ -1,0 +1,347 @@
+// ========================================
+// TailorHub - Design Tokens
+// ========================================
+
+:host {
+  --th-primary-dark: #264653;
+  --th-primary: #2a9d8f;
+  --th-primary-hover: #238276;
+  --th-active: #4caf50;
+  --th-background: #f5f5f5;
+  --th-surface: #ffffff;
+  --th-text: #264653;
+  --th-muted: #6c757d;
+  --th-focus: rgba(42, 157, 143, 0.2);
+}
+
+
+// ========================================
+// Page
+// ========================================
+
+.auth-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  min-height: 100dvh;
+}
+
+
+// ========================================
+// Mannequin Panel
+// ========================================
+
+.mannequin-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100dvh;
+
+  padding: 2rem;
+
+  background-color: var(--th-primary-dark);
+}
+
+.mannequin-image {
+  display: block;
+
+  width: min(350px, 80%);
+  height: auto;
+
+  object-fit: contain;
+}
+
+
+// ========================================
+// Authentication Panel
+// ========================================
+
+.auth-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100dvh;
+
+  padding: 2rem;
+
+  background-color: var(--th-background);
+}
+
+
+// ========================================
+// Authentication Card
+// ========================================
+
+.auth-card {
+  display: grid;
+
+  width: min(420px, 100%);
+
+  gap: 1rem;
+
+  padding: 2.5rem;
+
+  background-color: var(--th-surface);
+
+  border-radius: 1rem;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+
+// ========================================
+// Header
+// ========================================
+
+.auth-head {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 0.5rem;
+
+  text-align: center;
+}
+
+
+// ========================================
+// Logo
+// ========================================
+
+.auth-logo {
+  display: block;
+
+  width: min(280px, 100%);
+  height: auto;
+
+  margin: 0 auto 1rem;
+
+  object-fit: contain;
+}
+
+
+// ========================================
+// Title
+// ========================================
+
+.auth-head h1 {
+  margin: 0;
+
+  color: var(--th-primary-dark);
+
+  font-size: 1.65rem;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+
+// ========================================
+// Subtitle
+// ========================================
+
+.subtitle {
+  max-width: 380px;
+
+  margin: 0;
+
+  color: var(--th-muted);
+
+  font-size: 0.95rem;
+
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+
+// ========================================
+// Form
+// ========================================
+
+.auth-form {
+  display: grid;
+
+  width: 100%;
+
+  gap: 0.75rem;
+
+  margin-top: 0.5rem;
+}
+
+
+// ========================================
+// Input
+// ========================================
+
+.th-input {
+  border-radius: 8px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.th-input:focus {
+  border-color: var(--th-primary);
+
+  box-shadow:
+    0 0 0 0.2rem var(--th-focus);
+}
+
+
+// ========================================
+// Validation
+// ========================================
+
+.invalid-feedback {
+  margin-top: 0.35rem;
+
+  font-size: 0.85rem;
+}
+
+
+// ========================================
+// Alert
+// ========================================
+
+.auth-alert {
+  margin: 0;
+
+  font-size: 0.9rem;
+}
+
+
+// ========================================
+// Primary Button
+// ========================================
+
+.th-btn-primary {
+  width: 100%;
+
+  min-height: 2.75rem;
+
+  margin-top: 0.5rem;
+
+  padding: 0.75rem 1rem;
+
+  color: #ffffff;
+
+  background-color: var(--th-primary);
+
+  border-color: var(--th-primary);
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.th-btn-primary:hover:not(:disabled) {
+  background-color: var(--th-primary-hover);
+
+  border-color: var(--th-primary-hover);
+}
+
+.th-btn-primary:active:not(:disabled) {
+  background-color: var(--th-active);
+
+  border-color: var(--th-active);
+
+  transform: translateY(1px);
+}
+
+.th-btn-primary:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+// ========================================
+// Back Link
+// ========================================
+
+.link {
+  display: block;
+
+  margin-top: 0.5rem;
+
+  color: var(--th-primary);
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  text-align: center;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--th-primary-hover);
+
+  text-decoration: underline;
+}
+
+
+// ========================================
+// Responsive
+// ========================================
+
+@media (max-width: 768px) {
+
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .mannequin-panel {
+    display: none;
+  }
+
+  .auth-panel {
+    min-height: 100dvh;
+
+    padding: 1.5rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
+
+// ========================================
+// Small Mobile
+// ========================================
+
+@media (max-width: 400px) {
+
+  .auth-panel {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .auth-logo {
+    width: 240px;
+  }
+
+  .auth-head h1 {
+    font-size: 1.45rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+}
