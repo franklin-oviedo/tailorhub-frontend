@@ -1,165 +1,142 @@
 <div class="appointments-layout">
 
-    <div class="appointments-sidebar">
 
+    <!-- Sidebar -->
+    <aside class="appointments-sidebar">
+
+        <!-- Calendar -->
         <section class="th-card calendar-card" aria-labelledby="calendar-title">
             <div class="card-body">
+
                 <h2 id="calendar-title" class="visually-hidden">
                     Calendario de citas
                 </h2>
 
                 <app-calendar [month]="month" [year]="year" (dateSelected)="onDateSelected($event)" />
+
             </div>
         </section>
 
+        <!-- Daily summary -->
         <section class="th-card summary-card" aria-labelledby="summary-title">
             <div class="summary-body">
-                <h2 id="summary-title" class="summary-title">
-                    Resumen del día
-                </h2>
+
+                <div class="summary-header">
+                    <div>
+                        <span class="summary-eyebrow">
+                            Agenda
+                        </span>
+
+                        <h2 id="summary-title" class="summary-title">
+                            Resumen del día
+                        </h2>
+                    </div>
+                </div>
 
                 <dl class="summary-list">
+
                     <div class="summary-item">
-                        <dt>En proceso</dt>
-                        <dd>3</dd>
+                        <div class="summary-item-content">
+                            <dt>En proceso</dt>
+                            <dd>3</dd>
+                        </div>
                     </div>
 
                     <div class="summary-item">
-                        <dt>Citas programadas</dt>
-                        <dd>3</dd>
+                        <div class="summary-item-content">
+                            <dt>Citas programadas</dt>
+                            <dd>3</dd>
+                        </div>
                     </div>
 
                     <div class="summary-item">
-                        <dt>Completadas</dt>
-                        <dd>3</dd>
+                        <div class="summary-item-content">
+                            <dt>Completadas</dt>
+                            <dd>3</dd>
+                        </div>
                     </div>
 
                     <div class="summary-item">
-                        <dt>Canceladas</dt>
-                        <dd>3</dd>
+                        <div class="summary-item-content">
+                            <dt>Canceladas</dt>
+                            <dd>3</dd>
+                        </div>
                     </div>
+
                 </dl>
+
             </div>
         </section>
 
-    </div>
+    </aside>
 
+    <!-- Appointments -->
     <section class="th-card appointments-card" aria-labelledby="appointments-title">
-        <div class="appointments-header">
-            <h2 id="appointments-title" class="appointments-title">
-               Miercoles 12 de junio de 2026
-            </h2>
-        </div>
+
+        <header class="appointments-header">
+
+            <div class="appointments-heading">
+
+                <span class="appointments-eyebrow">
+                    Agenda del día
+                </span>
+
+                <h2 id="appointments-title" class="appointments-title">
+                    {{ today | date: 'fullDate' }}
+                </h2>
+
+            </div>
+
+        </header>
 
         <div class="appointments-table-wrapper">
+
             <table class="appointments-table">
-                
+
                 <tbody>
+
+                    @for (
+                    appointment of appointments();
+                    track appointment.id
+                    ) {
+
                     <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
+
                         <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
+                            <span class="appointment-time">
+                                {{ appointment.scheduledAt | date: 'shortTime' }}
                             </span>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
+
                         <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
+                            <span class="customer-name">
+                                {{ appointment.customer.name }}
                             </span>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
+
                         <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
+                            <span class="customer-phone">
+                                {{ appointment.customer.phone }}
                             </span>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
+
                         <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
+                            <span class="appointment-status">
+                                {{ appointment.status }}
                             </span>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>8:00 AM</td>
-                        <td>Fred</td>
-                        <td>Sastrería</td>
-                        <td>
-                            <span class="appointment-status appointment-status--pending">
-                                Pendiente
-                            </span>
-                        </td>
+
                     </tr>
 
-                    
+                    }
+
                 </tbody>
+
             </table>
+
         </div>
+
     </section>
+
 
 </div>

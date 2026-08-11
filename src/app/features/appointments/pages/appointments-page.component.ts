@@ -15,8 +15,9 @@ import { Calendar } from '../../calendar/calendar';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppointmentsPageComponent {
-   month: number = new Date().getMonth(); // mes actual
+  month: number = new Date().getMonth(); // mes actual
   year: number = new Date().getFullYear(); // año actual
+  readonly today = new Date();
 
   onDateSelected(date: Date) {
     console.log('Fecha seleccionada:', date);
