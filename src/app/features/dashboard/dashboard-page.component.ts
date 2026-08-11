@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { SessionService } from '../../../core/services/session.service';
+import { SessionService } from '../../core/services/session.service';
 
 @Component({
   selector: 'app-dashboard-page',

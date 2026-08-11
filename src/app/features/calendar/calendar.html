@@ -8,8 +8,7 @@
             <span aria-hidden="true" class="material-symbols-outlined" translate="no">chevron_right</span>
         </button>
     </div>
-    <table ngGrid colWrap="continuous" rowWrap="nowrap"
-        selectionMode="explicit" (keydown)="onKeyDown($event)">
+    <table ngGrid colWrap="continuous" rowWrap="nowrap" selectionMode="explicit" (keydown)="onKeyDown($event)">
         <thead>
             <tr>
                 @for (day of weekdays(); track day.long) {
@@ -28,18 +27,13 @@
             }
             }
             @for (day of week; track day.day) {
-  <td ngGridCell [class.selected]="day.selected()" [attr.data-day]="day.day">
-    <button
-      #dayButton
-      ngGridCellWidget
-      [attr.aria-label]="day.ariaLabel"
-      [attr.data-day]="day.day"
-      [class.selected]="day.selected()"
-      (click)="onDayClick(day)">
-      {{ day.displayName }}
-    </button>
-  </td>
-}
+            <td ngGridCell [class.selected]="day.selected()" [attr.data-day]="day.day">
+                <button #dayButton ngGridCellWidget [attr.aria-label]="day.ariaLabel" [attr.data-day]="day.day"
+                    [class.selected]="day.selected()" (click)="onDayClick(day)">
+                    {{ day.displayName }}
+                </button>
+            </td>
+            }
 
             @if ($last && week.length < 7) { @for (day of [].constructor(7 - week.length); track $index) { <td
                 ngGridCell disabled>{{ $index + 1 }}</td>

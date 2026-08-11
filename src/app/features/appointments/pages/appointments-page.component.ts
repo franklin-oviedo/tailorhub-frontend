@@ -17,6 +17,9 @@ import { Calendar } from '../../calendar/calendar';
 export class AppointmentsPageComponent {
   month: number = new Date().getMonth(); // mes actual
   year: number = new Date().getFullYear(); // año actual
+  appointmentsScheduled: number = 0; // citas programadas para el mes.
+  appointmentsCancelled: number = 0; // citas canceladas para el mes.
+
   readonly today = new Date();
 
   onDateSelected(date: Date) {
@@ -80,7 +83,7 @@ export class AppointmentsPageComponent {
 
   appointmentStatusClass(status: Appointment['status']): string {
     switch (status) {
-      case 'booked':
+      case 'scheduled':
         return 'bg-success-subtle text-success-emphasis border border-success-subtle';
       case 'cancelled':
         return 'bg-danger-subtle text-danger-emphasis border border-danger-subtle';
@@ -92,8 +95,12 @@ export class AppointmentsPageComponent {
   private load(): void {
     this.appointmentsService
       .list({ page: 1, limit: 20 })
-      .subscribe((response) => this.appointments.set(response.data));
+      .subscribe((response) => {
+        this.appointments.set(response.data);
+        this.appointmentsScheduled = response.data.filter(a => a.status === 'scheduled').length;
+        this.appointmentsCancelled = response.data.filter(a => a.status === 'cancelled').length;
+      });
 
-      this.userService.list({ role: 'client' }).subscribe((response) => this.customers.set(response.data));
+    this.userService.list({ role: 'client' }).subscribe((response) => this.customers.set(response.data));
   }
 }

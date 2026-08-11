@@ -103,7 +103,7 @@ export interface Appointment {
   customerPhone?: string;
   scheduledAt: string;
   startsAt: string;
-  status: 'booked' | 'cancelled';
+  status: 'scheduled' | 'cancelled';
   storeId: string;
 }
 
