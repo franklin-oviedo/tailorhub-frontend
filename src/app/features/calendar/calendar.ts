@@ -1,19 +1,10 @@
-import {
-  Component,
-  computed,
-  inject,
-  signal,
-  Signal,
-  untracked,
-  viewChildren,
-  WritableSignal,
-} from '@angular/core';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MatDateFormats,
-  provideNativeDateAdapter,
-} from '@angular/material/core';
+import {  Component, computed, inject, signal, Signal, untracked, viewChildren, WritableSignal, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { DateAdapter, MAT_DATE_FORMATS, MatDateFormats, MatNativeDateModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
 
 const DAYS_PER_WEEK = 7;
 interface CalendarCell<D = any> {
@@ -22,17 +13,38 @@ interface CalendarCell<D = any> {
   date: D;
   selected: WritableSignal<boolean>;
   day: number;
+  disabled?: boolean; // <-- agregar esta línea
 }
+
+
 
 @Component({
   selector: 'app-calendar',
-  imports: [Grid, GridRow, GridCell, GridCellWidget],
+  imports: [MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatNativeDateModule,
+    FormsModule],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
+  exportAs: 'app-calendar',
 })
 export class Calendar {
- private readonly _dayButtons = viewChildren(GridCellWidget);
-  private readonly _dateAdapter = inject<DateAdapter<D>>(DateAdapter, {optional: true})!;
+  @Input() month!: number;   // o Date, según tu lógica
+  @Input() year!: number;    // idem
+
+  @Output() dateSelected = new EventEmitter<Date>();
+
+  @Input() disabled: boolean = false;
+  // cuando el usuario selecciona un día:
+  selectDate(date: Date) {
+    if (!this.disabled) {
+      this.dateSelected.emit(date);
+    }
+  }
+  private readonly _dayButtons = viewChildren('dayButton', {read: HTMLButtonElement});
+  private readonly _dateAdapter = inject<DateAdapter<Calendar>>(DateAdapter, {optional: true})!;
   private readonly _dateFormats = inject<MatDateFormats>(MAT_DATE_FORMATS, {optional: true})!;
   private readonly _firstWeekOffset = computed(() => {
     const firstDayOfMonth = this._dateAdapter.createDate(
@@ -72,9 +84,9 @@ export class Calendar {
     return weekdays.slice(firstDayOfWeek).concat(weekdays.slice(0, firstDayOfWeek));
   });
   /** The current selected date. */
-  readonly selectedDate: WritableSignal<D> = signal(this._dateAdapter.today());
+  readonly selectedDate: WritableSignal<Calendar> = signal(this._dateAdapter.today());
   /** The current display month. */
-  readonly viewMonth: WritableSignal<D> = signal(this.selectedDate());
+  readonly viewMonth: WritableSignal<Calendar> = signal(this.selectedDate());
   /** Calendar day cells. */
   readonly calendar = computed(() => {
     const month = this.viewMonth();
@@ -103,10 +115,28 @@ export class Calendar {
           ) === 0,
         ),
         day: i + 1,
+        disabled: false
       });
     }
     return calendar;
   });
+
+  onDayClick(day: CalendarCell) {
+  // Desmarca todos los demás días
+  this.calendar().forEach(week =>
+    week.forEach(cell => cell.selected.set(false))
+  );
+
+  // Marca el día actual
+  day.selected.set(true);
+
+  // Actualiza la fecha seleccionada global
+  this.selectedDate.set(day.date);
+
+  // Emitir evento si lo necesitas
+  this.dateSelected.emit(day.date);
+}
+
   nextMonth(): void {
     this.viewMonth.set(this._dateAdapter.addCalendarMonths(this.viewMonth(), 1));
   }
@@ -114,13 +144,14 @@ export class Calendar {
     this.viewMonth.set(this._dateAdapter.addCalendarMonths(this.viewMonth(), -1));
   }
   scrollDown(): void {
-    this.nextMonth();
-    setTimeout(() => this._dayButtons()[0]?.element.focus());
-  }
-  scrollUp(): void {
-    this.prevMonth();
-    setTimeout(() => this._dayButtons()[this._dayButtons().length - 1]?.element.focus());
-  }
+  this.nextMonth();
+  setTimeout(() => this._dayButtons()[0]?.focus());
+}
+
+scrollUp(): void {
+  this.prevMonth();
+  setTimeout(() => this._dayButtons()[this._dayButtons().length - 1]?.focus());
+}
   onKeyDown(event: KeyboardEvent): void {
     const day = Number((event.target as Element).getAttribute('data-day'));
     if (!day) return;

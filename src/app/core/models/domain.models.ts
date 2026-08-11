@@ -93,9 +93,9 @@ export interface CreateOrder {
 
 export interface Appointment {
   id: string;
-  client: {
+  customer: {
     id: string;
-    fullName: string;
+    name: string;
     email: string;
   };
   customerName: string;

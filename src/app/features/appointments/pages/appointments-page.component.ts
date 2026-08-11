@@ -5,122 +5,23 @@ import { Appointment, CreateAppointment, User } from '../../../core/models/domai
 import { AppointmentsService } from '../data-access/appointments.service';
 import { UsersService } from '../../users/data-access/users.service';
 import { SessionService } from '../../../core/services/session.service';
+import { Calendar } from '../../calendar/calendar';
 
 @Component({
   selector: 'app-appointments-page',
-  imports: [ReactiveFormsModule, DatePipe],
-  template: `
-    <div class="grid">
-      <article class="th-card">
-        <header class="th-card-head">
-          <h2 class="th-card-title">Reservar cita</h2>
-        </header>
-        <div class="th-card-body">
-
-        <form [formGroup]="form" (ngSubmit)="book()" class="th-form-grid">
-          <div>
-            <label class="form-label" for="appointment-customer">Nombre del cliente</label>
-            <select
-              id="appointment-customer"
-              class="form-select th-input"
-              [class.is-invalid]="isInvalid('clientId')"
-              [class.is-valid]="isValid('clientId')"
-              formControlName="clientId"
-            >
-              @for (customer of customers(); track customer.id) {
-                <option [value]="customer.id">{{customer.fullName}}</option>
-              }
-            </select>
-            @if (isInvalid('clientId')) {
-              <div class="invalid-feedback d-block">El nombre del cliente es obligatorio.</div>
-            }
-          </div>
-
-          <div>
-            <label class="form-label" for="appointment-date">Fecha y hora</label>
-            <input
-              id="appointment-date"
-              class="form-control th-input"
-              [class.is-invalid]="isInvalid('startsAt')"
-              [class.is-valid]="isValid('startsAt')"
-              formControlName="startsAt"
-              type="datetime-local"
-            />
-            @if (isInvalid('startsAt')) {
-              <div class="invalid-feedback d-block">Selecciona una fecha y hora valida.</div>
-            }
-          </div>
-
-          <div class="th-form-actions">
-            <button class="btn th-btn-primary" type="submit" [disabled]="form.invalid">
-              Crear cita
-            </button>
-          </div>
-        </form>
-        </div>
-      </article>
-
-      <article class="th-card">
-        <header class="th-card-head">
-          <h2 class="th-card-title">Citas</h2>
-        </header>
-        <div class="th-card-body">
-
-        <div class="th-table-shell">
-        <div class="th-table-scroll">
-        <table class="table table-hover align-middle">
-          <thead>
-            <tr>
-              <th scope="col">Cliente</th>
-              <th scope="col">Fecha</th>
-              <th scope="col">Estado</th>
-              <th scope="col">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of appointments(); track item.id) {
-              <tr>
-                <td>{{ item.client.fullName }}</td>
-                <td>{{ item.startsAt | date:'short' }}</td>
-                <td>
-                  <span class="badge text-uppercase" [class]="appointmentStatusClass(item.status)">
-                    {{ item.status }}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    type="button"
-                    [disabled]="item.status === 'cancelled'"
-                    (click)="remove(item.id)"
-                  >
-                    Cancelar
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-        </div>
-        </div>
-        </div>
-      </article>
-    </div>
-  `,
-  styles: `
-    .grid {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-    }
-    h2 {
-      color: white;
-      margin-top: 0;
-    }
-  `,
+  imports: [ReactiveFormsModule, DatePipe, Calendar],
+  templateUrl: './appointments-page.html',
+  styleUrl: './appointments-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppointmentsPageComponent {
+   month: number = new Date().getMonth(); // mes actual
+  year: number = new Date().getFullYear(); // año actual
+
+  onDateSelected(date: Date) {
+    console.log('Fecha seleccionada:', date);
+    // aquí puedes actualizar tu formulario o lógica de citas
+  }
   private readonly fb = inject(FormBuilder);
   private readonly appointmentsService = inject(AppointmentsService);
   private readonly userService = inject(UsersService);

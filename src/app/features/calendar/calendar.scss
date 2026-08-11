@@ -75,3 +75,29 @@ button[ngGridCellWidget] {
   height: 45px;
   cursor: pointer;
 }
+
+button.selected {
+  background-color: var(--mat-primary);
+  color: #fff;
+  border-radius: 50%;
+}
+
+button.selected {
+  background-color: #2A9D8F;   // tu color personalizado
+  color: #fff;                 // texto blanco para contraste
+  border-radius: 50%;          // círculo estilo Material
+  font-weight: bold;
+}
+
+td.ngGridCell button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+td.ngGridCell button:hover {
+  background-color: rgba(42, 157, 143, 0.2); // hover suave con tu color
+  border-radius: 50%;
+}

@@ -3,6 +3,7 @@
         <header class="th-card-head">
             <h2 class="th-card-title">Reservar cita</h2>
         </header>
+        <app-calendar [month]="month" [year]="year" (dateSelected)="onDateSelected($event)" [disabled]="form.invalid"></app-calendar>
         <div class="th-card-body">
 
             <form [formGroup]="form" (ngSubmit)="book()" class="th-form-grid">

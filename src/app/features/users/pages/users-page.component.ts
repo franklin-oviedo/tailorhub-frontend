@@ -25,8 +25,8 @@ import { UsersService } from '../data-access/users.service';
         <tbody>
           @for (user of users(); track user.id) {
             <tr>
-              <td>{{ user.fullName }}</td>
-              <td>{{ user.email }}</td>
+              <td>{{ user.customer?.name ?? user.employee?.name }}</td>
+              <td>{{ user.customer?.email ?? user.employee?.email }}</td>
               <td>
                 <span [class]="roleClass(user.role)">
                   {{ user.role }}
