@@ -9,7 +9,6 @@ import { AuthService } from '../data-access/auth.service';
 @Component({
   selector: 'app-login-page',
   imports: [
-    NgOptimizedImage,
     ReactiveFormsModule,
     RouterLink,
     NgbAlertModule
