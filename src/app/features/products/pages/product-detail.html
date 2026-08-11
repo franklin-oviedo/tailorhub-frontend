@@ -1,0 +1,145 @@
+<section class="product-detail-page">
+
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">
+        Detalle del producto
+      </h1>
+
+      <p class="page-description">
+        Consulta la información del producto seleccionado.
+      </p>
+    </div>
+
+    <a
+      class="btn btn-outline-primary"
+      routerLink="/products"
+    >
+      Volver al catálogo
+    </a>
+  </header>
+
+
+  @if (loading()) {
+
+    <div
+      class="detail-state"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="spinner-border"
+        aria-hidden="true"
+      ></span>
+
+      <span>
+        Cargando producto...
+      </span>
+    </div>
+
+  } @else if (errorMessage()) {
+
+    <div
+      class="detail-state detail-state--error"
+      role="alert"
+    >
+      <h2>
+        No fue posible mostrar el producto
+      </h2>
+
+      <p>
+        {{ errorMessage() }}
+      </p>
+
+      <a
+        class="btn th-btn-primary"
+        routerLink="/products"
+      >
+        Volver al catálogo
+      </a>
+    </div>
+
+  } @else if (product(); as currentProduct) {
+
+    <article class="product-detail-card">
+
+      <header class="product-detail-header">
+
+        <div>
+          <span class="product-label">
+            Producto
+          </span>
+
+          <h2 class="product-name">
+            {{ currentProduct.name }}
+          </h2>
+        </div>
+
+        <span
+          class="product-status"
+          [class.product-status--active]="currentProduct.isActive"
+          [class.product-status--inactive]="!currentProduct.isActive"
+        >
+          <span
+            class="status-dot"
+            aria-hidden="true"
+          ></span>
+
+          {{ currentProduct.isActive ? 'Activo' : 'Inactivo' }}
+        </span>
+
+      </header>
+
+
+      <div class="product-detail-content">
+
+        <div class="product-info">
+
+          <span class="info-label">
+            Precio
+          </span>
+
+          <p class="product-price">
+            {{ currentProduct.price | currency:'USD' }}
+          </p>
+
+        </div>
+
+
+        <div class="product-info">
+
+          <span class="info-label">
+            Descripción
+          </span>
+
+          @if (currentProduct.description) {
+            <p class="product-description">
+              {{ currentProduct.description }}
+            </p>
+          } @else {
+            <p class="product-description product-description--empty">
+              Este producto no tiene una descripción.
+            </p>
+          }
+
+        </div>
+
+      </div>
+
+
+      <footer class="product-detail-footer">
+
+        <a
+          class="btn btn-outline-primary"
+          routerLink="/products"
+        >
+          Volver al catálogo
+        </a>
+
+      </footer>
+
+    </article>
+
+  }
+
+</section>

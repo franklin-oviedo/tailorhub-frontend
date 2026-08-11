@@ -1,0 +1,323 @@
+<section class="products-page">
+
+  <!-- Content -->
+  <div class="products-layout">
+
+    <!-- Create -->
+    @if (canCreate()) {
+      <aside class="create-panel">
+
+        <div class="panel-header">
+          <h2>
+            Nuevo producto
+          </h2>
+
+          <p>
+            Agrega un producto al catálogo.
+          </p>
+        </div>
+
+
+        <form
+          [formGroup]="form"
+          (ngSubmit)="createProduct()"
+          class="product-form"
+          novalidate
+        >
+
+          <!-- Name -->
+          <div class="form-field">
+
+            <label
+              for="productName"
+              class="form-label"
+            >
+              Nombre
+            </label>
+
+            <input
+              id="productName"
+              type="text"
+              class="form-control th-input"
+              formControlName="name"
+              placeholder="Ej. Traje ejecutivo"
+              autocomplete="off"
+              [class.is-invalid]="isInvalid('name')"
+              [class.is-valid]="isValid('name')"
+            />
+
+            @if (isInvalid('name')) {
+              <div class="invalid-feedback d-block">
+                Ingresa el nombre del producto.
+              </div>
+            }
+
+          </div>
+
+
+          <!-- Price -->
+          <div class="form-field">
+
+            <label
+              for="productPrice"
+              class="form-label"
+            >
+              Precio
+            </label>
+
+            <div class="price-input">
+
+              <span class="price-symbol">
+                $
+              </span>
+
+              <input
+                id="productPrice"
+                type="number"
+                min="0.01"
+                step="0.01"
+                class="form-control th-input"
+                formControlName="price"
+                placeholder="0.00"
+                [class.is-invalid]="isInvalid('price')"
+                [class.is-valid]="isValid('price')"
+              />
+
+            </div>
+
+            @if (isInvalid('price')) {
+              <div class="invalid-feedback d-block">
+                Ingresa un precio mayor a 0.
+              </div>
+            }
+
+          </div>
+
+
+          <!-- Description -->
+          <div class="form-field">
+
+            <label
+              for="productDescription"
+              class="form-label"
+            >
+              Descripción
+            </label>
+
+            <textarea
+              id="productDescription"
+              class="form-control th-input"
+              formControlName="description"
+              rows="4"
+              placeholder="Descripción del producto..."
+            ></textarea>
+
+          </div>
+
+
+          <!-- Status -->
+          <div class="product-active">
+
+            <input
+              id="productActive"
+              type="checkbox"
+              class="form-check-input"
+              formControlName="isActive"
+            />
+
+            <label
+              for="productActive"
+              class="form-check-label"
+            >
+              Producto activo
+            </label>
+
+          </div>
+
+
+          <!-- Feedback -->
+          @if (successMessage()) {
+            <div
+              class="feedback feedback-success"
+              role="status"
+            >
+              {{ successMessage() }}
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div
+              class="feedback feedback-error"
+              role="alert"
+            >
+              {{ errorMessage() }}
+            </div>
+          }
+
+
+          <!-- Action -->
+          <button
+            type="submit"
+            class="btn th-btn-primary submit-button"
+            [disabled]="form.invalid || loading()"
+          >
+            @if (loading()) {
+              <span
+                class="spinner-border spinner-border-sm"
+                aria-hidden="true"
+              ></span>
+
+              <span>Guardando...</span>
+            } @else {
+              <span>Crear producto</span>
+            }
+          </button>
+
+        </form>
+
+      </aside>
+    }
+
+
+    <!-- Catalog -->
+    <main class="catalog">
+
+      <div class="catalog-header">
+
+        <div>
+          <h2 class="catalog-title">
+            Catálogo
+          </h2>
+
+          <p class="catalog-description">
+            Productos disponibles
+          </p>
+        </div>
+
+        @if (!loadingProducts()) {
+          <span class="catalog-count">
+            {{ products().length }}
+          </span>
+        }
+
+      </div>
+
+
+      <!-- Loading -->
+      @if (loadingProducts()) {
+
+        <div
+          class="catalog-state"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="spinner-border"
+            aria-hidden="true"
+          ></span>
+
+          <span>
+            Cargando productos...
+          </span>
+        </div>
+
+      }
+
+
+      <!-- Products -->
+      @else if (products().length > 0) {
+
+        <div class="product-grid">
+
+          @for (product of products(); track product.id) {
+
+            <article class="product-card">
+
+              <div class="product-card-content">
+
+                <div class="product-card-top">
+
+                  <h3 class="product-name">
+                    {{ product.name }}
+                  </h3>
+
+                  <span
+                    class="status"
+                    [class.status-active]="product.isActive"
+                    [class.status-inactive]="!product.isActive"
+                  >
+                    <span
+                      class="status-dot"
+                      aria-hidden="true"
+                    ></span>
+
+                    {{ product.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+
+                </div>
+
+
+                <p class="product-price">
+                  {{ product.price | currency:'USD' }}
+                </p>
+
+
+                @if (product.description) {
+                  <p class="product-description">
+                    {{ product.description }}
+                  </p>
+                }
+
+              </div>
+
+
+              <div class="product-card-action">
+
+                <a
+                  class="product-link"
+                  [routerLink]="['/products', product.id]"
+                >
+                  Ver detalle
+
+                  <span aria-hidden="true">
+                    →
+                  </span>
+                </a>
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+
+      <!-- Empty -->
+      @else {
+
+        <div class="catalog-empty">
+
+          <div class="empty-icon" aria-hidden="true">
+            +
+          </div>
+
+          <h3>
+            No hay productos
+          </h3>
+
+          <p>
+            Aún no existen productos registrados en el catálogo.
+          </p>
+
+        </div>
+
+      }
+
+    </main>
+
+  </div>
+
+</section>

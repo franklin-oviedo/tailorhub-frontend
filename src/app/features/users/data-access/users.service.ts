@@ -22,7 +22,7 @@ export class UsersService {
 
   list(query: UsersQuery = {}): Observable<PaginatedResponse<User>> {
     return this.http.get<PaginatedResponse<User>>(`${this.config.baseUrl}/users`, { params: query as never });
-  }
+  } 
 
   detail(userId: string): Observable<User> {
     return this.http.get<User>(`${this.config.baseUrl}/users/${userId}`);
