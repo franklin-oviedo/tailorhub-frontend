@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+
 import { SessionService } from '../../core/services/session.service';
 import { UsersService } from '../users/data-access/users.service';
 import { AppointmentsService } from '../appointments/data-access/appointments.service';
@@ -13,34 +14,102 @@ import { OrdersService } from '../orders/data-access/orders.service';
 })
 export class DashboardPageComponent {
 
-  EmployeeTotal: number = 0; // total de empleados.
-  CustomerTotal: number = 0; // total de clientes.
-  AppointmentScheduleTotal: number = 0; // total de citas.
-  OrdersTotal: number = 0; // total de pedidos.
 
+  // =========================================================
+  // Services
+  // =========================================================
 
   readonly session = inject(SessionService);
-  readonly userService = inject(UsersService);
-  readonly appointmentsService = inject(AppointmentsService);
-  readonly ordersService = inject(OrdersService);
+  private readonly userService = inject(UsersService);
+  private readonly appointmentsService = inject(AppointmentsService);
+  private readonly ordersService = inject(OrdersService);
 
+  // =========================================================
+  // Dashboard state
+  // =========================================================
+
+  /**
+   * Total de empleados.
+   */
+  readonly EmployeeTotal = signal(0);
+
+  /**
+   * Total de clientes.
+   */
+  readonly CustomerTotal = signal(0);
+
+  /**
+   * Total de citas.
+   */
+  readonly AppointmentScheduleTotal = signal(0);
+
+  /**
+   * Total de pedidos.
+   */
+  readonly OrdersTotal = signal(0);
+
+  // =========================================================
+  // Lifecycle
+  // =========================================================
 
   constructor() {
     this.load();
   }
 
+  // =========================================================
+  // Data
+  // =========================================================
+
   private load(): void {
-    this.userService.list().subscribe((response) => {
-      this.CustomerTotal = response.data.filter(user => user.role === 'client').length;
-      this.EmployeeTotal = response.data.filter(user => user.role === 'employee').length;
+
+    this.userService.list().subscribe({
+      next: (response) => {
+
+        const users = response.data;
+
+        this.CustomerTotal.set(
+          users.filter(
+            user => user.role === 'client'
+          ).length
+        );
+
+        this.EmployeeTotal.set(
+          users.filter(
+            user => user.role === 'employee'
+          ).length
+        );
+      },
+
+      error: () => {
+        this.CustomerTotal.set(0);
+        this.EmployeeTotal.set(0);
+      }
     });
 
-    this.appointmentsService.list().subscribe((response) => {
-      this.AppointmentScheduleTotal = response.data.length;
+    this.appointmentsService.list().subscribe({
+      next: (response) => {
+        this.AppointmentScheduleTotal.set(
+          response.data.length
+        );
+      },
+
+      error: () => {
+        this.AppointmentScheduleTotal.set(0);
+      }
     });
 
-    this.ordersService.list().subscribe((response) => {
-      this.OrdersTotal = response.data.length;
+    this.ordersService.list().subscribe({
+      next: (response) => {
+        this.OrdersTotal.set(
+          response.data.length
+        );
+      },
+
+      error: () => {
+        this.OrdersTotal.set(0);
+      }
     });
   }
+
+
 }
