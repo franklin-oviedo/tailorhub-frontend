@@ -1,0 +1,89 @@
+<article class="th-card users-card">
+
+
+<div class="th-card-body">
+
+    <header class="users-header">
+
+        <div class="users-heading">
+            <span class="users-eyebrow">
+                Lista de Usuarios y Roles
+            </span>
+        </div>
+
+    </header>
+
+    <div class="th-table-shell">
+        <div class="th-table-scroll">
+
+            <table class="table table-hover align-middle users-table">
+
+                <tbody>
+
+                    @for (user of users(); track user.id) {
+
+                        <tr>
+
+                            <td>
+                                <span class="user-name">
+                                    {{ user.customer?.name ?? user.employee?.name ?? '-' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="user-phone">
+                                    {{ user.customer?.phone ?? user.employee?.phone ?? '-' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="user-email">
+                                    {{ user.customer?.email ?? user.employee?.email ?? '-' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span [class]="roleClass(user.role)">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="user-store">
+                                    {{ user?.store?.name ?? '-' }}
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+    @if (isEmpty()) {
+
+        <div
+            class="users-empty"
+            role="status"
+            aria-live="polite"
+        >
+            <span class="users-empty-title">
+                No hay usuarios disponibles
+            </span>
+
+            <span class="users-empty-description">
+                No se encontraron usuarios para mostrar.
+            </span>
+        </div>
+
+    }
+
+</div>
+
+
+</article>

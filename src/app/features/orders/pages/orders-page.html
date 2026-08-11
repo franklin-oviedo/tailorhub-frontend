@@ -1,0 +1,386 @@
+<section class="orders-page">
+
+
+<div class="orders-layout">
+
+    <!-- Create -->
+    <aside class="create-panel">
+
+        <div class="panel-header">
+            <h2>
+                Nuevo pedido
+            </h2>
+
+            <p>
+                Registra un nuevo pedido para un cliente.
+            </p>
+        </div>
+
+        <form
+            [formGroup]="form"
+            (ngSubmit)="createOrder()"
+            class="order-form"
+            novalidate
+        >
+
+            <!-- Customer -->
+            <div class="form-field">
+
+                <label
+                    for="orderCustomer"
+                    class="form-label"
+                >
+                    Cliente
+                </label>
+
+                <select
+                    id="orderCustomer"
+                    class="form-select th-input"
+                    formControlName="customerId"
+                    [class.is-invalid]="isInvalid('customerId')"
+                    [class.is-valid]="isValid('customerId')"
+                >
+                    <option value="" disabled>
+                        Selecciona un cliente
+                    </option>
+
+                    @for (customer of customers(); track customer.id) {
+                        <option [value]="customer.customer?.id">
+                            {{ customer.customer?.name }}
+                        </option>
+                    }
+                </select>
+
+                @if (isInvalid('customerId')) {
+                    <div class="invalid-feedback d-block">
+                        El cliente es obligatorio.
+                    </div>
+                }
+
+            </div>
+
+            <!-- Items -->
+            <div class="form-field">
+
+                <label
+                    for="orderItems"
+                    class="form-label"
+                >
+                    Producto
+                </label>
+
+                <select
+                    id="orderItems"
+                    class="form-select th-input"
+                    formControlName="items"
+                    [class.is-invalid]="isInvalid('items')"
+                    [class.is-valid]="isValid('items')"
+                >
+                    <option value="" disabled>
+                        Selecciona un producto
+                    </option>
+
+                    @for (product of products(); track product.id) {
+                        <option [value]="product.id">
+                            {{ product.name }} - DOP$ {{ product.price }}
+                        </option>
+                    }
+                </select>
+
+                @if (isInvalid('items')) {
+                    <div class="invalid-feedback d-block">
+                        Los items son obligatorios.
+                    </div>
+                }
+
+            </div>
+
+            <!-- Notes -->
+            <div class="form-field">
+
+                <label
+                    for="orderNotes"
+                    class="form-label"
+                >
+                    Notas
+                </label>
+
+                <textarea
+                    id="orderNotes"
+                    rows="4"
+                    class="form-control th-input"
+                    formControlName="notes"
+                    placeholder="Agrega alguna nota para el pedido..."
+                    [class.is-invalid]="isInvalid('notes')"
+                    [class.is-valid]="isValid('notes')"
+                ></textarea>
+
+                @if (isInvalid('notes')) {
+                    <div class="invalid-feedback d-block">
+                        Las notas no pueden exceder los 500 caracteres.
+                    </div>
+                }
+
+            </div>
+
+            <!-- Feedback -->
+            @if (successMessage()) {
+                <div
+                    class="feedback feedback-success"
+                    role="status"
+                    aria-live="polite"
+                >
+                    {{ successMessage() }}
+                </div>
+            }
+
+            @if (errorMessage()) {
+                <div
+                    class="feedback feedback-error"
+                    role="alert"
+                    aria-live="assertive"
+                >
+                    {{ errorMessage() }}
+                </div>
+            }
+
+            <!-- Action -->
+            <button
+                type="submit"
+                class="btn th-btn-primary submit-button"
+                [disabled]="form.invalid || loading()"
+            >
+                @if (loading()) {
+                    <span
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                    ></span>
+
+                    <span>Creando pedido...</span>
+                } @else {
+                    <span>Crear pedido</span>
+                }
+            </button>
+
+        </form>
+
+    </aside>
+
+    <!-- Orders -->
+    <main class="orders-content">
+
+        <header class="orders-header">
+
+            <div>
+                <h2 class="orders-title">
+                    Pedidos
+                </h2>
+
+                <p class="orders-description">
+                    Pedidos registrados
+                </p>
+            </div>
+
+            @if (orders().length > 0) {
+                <span class="orders-count">
+                    Total de pedidos: {{ orders().length }}
+                </span>
+            }
+
+        </header>
+
+        <!-- Orders table -->
+        @if (paginatedOrders().length > 0) {
+
+            <div class="orders-table-shell">
+
+                <div class="orders-table-scroll">
+
+                    <table class="orders-table">
+
+                        <caption class="visually-hidden">
+                            Lista de pedidos registrados
+                        </caption>
+
+                        <tbody>
+
+                            @for (order of paginatedOrders(); track order.id) {
+
+                                <tr>
+
+                                    <td>
+                                        <span class="order-customer">
+                                            {{ order?.customer?.name || '-' }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="order-customer-phone">
+                                            {{ order?.customer?.phone || '-' }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="order-status"
+                                            [class]="orderStatusClass(order.status)"
+                                        >
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <time class="order-date">
+                                            {{ order.createdAt | date:'short' }}
+                                        </time>
+                                    </td>
+
+                                    <td>
+                                        <span class="order-total">
+                                            {{ order.totalAmount }}
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Pagination -->
+                @if (totalPages() > 1) {
+
+                    <nav
+                        class="orders-pagination"
+                        aria-label="Paginación de pedidos"
+                    >
+
+                        <div
+                            class="pagination-info"
+                            aria-live="polite"
+                        >
+                            Mostrando
+                            <strong>{{ paginationStart() }}</strong>
+                            -
+                            <strong>{{ paginationEnd() }}</strong>
+                            de
+                            <strong>{{ orders().length }}</strong>
+                            pedidos
+                        </div>
+
+                        <div class="pagination-controls">
+
+                            <!-- Previous -->
+                            <button
+                                type="button"
+                                class="pagination-button"
+                                [disabled]="currentPage() === 1"
+                                (click)="previousPage()"
+                                aria-label="Ir a la página anterior"
+                            >
+                                <span aria-hidden="true">
+                                    ←
+                                </span>
+
+                                <span>
+                                    Anterior
+                                </span>
+                            </button>
+
+                            <!-- Pages -->
+                            <div
+                                class="pagination-pages"
+                                role="group"
+                                aria-label="Páginas"
+                            >
+
+                                @for (page of pages(); track page) {
+
+                                    <button
+                                        type="button"
+                                        class="pagination-page"
+                                        [class.is-active]="page === currentPage()"
+                                        [attr.aria-current]="
+                                            page === currentPage()
+                                                ? 'page'
+                                                : null
+                                        "
+                                        [attr.aria-label]="
+                                            page === currentPage()
+                                                ? 'Página actual, página ' + page
+                                                : 'Ir a la página ' + page
+                                        "
+                                        (click)="goToPage(page)"
+                                    >
+                                        {{ page }}
+                                    </button>
+
+                                }
+
+                            </div>
+
+                            <!-- Next -->
+                            <button
+                                type="button"
+                                class="pagination-button"
+                                [disabled]="currentPage() === totalPages()"
+                                (click)="nextPage()"
+                                aria-label="Ir a la página siguiente"
+                            >
+                                <span>
+                                    Siguiente
+                                </span>
+
+                                <span aria-hidden="true">
+                                    →
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </nav>
+
+                }
+
+            </div>
+
+        }
+
+        <!-- Empty -->
+        @else {
+
+            <div
+                class="orders-empty"
+                role="status"
+                aria-live="polite"
+            >
+
+                <div
+                    class="empty-icon"
+                    aria-hidden="true"
+                >
+                    +
+                </div>
+
+                <h3>
+                    No hay pedidos
+                </h3>
+
+                <p>
+                    Aún no existen pedidos registrados.
+                </p>
+
+            </div>
+
+        }
+
+    </main>
+
+</div>
+
+
+</section>

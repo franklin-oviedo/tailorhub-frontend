@@ -5,57 +5,8 @@ import { UsersService } from '../data-access/users.service';
 @Component({
   selector: 'app-users-page',
   imports: [],
-  template: `
-    <article class="th-card">
-      <header class="th-card-head">
-        <h2 class="th-card-title">Usuarios y Roles</h2>
-      </header>
-      <div class="th-card-body">
-      <div class="th-table-shell">
-      <div class="th-table-scroll">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th scope="col">Nombre</th>
-            <th scope="col">Email</th>
-            <th scope="col">Rol</th>
-            <th scope="col">Tienda</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of users(); track user.id) {
-            <tr>
-              <td>{{ user.customer?.name ?? user.employee?.name }}</td>
-              <td>{{ user.customer?.email ?? user.employee?.email }}</td>
-              <td>
-                <span [class]="roleClass(user.role)">
-                  {{ user.role }}
-                </span>
-              </td>
-              <td>{{ user.store.name || '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      </div>
-      </div>
-
-      @if (isEmpty()) {
-        <p class="empty">No hay usuarios disponibles.</p>
-      }
-      </div>
-    </article>
-  `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .empty {
-      margin-top: 1rem;
-      color: #6b7280;
-    }
-  `,
+  templateUrl: './users-page.html',
+  styleUrl: './users-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersPageComponent {

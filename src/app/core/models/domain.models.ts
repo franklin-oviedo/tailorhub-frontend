@@ -73,9 +73,9 @@ export interface Order {
   id: string;
   customer: {
     id: string;
-    fullName: string;
+    name: string;
     email: string;
-    role: UserRole;
+    phone: string;
   };
   status: OrderStatus;
   totalAmount: number;
@@ -86,7 +86,6 @@ export interface Order {
 
 export interface CreateOrder {
   customerId: string;
-  employeeId: string;
   items: OrderItem[];
   notes: string;
 }
