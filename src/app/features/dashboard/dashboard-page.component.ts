@@ -89,7 +89,7 @@ export class DashboardPageComponent {
     this.appointmentsService.list().subscribe({
       next: (response) => {
         this.AppointmentScheduleTotal.set(
-          response.data.length
+          response.meta.totalItems
         );
       },
 
@@ -98,10 +98,10 @@ export class DashboardPageComponent {
       }
     });
 
-    this.ordersService.list().subscribe({
+    this.ordersService.list({status: 'completed'}).subscribe({
       next: (response) => {
         this.OrdersTotal.set(
-          response.data.length
+          response.meta.totalItems  
         );
       },
 

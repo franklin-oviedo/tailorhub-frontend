@@ -1,0 +1,308 @@
+<section class="stores-page">
+
+  <div class="stores-layout">
+
+    <!-- Create -->
+    <aside class="create-panel">
+
+      <div class="panel-header">
+
+        <h2>
+          Nueva tienda
+        </h2>
+
+        <p>
+          Registra una nueva tienda para tu negocio.
+        </p>
+
+      </div>
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="createStore()"
+        class="store-form"
+        novalidate
+      >
+
+        <div class="form-field">
+
+          <label
+            for="store-name"
+            class="form-label"
+          >
+            Nombre
+          </label>
+
+          <input
+            id="store-name"
+            type="text"
+            class="form-control th-input"
+            formControlName="name"
+            placeholder="Nombre de la tienda"
+            [class.is-invalid]="isInvalid('name')"
+            [class.is-valid]="isValid('name')"
+          />
+
+          @if (isInvalid('name')) {
+            <div class="invalid-feedback d-block">
+              El nombre de la tienda es obligatorio.
+            </div>
+          }
+
+        </div>
+
+        <div class="form-field">
+
+          <label
+            for="store-address"
+            class="form-label"
+          >
+            Dirección
+          </label>
+
+          <input
+            id="store-address"
+            type="text"
+            class="form-control th-input"
+            formControlName="address"
+            placeholder="Dirección de la tienda"
+            [class.is-invalid]="isInvalid('address')"
+            [class.is-valid]="isValid('address')"
+          />
+
+          @if (isInvalid('address')) {
+            <div class="invalid-feedback d-block">
+              La dirección es obligatoria.
+            </div>
+          }
+
+        </div>
+
+        <div class="form-field">
+
+          <label
+            for="store-phone"
+            class="form-label"
+          >
+            Teléfono
+          </label>
+
+          <input
+            id="store-phone"
+            type="tel"
+            class="form-control th-input"
+            formControlName="phone"
+            placeholder="Teléfono de contacto"
+          />
+
+        </div>
+
+        <button
+          type="submit"
+          class="btn th-btn-primary submit-button"
+          [disabled]="form.invalid"
+        >
+          Crear tienda
+        </button>
+
+      </form>
+
+    </aside>
+
+    <!-- Stores -->
+    <main class="stores-content">
+
+      <header class="stores-header">
+
+        <div>
+
+          <h2 class="stores-title">
+            Tiendas
+          </h2>
+
+          <p class="stores-description">
+            Tiendas registradas
+          </p>
+
+        </div>
+
+        @if (totalItems() > 0) {
+          <span
+            class="stores-count"
+            aria-label="Cantidad de tiendas registradas"
+          >
+            {{ totalItems() }}
+          </span>
+        }
+
+      </header>
+
+      @if (stores().length > 0) {
+
+        <div class="stores-table-shell">
+
+          <table class="stores-table">
+
+            <caption class="visually-hidden">
+              Lista de tiendas registradas
+            </caption>
+
+            <tbody>
+
+              @for (
+                store of stores();
+                track store.id
+              ) {
+
+                <tr>
+
+                  <td>
+                    <span class="store-name">
+                      {{ store.name }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="store-address">
+                      {{ store.address }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="store-phone">
+                      {{ store.phone || '-' }}
+                    </span>
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+          @if (totalPages() > 1) {
+
+            <nav
+              class="stores-pagination"
+              aria-label="Paginación de tiendas"
+            >
+
+              <div class="pagination-info">
+                Página
+                <strong>{{ currentPage() }}</strong>
+                de
+                <strong>{{ totalPages() }}</strong>
+              </div>
+
+              <div class="pagination-controls">
+
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="currentPage() === 1"
+                  (click)="previousPage()"
+                  aria-label="Ir a la página anterior"
+                >
+                  <span aria-hidden="true">
+                    ←
+                  </span>
+
+                  <span>
+                    Anterior
+                  </span>
+                </button>
+
+                <div
+                  class="pagination-pages"
+                  role="group"
+                  aria-label="Páginas"
+                >
+
+                  @for (
+                    page of pages();
+                    track page
+                  ) {
+
+                    <button
+                      type="button"
+                      class="pagination-page"
+                      [class.is-active]="
+                        page === currentPage()
+                      "
+                      [attr.aria-current]="
+                        page === currentPage()
+                          ? 'page'
+                          : null
+                      "
+                      [attr.aria-label]="
+                        'Ir a la página ' + page
+                      "
+                      (click)="goToPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+
+                  }
+
+                </div>
+
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="
+                    currentPage() === totalPages()
+                  "
+                  (click)="nextPage()"
+                  aria-label="Ir a la página siguiente"
+                >
+                  <span>
+                    Siguiente
+                  </span>
+
+                  <span aria-hidden="true">
+                    →
+                  </span>
+                </button>
+
+              </div>
+
+            </nav>
+
+          }
+
+        </div>
+
+      } @else {
+
+        <div
+          class="stores-empty"
+          role="status"
+          aria-live="polite"
+        >
+
+          <div
+            class="empty-icon"
+            aria-hidden="true"
+          >
+            +
+          </div>
+
+          <h3>
+            No hay tiendas
+          </h3>
+
+          <p>
+            Aún no existen tiendas registradas.
+          </p>
+
+        </div>
+
+      }
+
+    </main>
+
+  </div>
+
+</section>

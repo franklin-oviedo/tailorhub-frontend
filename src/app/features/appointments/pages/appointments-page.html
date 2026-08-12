@@ -82,7 +82,7 @@
                 <tbody>
 
                     @for (
-                    appointment of appointments();
+                    appointment of paginatedAppointments();
                     track appointment.id
                     ) {
 
@@ -119,6 +119,70 @@
                 </tbody>
 
             </table>
+            @if (totalPages() > 1) {
+
+            <nav class="appointments-pagination" aria-label="Paginación de citas">
+
+                <div class="pagination-info">
+                    Mostrando
+                    <strong>{{ paginationStart() }}</strong>
+                    -
+                    <strong>{{ paginationEnd() }}</strong>
+                    de
+                    <strong>{{ appointments().length }}</strong>
+                    citas
+                </div>
+
+                <div class="pagination-controls">
+
+                    <button type="button" class="pagination-button" [disabled]="currentPage() === 1"
+                        (click)="previousPage()" aria-label="Ir a la página anterior">
+                        <span aria-hidden="true">
+                            ←
+                        </span>
+
+                        <span>
+                            Anterior
+                        </span>
+                    </button>
+
+                    <div class="pagination-pages" role="group" aria-label="Páginas">
+
+                        @for (page of pages(); track page) {
+
+                        <button type="button" class="pagination-page" [class.is-active]="page === currentPage()"
+                            [attr.aria-current]="
+                            page === currentPage()
+                                ? 'page'
+                                : null
+                        " [attr.aria-label]="
+                            'Ir a la página ' + page
+                        " (click)="goToPage(page)">
+                            {{ page }}
+                        </button>
+
+                        }
+
+                    </div>
+
+                    <button type="button" class="pagination-button" [disabled]="currentPage() === totalPages()"
+                        (click)="nextPage()" aria-label="Ir a la página siguiente">
+                        <span>
+                            Siguiente
+                        </span>
+
+                        <span aria-hidden="true">
+                            →
+                        </span>
+                    </button>
+
+                </div>
+
+            </nav>
+
+            }
+
+
 
         </div>
 

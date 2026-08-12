@@ -430,3 +430,149 @@
         font-size: 0.8125rem;
     }
 }
+/* =========================================================
+   Pagination
+   ========================================================= */
+
+.appointments-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 64px;
+    padding: 0.875rem 1rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #ffffff;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.pagination-info strong {
+    color: #263238;
+    font-weight: 700;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-button,
+.pagination-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.625rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.pagination-button {
+    gap: 0.375rem;
+}
+
+.pagination-button:hover:not(:disabled),
+.pagination-page:hover:not(.is-active) {
+    border-color: #2a9d8f;
+    background-color: rgba(42, 157, 143, 0.05);
+    color: #237f74;
+}
+
+.pagination-page.is-active {
+    border-color: #2a9d8f;
+    background-color: #2a9d8f;
+    color: #ffffff;
+    cursor: default;
+}
+
+.pagination-button:focus-visible,
+.pagination-page:focus-visible {
+    outline: 3px solid rgba(42, 157, 143, 0.25);
+    outline-offset: 2px;
+}
+
+.pagination-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   Responsive Pagination
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .appointments-pagination {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.875rem;
+    }
+
+    .pagination-info {
+        text-align: center;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .pagination-pages {
+        overflow-x: auto;
+        max-width: 100%;
+        padding: 0.125rem;
+        scrollbar-width: none;
+    }
+
+    .pagination-pages::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pagination-button {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    .pagination-button {
+        min-width: 36px;
+        padding: 0;
+    }
+
+    .pagination-button span:not([aria-hidden="true"]) {
+        display: none;
+    }
+
+    .pagination-page {
+        min-width: 34px;
+        height: 34px;
+    }
+}
+
