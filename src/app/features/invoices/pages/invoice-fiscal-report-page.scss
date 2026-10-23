@@ -1,0 +1,424 @@
+:host {
+  display: block;
+}
+.invoice-fiscal-report-page {
+  display: grid;
+  gap: 1rem;
+}
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.report-heading {
+  min-width: 0;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--th-text-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.back-link:hover {
+  color: var(--th-primary);
+}
+.report-title {
+  margin: 0.45rem 0 0;
+  color: var(--th-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.report-description {
+  margin: 0.3rem 0 0;
+  color: var(--th-text-soft);
+  font-size: 0.88rem;
+}
+.filters-card {
+  overflow: visible;
+}
+.report-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+.form-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.form-field label {
+  color: var(--th-text-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.report-form-actions {
+  display: flex;
+  align-items: flex-end;
+}
+.feedback {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.75rem;
+}
+.feedback-error {
+  background: color-mix(in srgb, var(--th-error) 8%, white 92%);
+  border-color: color-mix(in srgb, var(--th-error) 26%, white 74%);
+}
+.report-card {
+  overflow: hidden;
+}
+.report-card-body {
+  padding: 0;
+}
+.report-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--th-stroke);
+}
+.report-table-toolbar h3 {
+  margin: 0;
+  color: var(--th-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.report-table-meta {
+  margin: 0.2rem 0 0;
+  color: var(--th-text-soft);
+  font-size: 0.78rem;
+}
+.report-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--th-text-soft);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.report-page-size .form-select {
+  width: 80px;
+  min-height: 2.2rem;
+}
+.fiscal-report-table {
+  width: 100%;
+  margin: 0;
+}
+.fiscal-report-table thead th {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--th-stroke);
+  background: var(--th-surface);
+  color: var(--th-text-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+.fiscal-report-table tbody td {
+  padding: 0.85rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--th-stroke);
+  color: var(--th-primary);
+  font-size: 0.8rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.fiscal-report-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.fiscal-report-table tbody tr:hover {
+  background: color-mix(in srgb, var(--th-secondary) 5%, var(--th-surface) 95%);
+}
+.report-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--th-stroke);
+}
+.report-pagination {
+  display: flex;
+  justify-content: flex-end;
+}
+.pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+.pagination-pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.pagination-button,
+.pagination-page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.625rem;
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.5rem;
+  background: var(--th-surface);
+  color: var(--th-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.pagination-button:hover:not(:disabled),
+.pagination-page:hover:not(:disabled) {
+  border-color: var(--th-secondary);
+  background: color-mix(in srgb, var(--th-secondary) 12%, white 88%);
+}
+.pagination-page.is-active {
+  border-color: var(--th-secondary);
+  background: var(--th-secondary);
+  color: var(--th-surface);
+}
+.pagination-button:disabled,
+.pagination-page:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 2rem 1.25rem;
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.85rem;
+  background: var(--th-surface);
+  text-align: center;
+}
+.empty-state h3 {
+  margin: 0;
+  color: var(--th-primary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.empty-state p {
+  max-width: 440px;
+  margin: 0;
+  color: var(--th-text-soft);
+  font-size: 0.84rem;
+}
+.empty-state-initial {
+  min-height: 140px;
+  align-content: center;
+}
+.report-loading {
+  overflow: hidden;
+}
+.loading-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--th-stroke);
+}
+.loading-header > div {
+  display: grid;
+  gap: 0.15rem;
+}
+.loading-header strong {
+  color: var(--th-primary);
+  font-size: 0.85rem;
+}
+.loading-header span:not(.loading-spinner) {
+  color: var(--th-text-soft);
+  font-size: 0.76rem;
+}
+.loading-spinner {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border: 2px solid var(--th-stroke);
+  border-top-color: var(--th-secondary);
+  border-radius: 50%;
+  animation: fiscal-spin 0.8s linear infinite;
+}
+.loading-table {
+  display: grid;
+}
+.loading-table-header,
+.loading-table-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(100px, 1fr));
+  gap: 1rem;
+  align-items: center;
+  padding: 0 1rem;
+}
+.loading-table-header {
+  min-height: 42px;
+  border-bottom: 1px solid var(--th-stroke);
+}
+.loading-table-row {
+  min-height: 58px;
+  border-bottom: 1px solid var(--th-stroke);
+}
+.loading-table-row:last-child {
+  border-bottom: 0;
+}
+.skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--th-stroke) 68%, var(--th-surface) 32%);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--th-surface) 75%, transparent 25%),
+    transparent
+  );
+  animation: fiscal-skeleton 1.4s infinite;
+}
+.skeleton-header {
+  width: 60%;
+  height: 9px;
+}
+.skeleton-cell {
+  width: 75%;
+  height: 11px;
+}
+@keyframes fiscal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fiscal-skeleton {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (max-width: 1099.98px) {
+  .report-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .report-form-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 767.98px) {
+  .report-form {
+    grid-template-columns: 1fr;
+  }
+  .report-form-actions {
+    grid-column: auto;
+  }
+  .report-form-actions .btn {
+    width: 100%;
+  }
+  .report-table-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .report-page-size {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .th-table-scroll {
+    overflow: visible;
+  }
+  .fiscal-report-table,
+  .fiscal-report-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .fiscal-report-table thead {
+    display: none;
+  }
+  .fiscal-report-table tbody {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .fiscal-report-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.65rem;
+    border: 1px solid var(--th-stroke);
+    border-radius: 0.7rem;
+  }
+  .fiscal-report-table tbody td {
+    display: block;
+    padding: 0.4rem;
+    border: 0;
+    white-space: normal;
+  }
+  .fiscal-report-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.15rem;
+    color: var(--th-text-soft);
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .report-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .report-pagination,
+  .pagination-controls {
+    width: 100%;
+  }
+  .pagination-controls {
+    justify-content: space-between;
+  }
+  .loading-table-header {
+    display: none;
+  }
+  .loading-table {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .loading-table-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    min-height: auto;
+    padding: 0.75rem;
+    border: 1px solid var(--th-stroke);
+    border-radius: 0.7rem;
+  }
+}
+@media (max-width: 479.98px) {
+  .report-title {
+    font-size: 1.35rem;
+  }
+  .fiscal-report-table tbody tr,
+  .loading-table-row {
+    grid-template-columns: 1fr;
+  }
+  .pagination-pages {
+    display: none;
+  }
+  .pagination-button {
+    flex: 1;
+  }
+}

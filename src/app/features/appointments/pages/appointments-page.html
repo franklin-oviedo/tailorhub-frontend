@@ -4,9 +4,15 @@
     <!-- Calendar -->
     <section class="th-card calendar-card" aria-labelledby="calendar-title">
       <div class="card-body">
-        <h2 id="calendar-title" class="visually-hidden">Calendario de citas</h2>
+        <h2 id="calendar-title" class="visually-hidden">
+          Calendario de citas
+        </h2>
 
-        <app-calendar [month]="month" [year]="year" (dateSelected)="onDateSelected($event)" />
+        <app-calendar
+          [month]="month"
+          [year]="year"
+          (dateSelected)="onDateSelected($event)"
+        />
       </div>
     </section>
 
@@ -15,9 +21,13 @@
       <div class="summary-body">
         <div class="summary-header">
           <div>
-            <span class="summary-eyebrow"> Agenda </span>
+            <span class="summary-eyebrow">
+              Agenda
+            </span>
 
-            <h2 id="summary-title" class="summary-title">Resumen del día</h2>
+            <h2 id="summary-title" class="summary-title">
+              Resumen del día
+            </h2>
           </div>
         </div>
 
@@ -25,14 +35,20 @@
           <div class="summary-item">
             <div class="summary-item-content">
               <dt>Citas programadas</dt>
-              <dd>{{ appointmentsScheduled }}</dd>
+
+              <dd>
+                {{ appointmentsScheduled() }}
+              </dd>
             </div>
           </div>
 
           <div class="summary-item">
             <div class="summary-item-content">
               <dt>Canceladas</dt>
-              <dd>{{ appointmentsCancelled }}</dd>
+
+              <dd>
+                {{ appointmentsCancelled() }}
+              </dd>
             </div>
           </div>
         </dl>
@@ -41,103 +57,382 @@
   </aside>
 
   <!-- Appointments -->
-  <section class="th-card appointments-card" aria-labelledby="appointments-title">
+  <section
+    class="th-card appointments-card"
+    aria-labelledby="appointments-title"
+  >
     <header class="appointments-header">
       <div class="appointments-heading">
-        <span class="appointments-eyebrow"> Agenda del día </span>
+        <span class="appointments-eyebrow">
+          Agenda del día
+        </span>
 
         <h2 id="appointments-title" class="appointments-title">
-          {{ today | date: 'fullDate' }}
+          {{ selectedDate() | date: 'fullDate' }}
         </h2>
       </div>
+
+      <button
+        type="button"
+        class="new-appointment-button"
+        (click)="openAppointmentForm()"
+      >
+        <span aria-hidden="true">+</span>
+
+        <span>Nueva cita</span>
+      </button>
     </header>
 
-    <div class="appointments-table-wrapper">
-      <table class="appointments-table">
-        <tbody>
-          @for (appointment of paginatedAppointments(); track appointment.id) {
-            <tr>
-              <td>
-                <span class="appointment-time">
-                  {{ appointment.scheduledAt | date: 'shortTime' }}
-                </span>
-              </td>
+    <!-- Appointment form -->
+    @if (showAppointmentForm()) {
+      <section
+        class="appointment-form-section"
+        aria-labelledby="appointment-form-title"
+      >
+        <div class="appointment-form-header">
+          <div>
+            <span class="appointments-eyebrow">
+              Agendar
+            </span>
 
-              <td>
-                <span class="customer-name">
-                  {{ appointment.customer.name }}
-                </span>
-              </td>
-
-              <td>
-                <span class="customer-phone">
-                  {{ appointment.customer.phone }}
-                </span>
-              </td>
-
-              <td>
-                <span class="appointment-status">
-                  {{ appointment.status }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      @if (totalPages() > 1) {
-        <nav class="appointments-pagination" aria-label="Paginación de citas">
-          <div class="pagination-info">
-            Mostrando
-            <strong>{{ paginationStart() }}</strong>
-            -
-            <strong>{{ paginationEnd() }}</strong>
-            de
-            <strong>{{ appointments().length }}</strong>
-            citas
+            <h3
+              id="appointment-form-title"
+              class="appointment-form-title"
+            >
+              Nueva cita
+            </h3>
           </div>
 
-          <div class="pagination-controls">
-            <button
-              type="button"
-              class="pagination-button"
-              [disabled]="currentPage() === 1"
-              (click)="previousPage()"
-              aria-label="Ir a la página anterior"
-            >
-              <span aria-hidden="true"> ← </span>
+          <button
+            type="button"
+            class="appointment-form-close"
+            aria-label="Cerrar formulario"
+            [disabled]="saving()"
+            (click)="closeAppointmentForm()"
+          >
+            ×
+          </button>
+        </div>
 
-              <span> Anterior </span>
-            </button>
+        <form
+          class="appointment-form"
+          [formGroup]="form"
+          (ngSubmit)="book()"
+          novalidate
+        >
+          <div class="appointment-form-grid">
+            <!-- Customer -->
+            <div class="appointment-form-field">
+              <label
+                class="appointment-form-label"
+                for="appointment-customer"
+              >
+                Cliente
+                <span aria-hidden="true">*</span>
+              </label>
 
-            <div class="pagination-pages" role="group" aria-label="Páginas">
-              @for (page of pages(); track page) {
-                <button
-                  type="button"
-                  class="pagination-page"
-                  [class.is-active]="page === currentPage()"
-                  [attr.aria-current]="page === currentPage() ? 'page' : null"
-                  [attr.aria-label]="'Ir a la página ' + page"
-                  (click)="goToPage(page)"
-                >
-                  {{ page }}
-                </button>
+              <select
+                id="appointment-customer"
+                class="appointment-form-control"
+                formControlName="customerId"
+                [class.is-invalid]="isInvalid('customerId')"
+                [class.is-valid]="isValid('customerId')"
+              >
+                <option value="">
+                  Selecciona un cliente
+                </option>
+
+                @for (customer of customers(); track customer.id) {
+                  <option [value]="customer.id">
+                    {{ customer.name }}
+                  </option>
+                }
+              </select>
+
+              @if (isInvalid('customerId')) {
+                <span class="appointment-form-error">
+                  Debes seleccionar un cliente.
+                </span>
               }
             </div>
 
+            <!-- Date -->
+            <div class="appointment-form-field">
+              <label
+                class="appointment-form-label"
+                for="appointment-date"
+              >
+                Fecha
+                <span aria-hidden="true">*</span>
+              </label>
+
+              <input
+                id="appointment-date"
+                type="date"
+                class="appointment-form-control"
+                formControlName="date"
+                [class.is-invalid]="isInvalid('date')"
+                [class.is-valid]="isValid('date')"
+              />
+
+              @if (isInvalid('date')) {
+                <span class="appointment-form-error">
+                  Debes seleccionar una fecha.
+                </span>
+              }
+            </div>
+
+            <!-- Time -->
+            <div class="appointment-form-field">
+              <label
+                class="appointment-form-label"
+                for="appointment-time"
+              >
+                Hora
+                <span aria-hidden="true">*</span>
+              </label>
+
+              <input
+                id="appointment-time"
+                type="time"
+                class="appointment-form-control"
+                formControlName="time"
+                [class.is-invalid]="isInvalid('time')"
+                [class.is-valid]="isValid('time')"
+              />
+
+              @if (isInvalid('time')) {
+                <span class="appointment-form-error">
+                  Debes seleccionar una hora.
+                </span>
+              }
+            </div>
+
+            <!-- Notes -->
+            <div class="appointment-form-field appointment-form-field--full">
+              <label
+                class="appointment-form-label"
+                for="appointment-notes"
+              >
+                Notas
+                <span class="appointment-form-optional">
+                  Opcional
+                </span>
+              </label>
+
+              <textarea
+                id="appointment-notes"
+                class="appointment-form-control appointment-form-textarea"
+                formControlName="notes"
+                rows="4"
+                maxlength="500"
+                placeholder="Ej. Primera prueba de traje, ajuste final, toma de medidas..."
+                [class.is-invalid]="isInvalid('notes')"
+                [class.is-valid]="isValid('notes')"
+              ></textarea>
+
+              @if (form.controls.notes.hasError('maxlength')) {
+                <span class="appointment-form-error">
+                  Las notas no pueden superar los 500 caracteres.
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="appointment-form-actions">
             <button
               type="button"
-              class="pagination-button"
-              [disabled]="currentPage() === totalPages()"
-              (click)="nextPage()"
-              aria-label="Ir a la página siguiente"
+              class="appointment-secondary-button"
+              [disabled]="saving()"
+              (click)="closeAppointmentForm()"
             >
-              <span> Siguiente </span>
+              Cancelar
+            </button>
 
-              <span aria-hidden="true"> → </span>
+            <button
+              type="submit"
+              class="appointment-primary-button"
+              [disabled]="saving()"
+            >
+              @if (saving()) {
+                <span
+                  class="appointment-button-spinner"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Agendando...</span>
+              } @else {
+                <span>Agendar cita</span>
+              }
             </button>
           </div>
-        </nav>
+        </form>
+      </section>
+    }
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div
+        class="appointments-loading"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="appointments-loading-spinner"
+          aria-hidden="true"
+        ></span>
+
+        <span>Cargando citas...</span>
+      </div>
+    } @else {
+      <!-- Appointments table -->
+      @if (appointments().length > 0) {
+        <div class="appointments-table-wrapper">
+          <table class="appointments-table">
+            <tbody>
+              @for (
+                appointment of paginatedAppointments();
+                track appointment.id
+              ) {
+                <tr>
+                  <td>
+                    <span class="appointment-time">
+                      {{ appointment.scheduledAt | date: 'shortTime' }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="customer-name">
+                      {{ appointment.customer.name }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="customer-phone">
+                      {{ appointment.customer.phone }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
+                      class="appointment-status"
+                      [class.appointment-status--scheduled]="
+                        appointment.status === 'scheduled'
+                      "
+                      [class.appointment-status--cancelled]="
+                        appointment.status === 'cancelled'
+                      "
+                    >
+                      {{ appointment.status }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          @if (totalPages() > 1) {
+            <nav
+              class="appointments-pagination"
+              aria-label="Paginación de citas"
+            >
+              <div class="pagination-info">
+                Mostrando
+
+                <strong>
+                  {{ paginationStart() }}
+                </strong>
+
+                -
+
+                <strong>
+                  {{ paginationEnd() }}
+                </strong>
+
+                de
+
+                <strong>
+                  {{ appointments().length }}
+                </strong>
+
+                citas
+              </div>
+
+              <div class="pagination-controls">
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="currentPage() === 1"
+                  (click)="previousPage()"
+                  aria-label="Ir a la página anterior"
+                >
+                  <span aria-hidden="true">←</span>
+
+                  <span>Anterior</span>
+                </button>
+
+                <div
+                  class="pagination-pages"
+                  role="group"
+                  aria-label="Páginas"
+                >
+                  @for (page of pages(); track page) {
+                    <button
+                      type="button"
+                      class="pagination-page"
+                      [class.is-active]="page === currentPage()"
+                      [attr.aria-current]="
+                        page === currentPage() ? 'page' : null
+                      "
+                      [attr.aria-label]="'Ir a la página ' + page"
+                      (click)="goToPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+                  }
+                </div>
+
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="currentPage() === totalPages()"
+                  (click)="nextPage()"
+                  aria-label="Ir a la página siguiente"
+                >
+                  <span>Siguiente</span>
+
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </nav>
+          }
+        </div>
+      } @else {
+        <!-- Empty state -->
+        <div class="appointments-empty">
+          <div class="appointments-empty-icon" aria-hidden="true">
+            📅
+          </div>
+
+          <h3 class="appointments-empty-title">
+            No hay citas para este día
+          </h3>
+
+          <p class="appointments-empty-text">
+            Selecciona otra fecha o agenda una nueva cita.
+          </p>
+
+          <button
+            type="button"
+            class="appointment-primary-button"
+            (click)="openAppointmentForm()"
+          >
+            <span aria-hidden="true">+</span>
+
+            <span>Nueva cita</span>
+          </button>
+        </div>
       }
-    </div>
+    }
   </section>
 </div>

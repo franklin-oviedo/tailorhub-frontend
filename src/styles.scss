@@ -399,3 +399,14 @@ mat-card {
 	font-weight: 700;
 	border: 1px solid color-mix(in srgb, var(--th-secondary) 40%, white 60%);
 }
+
+.th-dialog-panel .mat-mdc-dialog-surface {
+	border: 1px solid var(--th-stroke);
+	border-radius: 1rem;
+	background: var(--th-surface);
+	box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+}
+
+.th-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+	padding: 1rem;
+}

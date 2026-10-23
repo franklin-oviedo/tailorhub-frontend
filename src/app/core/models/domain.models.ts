@@ -107,10 +107,8 @@ export interface Appointment {
 }
 
 export interface CreateAppointment {
-  clientId: string;
-  employeeId: string;
-  startsAt: Date;
-  endsAt: Date;
+  customerId: string;
+  scheduledAt: Date;
   status: 'scheduled';
   notes: string;
 }

@@ -15,11 +15,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const status = error.status;
+      const isAuthEndpoint =
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/register') ||
+        req.url.includes('/auth/forgot-password');
 
-      if (status === 401) {
+      if (status === 401 && !isAuthEndpoint) {
         tokenService.clearToken();
         session.clear();
-        snackbar.open('Sesion expirada. Vuelve a iniciar sesion.', 'Cerrar', { duration: 3500 });
+        snackbar.open('Sesión expirada. Vuelve a iniciar sesión.', 'Cerrar', { duration: 3500 });
         router.navigate(['/login']);
       } else if (status === 403) {
         snackbar.open('No tienes permisos para esta accion o tienda.', 'Cerrar', { duration: 4000 });
@@ -29,7 +33,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         const backendMessage =
           (error.error?.message as string | string[] | undefined) ?? 'Solicitud invalida.';
         const message = Array.isArray(backendMessage) ? backendMessage.join(', ') : backendMessage;
-        snackbar.open(message, 'Cerrar', { duration: 4500 });
+        const normalizedMessage = message.toLowerCase().includes('numeric value must be finite')
+          ? 'Hay datos numéricos inválidos en origen. Revisa cantidad, precio unitario o tasas en el pedido/factura y vuelve a intentar.'
+          : message;
+        snackbar.open(normalizedMessage, 'Cerrar', { duration: 4500 });
       }
 
       return throwError(() => error);

@@ -1,0 +1,169 @@
+:host {
+  display: block;
+}
+
+.invoice-document {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--th-surface);
+  border: 1px solid var(--th-stroke);
+  border-radius: 1rem;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+}
+
+.invoice-document-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--th-stroke);
+}
+
+.invoice-logo {
+  max-width: 180px;
+  max-height: 54px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.invoice-company-name {
+  margin: 0;
+  color: var(--th-primary);
+}
+
+.invoice-company-legal-name,
+.invoice-company-row,
+.invoice-meta p {
+  margin: 0.2rem 0;
+  color: var(--th-text);
+}
+
+.invoice-meta h1 {
+  margin: 0 0 0.5rem;
+  color: var(--th-primary);
+  font-size: 1.4rem;
+}
+
+.invoice-customer {
+  padding: 1.2rem 0;
+}
+
+.invoice-customer h3,
+.invoice-notes h3,
+.invoice-terms h3 {
+  margin: 0 0 0.35rem;
+  color: var(--th-primary);
+  font-size: 1rem;
+}
+
+.invoice-customer p,
+.invoice-notes p,
+.invoice-terms p {
+  margin: 0.2rem 0;
+}
+
+.invoice-lines-shell {
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.8rem;
+  overflow: hidden;
+}
+
+.invoice-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-lines-table thead th {
+  padding: 0.75rem;
+  background: linear-gradient(180deg, var(--th-primary) 0%, color-mix(in srgb, var(--th-primary) 82%, white 18%) 100%);
+  color: var(--th-surface);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.invoice-lines-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--th-primary) 10%, white 90%);
+}
+
+.invoice-lines-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.number-col {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.invoice-totals {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 360px;
+  margin: 1.25rem 0 0 auto;
+}
+
+.invoice-totals p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.invoice-totals .grand-total {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--th-stroke);
+  color: var(--th-primary);
+}
+
+.invoice-notes,
+.invoice-terms {
+  margin-top: 1.15rem;
+}
+
+@media (max-width: 767.98px) {
+  .invoice-document {
+    padding: 1rem;
+  }
+
+  .invoice-document-header {
+    flex-direction: column;
+  }
+
+  .invoice-lines-shell {
+    overflow-x: auto;
+  }
+
+  .invoice-lines-table {
+    min-width: 640px;
+  }
+}
+
+@media print {
+  .invoice-document {
+    padding: 0.5cm;
+    border: 0;
+    box-shadow: none;
+    max-width: none;
+  }
+
+  .invoice-lines-table thead {
+    display: table-header-group;
+  }
+
+  .invoice-lines-table tr,
+  .invoice-lines-table td,
+  .invoice-totals,
+  .invoice-notes,
+  .invoice-terms {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .invoice-totals {
+    margin-top: 0.8rem;
+  }
+}

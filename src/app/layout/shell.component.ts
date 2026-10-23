@@ -75,6 +75,17 @@ export class ShellComponent {
       ]
     },
     {
+      label: 'Facturas',
+      path: '/invoices',
+      roles: [
+        'client',
+        'employee',
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
       label: 'Citas',
       path: '/appointments',
       roles: [
@@ -97,6 +108,16 @@ export class ShellComponent {
       label: 'Usuarios',
       path: '/users',
       roles: [
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
+      label: 'Clientes',
+      path: '/customers',
+      roles: [
+        'employee',
         'manager',
         'admin',
         'super_admin'

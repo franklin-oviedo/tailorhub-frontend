@@ -1,0 +1,399 @@
+<section class="invoices-page">
+  <header class="invoices-header">
+    <div class="header-copy">
+      <h2 class="invoices-title">Facturas</h2>
+      <p class="invoices-description">Gestiona y consulta las facturas de tus pedidos.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="openFiscalReport()">
+        Reporte fiscal
+      </button>
+    </div>
+  </header>
+
+  <article class="th-card filters-card">
+    <div class="th-card-body">
+      <form class="filters-form" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+        <div class="filters-main">
+          <div class="filter-field filter-search">
+            <label class="filter-label" for="invoiceSearch">Buscar</label>
+            <input
+              id="invoiceSearch"
+              class="form-control th-input"
+              type="text"
+              placeholder="Factura, cliente o NCF"
+              formControlName="invoiceNumber"
+            />
+          </div>
+
+          <div class="filter-field">
+            <label class="filter-label" for="invoiceStatus">Estado</label>
+            <select id="invoiceStatus" class="form-select th-input" formControlName="status">
+              <option value="">Todos</option>
+              <option value="draft">Borrador</option>
+              <option value="issued">Emitida</option>
+              <option value="partially_paid">Pago parcial</option>
+              <option value="paid">Pagada</option>
+              <option value="cancelled">Cancelada</option>
+              <option value="credited">Acreditada</option>
+            </select>
+          </div>
+
+          <div class="filters-primary-actions">
+            <button type="submit" class="btn th-btn-primary" [disabled]="loading()">Filtrar</button>
+
+            @if (hasActiveFilters()) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                [disabled]="loading()"
+                (click)="clearFilters()"
+              >
+                Limpiar
+              </button>
+            }
+          </div>
+        </div>
+
+        <details class="more-filters">
+          <summary>
+            <span>Más filtros</span>
+
+            @if (hasActiveFilters()) {
+              <span class="filters-active-label">Filtros activos</span>
+            }
+          </summary>
+
+          <div class="more-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="fiscalDocumentType"> Tipo fiscal </label>
+
+              <select
+                id="fiscalDocumentType"
+                class="form-select th-input"
+                formControlName="fiscalDocumentType"
+              >
+                <option value="">Todos</option>
+                <option value="consumer">Consumo</option>
+                <option value="credit_fiscal">Crédito fiscal</option>
+                <option value="government">Gubernamental</option>
+                <option value="special">Especial</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label" for="dateFrom">Desde</label>
+              <input
+                id="dateFrom"
+                class="form-control th-input"
+                type="date"
+                formControlName="dateFrom"
+              />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label" for="dateTo">Hasta</label>
+              <input
+                id="dateTo"
+                class="form-control th-input"
+                type="date"
+                formControlName="dateTo"
+              />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label" for="customerId">Cliente ID</label>
+              <input
+                id="customerId"
+                class="form-control th-input"
+                type="text"
+                placeholder="Identificador del cliente"
+                formControlName="customerId"
+              />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label" for="orderId">Pedido ID</label>
+              <input
+                id="orderId"
+                class="form-control th-input"
+                type="text"
+                placeholder="Identificador del pedido"
+                formControlName="orderId"
+              />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label" for="fiscalNumber">NCF</label>
+              <input
+                id="fiscalNumber"
+                class="form-control th-input"
+                type="text"
+                placeholder="Número de comprobante"
+                formControlName="fiscalNumber"
+              />
+            </div>
+          </div>
+        </details>
+      </form>
+    </div>
+  </article>
+
+  @if (errorMessage()) {
+    <div class="feedback feedback-error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <section class="summary-grid" aria-label="Cargando resumen financiero" aria-busy="true">
+      @for (item of [1, 2, 3]; track item) {
+        <article class="summary-card summary-card-loading">
+          <span class="skeleton skeleton-label"></span>
+          <span class="skeleton skeleton-value"></span>
+        </article>
+      }
+    </section>
+
+    <article
+      class="th-card invoices-card loading-card"
+      aria-label="Cargando facturas"
+      aria-busy="true"
+    >
+      <div class="loading-header">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <div>
+          <strong>Cargando facturas</strong>
+          <span>Estamos consultando la información...</span>
+        </div>
+      </div>
+
+      <div class="loading-table">
+        <div class="loading-table-header">
+          <span>Factura</span>
+          <span>Cliente</span>
+          <span>Fecha</span>
+          <span>Total</span>
+          <span>Pendiente</span>
+          <span>Estado</span>
+        </div>
+
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="loading-table-row">
+            <div class="loading-cell loading-reference">
+              <span class="skeleton skeleton-main"></span>
+              <span class="skeleton skeleton-secondary"></span>
+            </div>
+
+            <div class="loading-cell loading-reference">
+              <span class="skeleton skeleton-main"></span>
+              <span class="skeleton skeleton-secondary"></span>
+            </div>
+
+            <div class="loading-cell">
+              <span class="skeleton skeleton-date"></span>
+            </div>
+
+            <div class="loading-cell">
+              <span class="skeleton skeleton-amount"></span>
+            </div>
+
+            <div class="loading-cell">
+              <span class="skeleton skeleton-amount"></span>
+            </div>
+
+            <div class="loading-cell">
+              <span class="skeleton skeleton-status"></span>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  } @else if (invoices().length > 0) {
+    <section class="summary-grid" aria-label="Resumen financiero de facturas visibles">
+      <article class="summary-card">
+        <span class="summary-label">Total facturado</span>
+        <strong class="summary-value">
+          {{
+            financialSummary().total | currency: financialSummary().currency : 'symbol' : '1.2-2'
+          }}
+        </strong>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Cobrado</span>
+        <strong class="summary-value">
+          {{ financialSummary().paid | currency: financialSummary().currency : 'symbol' : '1.2-2' }}
+        </strong>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Pendiente</span>
+        <strong class="summary-value">
+          {{
+            financialSummary().balance | currency: financialSummary().currency : 'symbol' : '1.2-2'
+          }}
+        </strong>
+      </article>
+    </section>
+
+    <article class="th-card invoices-card">
+      <div class="th-card-body invoices-card-body">
+        <div class="th-table-shell">
+          <div class="th-table-scroll">
+            <table class="table invoices-table">
+              <thead>
+                <tr>
+                  <th class="invoice-column">Factura</th>
+                  <th>Cliente</th>
+                  <th>Fecha</th>
+                  <th class="amount-column">Total</th>
+                  <th class="amount-column">Pendiente</th>
+                  <th>Estado</th>
+                  <th class="actions-column">
+                    <span class="visually-hidden">Acción</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (invoice of invoices(); track invoice.id) {
+                  <tr>
+                    <td data-label="Factura">
+                      <div class="invoice-reference">
+                        <span class="primary-cell">
+                          {{ invoice.invoiceNumber || 'Sin número' }}
+                        </span>
+                        <span class="secondary-cell"> Pedido {{ orderReference(invoice) }} </span>
+                      </div>
+                    </td>
+
+                    <td data-label="Cliente">
+                      <div class="customer-reference">
+                        <span class="primary-cell">
+                          {{ customerName(invoice) }}
+                        </span>
+
+                        @if (invoice.fiscalNumber) {
+                          <span class="secondary-cell"> NCF {{ invoice.fiscalNumber }} </span>
+                        } @else {
+                          <span class="secondary-cell">Sin NCF</span>
+                        }
+                      </div>
+                    </td>
+
+                    <td data-label="Fecha">
+                      <span class="table-value">
+                        {{
+                          invoice.issuedAt ? (invoice.issuedAt | date: 'dd/MM/yyyy') : 'Sin emitir'
+                        }}
+                      </span>
+                    </td>
+
+                    <td data-label="Total" class="amount-cell">
+                      <span class="amount-value">
+                        {{ invoice.total | currency: invoice.currency : 'symbol' : '1.2-2' }}
+                      </span>
+                    </td>
+
+                    <td data-label="Pendiente" class="amount-cell">
+                      <span class="amount-value">
+                        {{ invoice.balance | currency: invoice.currency : 'symbol' : '1.2-2' }}
+                      </span>
+                    </td>
+
+                    <td data-label="Estado">
+                      <span [class]="statusClass(invoice.status)">
+                        {{ statusLabel(invoice.status) }}
+                      </span>
+                    </td>
+
+                    <td data-label="Acción" class="actions-cell">
+                      <a
+                        [routerLink]="['/invoices', invoice.id]"
+                        class="invoice-action"
+                        aria-label="Ver factura"
+                      >
+                        <span>Ver</span>
+                        <span aria-hidden="true">→</span>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        @if (totalPages() > 1) {
+          <nav class="orders-pagination" aria-label="Paginación de facturas">
+            <div class="pagination-info" aria-live="polite">
+              Mostrando
+              <strong>{{ paginationStart() }}</strong>
+              -
+              <strong>{{ paginationEnd() }}</strong>
+              de
+              <strong>{{ totalItems() }}</strong>
+              facturas
+            </div>
+
+            <div class="pagination-controls">
+              <button
+                type="button"
+                class="pagination-button"
+                [disabled]="currentPage() === 1 || loading()"
+                (click)="previousPage()"
+                aria-label="Ir a la página anterior"
+              >
+                <span aria-hidden="true">←</span>
+                <span>Anterior</span>
+              </button>
+
+              <div class="pagination-pages" role="group" aria-label="Páginas">
+                @for (page of pages(); track page) {
+                  <button
+                    type="button"
+                    class="pagination-page"
+                    [class.is-active]="page === currentPage()"
+                    [attr.aria-current]="page === currentPage() ? 'page' : null"
+                    [disabled]="loading()"
+                    (click)="goToPage(page)"
+                  >
+                    {{ page }}
+                  </button>
+                }
+              </div>
+
+              <button
+                type="button"
+                class="pagination-button"
+                [disabled]="currentPage() === totalPages() || loading()"
+                (click)="nextPage()"
+                aria-label="Ir a la página siguiente"
+              >
+                <span>Siguiente</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </nav>
+        }
+      </div>
+    </article>
+  } @else if (hasActiveFilters()) {
+    <article class="empty-state" role="status" aria-live="polite">
+      <h3>No encontramos facturas</h3>
+      <p>No hay resultados que coincidan con los filtros seleccionados.</p>
+
+      <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </article>
+  } @else if (hasLoaded()) {
+    <article class="empty-state" role="status" aria-live="polite">
+      <h3>Aún no tienes facturas</h3>
+      <p>Cuando generes una factura desde un pedido, aparecerá aquí.</p>
+
+      <a routerLink="/orders" class="btn th-btn-primary"> Ver pedidos </a>
+    </article>
+  }
+</section>

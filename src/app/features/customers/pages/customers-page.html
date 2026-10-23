@@ -1,0 +1,434 @@
+<article
+    class="th-card customers-card"
+    [attr.aria-busy]="loading() || creating() || updating()"
+>
+
+
+<div class="th-card-body">
+
+    <header class="customers-header">
+
+        <div class="customers-heading">
+            <span class="customers-eyebrow">
+                Clientes de la sastreria
+            </span>
+
+            <h1 class="customers-title">
+                Gestion de clientes
+            </h1>
+        </div>
+
+        <div class="customers-header-actions">
+            <button
+                type="button"
+                class="customers-btn customers-btn--primary"
+                (click)="openCreateModal()"
+            >
+                Nuevo cliente
+            </button>
+        </div>
+
+    </header>
+
+    @if (createSuccessMessage()) {
+        <div class="customers-status customers-status--success" role="status" aria-live="polite">
+            {{ createSuccessMessage() }}
+        </div>
+    }
+
+    @if (updateSuccessMessage()) {
+        <div class="customers-status customers-status--success" role="status" aria-live="polite">
+            {{ updateSuccessMessage() }}
+        </div>
+    }
+
+    @if (loading()) {
+
+        <div
+            class="customers-status"
+            role="status"
+            aria-live="polite"
+        >
+            Cargando clientes...
+        </div>
+
+    }
+
+    @if (!loading() && errorMessage()) {
+
+        <div
+            class="customers-error"
+            role="alert"
+        >
+            {{ errorMessage() }}
+        </div>
+
+    }
+
+    @if (!loading() && !errorMessage()) {
+
+        <div class="th-table-shell">
+            <div class="th-table-scroll">
+
+                <table class="table table-hover align-middle customers-table">
+                    <caption class="visually-hidden">
+                        Lista de clientes registrados
+                    </caption>
+
+                    <tbody>
+
+                        @for (customer of paginatedCustomers(); track customer.id) {
+
+                            <tr>
+
+                                <td>
+                                    <span class="customer-name">
+                                        {{ customer.name }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="customer-phone">
+                                        {{ customer.phone }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="customer-email">
+                                        {{ customer.email }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="customer-store">
+                                        {{ customer.store.name }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="customers-btn customers-btn--ghost customers-btn--small"
+                                        (click)="startEdit(customer)"
+                                    >
+                                        Editar
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            @if (totalPages() > 1) {
+                <nav class="customers-pagination" aria-label="Paginacion de clientes">
+                    <div class="pagination-info" aria-live="polite">
+                        Mostrando
+                        <strong>{{ paginationStart() }}</strong>
+                        -
+                        <strong>{{ paginationEnd() }}</strong>
+                        de
+                        <strong>{{ customers().length }}</strong>
+                        clientes
+                    </div>
+                    <div class="pagination-controls">
+                        <button
+                            type="button"
+                            class="pagination-button"
+                            [disabled]="currentPage() === 1"
+                            (click)="previousPage()"
+                            aria-label="Ir a la pagina anterior"
+                        >
+                            <span aria-hidden="true">←</span>
+                            <span>Anterior</span>
+                        </button>
+                        <div class="pagination-pages" role="group" aria-label="Paginas">
+                            @for (page of pages(); track page) {
+                                <button
+                                    type="button"
+                                    class="pagination-page"
+                                    [class.is-active]="page === currentPage()"
+                                    [attr.aria-current]="page === currentPage() ? 'page' : null"
+                                    (click)="goToPage(page)"
+                                >
+                                    {{ page }}
+                                </button>
+                            }
+                        </div>
+                        <button
+                            type="button"
+                            class="pagination-button"
+                            [disabled]="currentPage() === totalPages()"
+                            (click)="nextPage()"
+                            aria-label="Ir a la pagina siguiente"
+                        >
+                            <span>Siguiente</span>
+                            <span aria-hidden="true">→</span>
+                        </button>
+                    </div>
+                </nav>
+            }
+        </div>
+
+    }
+
+    @if (isEmpty()) {
+
+        <div
+            class="customers-empty"
+            role="status"
+            aria-live="polite"
+        >
+            <span class="customers-empty-title">
+                No hay clientes disponibles
+            </span>
+
+            <span class="customers-empty-description">
+                No se encontraron clientes para esta sastreria. Puedes crear uno desde el formulario.
+            </span>
+        </div>
+
+    }
+
+    @if (createModalOpen()) {
+        <div class="customers-modal-backdrop" (click)="closeCreateModal()">
+            <section
+                class="customers-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="customers-create-title"
+                (click)="$event.stopPropagation()"
+            >
+                <div class="customers-modal-header">
+                    <h2 id="customers-create-title" class="customers-create-title">Nuevo cliente</h2>
+                    <button
+                        type="button"
+                        class="customers-modal-close"
+                        aria-label="Cerrar modal"
+                        (click)="closeCreateModal()"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <form
+                    class="customers-create-form"
+                    [formGroup]="createForm"
+                    (ngSubmit)="createCustomer()"
+                    novalidate
+                >
+                    <div class="customers-create-grid">
+                        <div class="customers-create-field">
+                            <label for="customer-name">Nombre</label>
+                            <span class="customers-create-hint">Nombre completo del cliente.</span>
+                            <input
+                                id="customer-name"
+                                type="text"
+                                class="form-control"
+                                formControlName="name"
+                                placeholder="Ana Martinez"
+                                autocomplete="name"
+                                maxlength="120"
+                                [attr.aria-invalid]="isInvalid('name')"
+                                aria-describedby="customer-name-error"
+                                [class.is-invalid]="isInvalid('name')"
+                            />
+                            @if (isInvalid('name')) {
+                                <span id="customer-name-error" class="customers-create-error">
+                                    El nombre es obligatorio y debe tener al menos 2 caracteres.
+                                </span>
+                            }
+                        </div>
+
+                        <div class="customers-create-field">
+                            <label for="customer-email">Correo</label>
+                            <span class="customers-create-hint">Correo principal de contacto.</span>
+                            <input
+                                id="customer-email"
+                                type="email"
+                                class="form-control"
+                                formControlName="email"
+                                placeholder="ana.martinez@example.com"
+                                autocomplete="email"
+                                maxlength="160"
+                                [attr.aria-invalid]="isInvalid('email')"
+                                aria-describedby="customer-email-error"
+                                [class.is-invalid]="isInvalid('email')"
+                            />
+                            @if (isInvalid('email')) {
+                                <span id="customer-email-error" class="customers-create-error">
+                                    Ingresa un correo valido.
+                                </span>
+                            }
+                        </div>
+
+                        <div class="customers-create-field">
+                            <label for="customer-phone">Telefono</label>
+                            <span class="customers-create-hint">Incluye codigo de pais si aplica.</span>
+                            <input
+                                id="customer-phone"
+                                type="tel"
+                                class="form-control"
+                                formControlName="phone"
+                                placeholder="+57 300 123 4567"
+                                autocomplete="tel"
+                                inputmode="tel"
+                                maxlength="30"
+                                [attr.aria-invalid]="isInvalid('phone')"
+                                aria-describedby="customer-phone-error"
+                                [class.is-invalid]="isInvalid('phone')"
+                            />
+                            @if (isInvalid('phone')) {
+                                <span id="customer-phone-error" class="customers-create-error">
+                                    El telefono es obligatorio y debe tener al menos 7 caracteres.
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (createErrorMessage()) {
+                        <div class="customers-create-feedback customers-create-feedback--error" role="alert">
+                            {{ createErrorMessage() }}
+                        </div>
+                    }
+
+                    <div class="customers-create-actions customers-update-actions">
+                        <button
+                            type="button"
+                            class="customers-btn customers-btn--secondary"
+                            [disabled]="creating()"
+                            (click)="closeCreateModal()"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="customers-btn customers-btn--primary"
+                            [disabled]="creating() || createForm.invalid"
+                        >
+                            @if (creating()) {
+                                Creando...
+                            } @else {
+                                Crear cliente
+                            }
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    }
+
+    @if (editModalOpen() && editingCustomerId()) {
+        <div class="customers-modal-backdrop" (click)="cancelEdit()">
+            <section
+                class="customers-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="customers-update-title"
+                (click)="$event.stopPropagation()"
+            >
+                <div class="customers-modal-header">
+                    <h2 id="customers-update-title" class="customers-create-title">Actualizar cliente</h2>
+                    <button
+                        type="button"
+                        class="customers-modal-close"
+                        aria-label="Cerrar modal"
+                        [disabled]="updating()"
+                        (click)="cancelEdit()"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <form
+                    class="customers-create-form"
+                    [formGroup]="updateForm"
+                    (ngSubmit)="updateCustomer()"
+                    novalidate
+                >
+                    <div class="customers-create-grid">
+                        <div class="customers-create-field">
+                            <label for="update-customer-name">Nombre</label>
+                            <input
+                                id="update-customer-name"
+                                type="text"
+                                class="form-control"
+                                formControlName="name"
+                                [class.is-invalid]="isUpdateInvalid('name')"
+                            />
+                            @if (isUpdateInvalid('name')) {
+                                <span class="customers-create-error">Nombre invalido.</span>
+                            }
+                        </div>
+
+                        <div class="customers-create-field">
+                            <label for="update-customer-email">Correo</label>
+                            <input
+                                id="update-customer-email"
+                                type="email"
+                                class="form-control"
+                                formControlName="email"
+                                [class.is-invalid]="isUpdateInvalid('email')"
+                            />
+                            @if (isUpdateInvalid('email')) {
+                                <span class="customers-create-error">Correo invalido.</span>
+                            }
+                        </div>
+
+                        <div class="customers-create-field">
+                            <label for="update-customer-phone">Telefono</label>
+                            <input
+                                id="update-customer-phone"
+                                type="tel"
+                                class="form-control"
+                                formControlName="phone"
+                                [class.is-invalid]="isUpdateInvalid('phone')"
+                            />
+                            @if (isUpdateInvalid('phone')) {
+                                <span class="customers-create-error">Telefono invalido.</span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (updateErrorMessage()) {
+                        <div class="customers-create-feedback customers-create-feedback--error" role="alert">
+                            {{ updateErrorMessage() }}
+                        </div>
+                    }
+
+                    <div class="customers-create-actions customers-update-actions">
+                        <button
+                            type="button"
+                            class="customers-btn customers-btn--secondary"
+                            [disabled]="updating()"
+                            (click)="cancelEdit()"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="customers-btn customers-btn--primary"
+                            [disabled]="updating() || updateForm.invalid"
+                        >
+                            @if (updating()) {
+                                Guardando...
+                            } @else {
+                                Guardar cambios
+                            }
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    }
+
+</div>
+
+
+</article>

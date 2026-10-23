@@ -1,0 +1,196 @@
+<section class="invoice-fiscal-report-page">
+  <header class="report-header">
+    <div class="report-heading">
+      <a routerLink="/invoices" class="back-link">← Volver a facturas</a>
+      <h2 class="report-title">Reporte fiscal</h2>
+      <p class="report-description">Consulta la información fiscal generada desde las facturas.</p>
+    </div>
+  </header>
+  <article class="th-card filters-card">
+    <div class="th-card-body">
+      <form class="report-form" [formGroup]="form" (ngSubmit)="loadReport()">
+        <div class="form-field">
+          <label for="dateFrom">Desde</label>
+          <input
+            id="dateFrom"
+            class="form-control th-input"
+            type="date"
+            formControlName="dateFrom"
+          />
+        </div>
+        <div class="form-field">
+          <label for="dateTo">Hasta</label>
+          <input id="dateTo" class="form-control th-input" type="date" formControlName="dateTo" />
+        </div>
+        <div class="form-field">
+          <label for="fiscalDocumentType">Tipo fiscal</label>
+          <select
+            id="fiscalDocumentType"
+            class="form-select th-input"
+            formControlName="fiscalDocumentType"
+          >
+            <option value="">Todos</option>
+            <option value="consumer">Consumo</option>
+            <option value="credit_fiscal">Crédito fiscal</option>
+            <option value="government">Gubernamental</option>
+            <option value="special">Especial</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="status">Estado</label>
+          <select id="status" class="form-select th-input" formControlName="status">
+            <option value="">Todos</option>
+            <option value="draft">Borrador</option>
+            <option value="issued">Emitida</option>
+            <option value="partially_paid">Pago parcial</option>
+            <option value="paid">Pagada</option>
+            <option value="cancelled">Cancelada</option>
+            <option value="credited">Acreditada</option>
+          </select>
+        </div>
+        <div class="report-form-actions">
+          <button type="submit" class="btn th-btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Consultando...' : 'Consultar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </article>
+  @if (errorMessage()) {
+    <div class="feedback feedback-error" role="alert">{{ errorMessage() }}</div>
+  }
+  @if (loading()) {
+    <article class="th-card report-loading" role="status" aria-live="polite">
+      <div class="loading-header">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <div>
+          <strong>Consultando reporte fiscal</strong>
+          <span>Estamos preparando los registros...</span>
+        </div>
+      </div>
+      <div class="loading-table">
+        <div class="loading-table-header">
+          @for (column of [1, 2, 3, 4, 5, 6]; track column) {
+            <span class="skeleton skeleton-header"></span>
+          }
+        </div>
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="loading-table-row">
+            @for (column of [1, 2, 3, 4, 5, 6]; track column) {
+              <span class="skeleton skeleton-cell"></span>
+            }
+          </div>
+        }
+      </div>
+    </article>
+  } @else if (reportRows().length > 0) {
+    <article class="th-card report-card">
+      <div class="th-card-body report-card-body">
+        <header class="report-table-toolbar">
+          <div>
+            <h3>Resultados</h3>
+            <p class="report-table-meta">
+              {{ reportRows().length }} registro{{
+                reportRows().length === 1 ? '' : 's'
+              }}
+              encontrado{{ reportRows().length === 1 ? '' : 's' }}
+            </p>
+          </div>
+          <label class="report-page-size">
+            <span>Filas por página</span>
+            <select
+              class="form-select th-input"
+              #pageSizeSelector
+              [value]="pageSize()"
+              (change)="updatePageSize(pageSizeSelector.value)"
+            >
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="25">25</option>
+            </select>
+          </label>
+        </header>
+        <div class="th-table-shell">
+          <div class="th-table-scroll">
+            <table class="table fiscal-report-table">
+              <thead>
+                <tr>
+                  @for (column of columns(); track column) {
+                    <th>{{ columnLabel(column) }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of paginatedRows(); track $index) {
+                  <tr>
+                    @for (column of columns(); track column) {
+                      <td [attr.data-label]="columnLabel(column)">
+                        {{ formatCellValue(row[column]) }}
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <footer class="report-footer">
+          <p class="report-table-meta">
+            Mostrando {{ paginationStart() }} - {{ paginationEnd() }} de
+            {{ reportRows().length }} registros
+          </p>
+          @if (totalPages() > 1) {
+            <nav class="report-pagination" aria-label="Paginación de reporte fiscal">
+              <div class="pagination-controls">
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="currentPage() === 1"
+                  (click)="previousPage()"
+                >
+                  <span aria-hidden="true">←</span>
+                  <span>Anterior</span>
+                </button>
+                <div class="pagination-pages" role="group" aria-label="Páginas">
+                  @for (page of pages(); track page) {
+                    <button
+                      type="button"
+                      class="pagination-page"
+                      [class.is-active]="page === currentPage()"
+                      [attr.aria-current]="page === currentPage() ? 'page' : null"
+                      (click)="goToPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="pagination-button"
+                  [disabled]="currentPage() === totalPages()"
+                  (click)="nextPage()"
+                >
+                  <span>Siguiente</span>
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </nav>
+          }
+        </footer>
+      </div>
+    </article>
+  } @else if (hasSearched()) {
+    <article class="empty-state" role="status" aria-live="polite">
+      <h3>Sin resultados</h3>
+      <p>No encontramos registros fiscales para los filtros seleccionados.</p>
+      <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </article>
+  } @else {
+    <article class="empty-state empty-state-initial">
+      <h3>Consulta tu reporte fiscal</h3>
+      <p>Selecciona un rango de fechas para visualizar los registros disponibles.</p>
+    </article>
+  }
+</section>

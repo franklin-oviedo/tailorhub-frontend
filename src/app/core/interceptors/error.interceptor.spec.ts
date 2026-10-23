@@ -54,7 +54,28 @@ describe('errorInterceptor', () => {
     expect(tokenServiceStub.clearToken).toHaveBeenCalled();
     expect(sessionStub.clear).toHaveBeenCalled();
     expect(routerStub.navigate).toHaveBeenCalledWith(['/login']);
-    expect(snackbarStub.open).toHaveBeenCalled();
+    expect(snackbarStub.open).toHaveBeenCalledWith(
+      'Sesión expirada. Vuelve a iniciar sesión.',
+      'Cerrar',
+      { duration: 3500 }
+    );
+  });
+
+  it('should not show session-expired flow for auth endpoints', async () => {
+    const authReq = new HttpRequest('POST', '/api/auth/login', null);
+
+    const response$ = TestBed.runInInjectionContext(() =>
+      errorInterceptor(
+        authReq,
+        () => throwError(() => new HttpErrorResponse({ status: 401, error: { message: 'Invalid credentials' } }))
+      )
+    );
+
+    await expect(firstValueFrom(response$)).rejects.toBeTruthy();
+
+    expect(tokenServiceStub.clearToken).not.toHaveBeenCalled();
+    expect(sessionStub.clear).not.toHaveBeenCalled();
+    expect(routerStub.navigate).not.toHaveBeenCalled();
   });
 
   it('should handle 403 with snackbar message', async () => {
@@ -91,6 +112,16 @@ describe('errorInterceptor', () => {
     expect(snackbarStub.open).toHaveBeenCalledWith('Regla de negocio invalida', 'Cerrar', {
       duration: 4500
     });
+  });
+
+  it('should map numeric finite backend message to friendly text', async () => {
+    await expect(firstValueFrom(runWithError(400, { message: 'Numeric value must be finite.' }))).rejects.toBeTruthy();
+
+    expect(snackbarStub.open).toHaveBeenCalledWith(
+      'Hay datos numéricos inválidos en origen. Revisa cantidad, precio unitario o tasas en el pedido/factura y vuelve a intentar.',
+      'Cerrar',
+      { duration: 4500 }
+    );
   });
 
   it('should handle 400 with default message fallback', async () => {

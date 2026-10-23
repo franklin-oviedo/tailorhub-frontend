@@ -122,21 +122,6 @@
   line-height: 1;
 }
 
-/*
- * Permite que el último elemento:
- *
- * Canceladas: 3
- *
- * mantenga exactamente la misma jerarquía visual
- * aunque actualmente el HTML coloca el número dentro
- * del <dt>.
- */
-.summary-item dt strong {
-  margin-left: 0.25rem;
-  color: #263238;
-  font-weight: 700;
-}
-
 /* =========================================================
    Appointments card
    ========================================================= */
@@ -148,6 +133,8 @@
 .appointments-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   min-height: 72px;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
@@ -171,6 +158,337 @@
 }
 
 /* =========================================================
+   New appointment button
+   ========================================================= */
+
+.new-appointment-button,
+.appointment-primary-button,
+.appointment-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0.625rem 1rem;
+  border-radius: 0.625rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.new-appointment-button,
+.appointment-primary-button {
+  border: 1px solid #2a9d8f;
+  background-color: #2a9d8f;
+  color: #ffffff;
+}
+
+.new-appointment-button:hover:not(:disabled),
+.appointment-primary-button:hover:not(:disabled) {
+  border-color: #237f74;
+  background-color: #237f74;
+}
+
+.new-appointment-button:active:not(:disabled),
+.appointment-primary-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.new-appointment-button:focus-visible,
+.appointment-primary-button:focus-visible,
+.appointment-secondary-button:focus-visible {
+  outline: 3px solid rgba(42, 157, 143, 0.25);
+  outline-offset: 2px;
+}
+
+.new-appointment-button:disabled,
+.appointment-primary-button:disabled,
+.appointment-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   Appointment form
+   ========================================================= */
+
+.appointment-form-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #fafafa;
+}
+
+.appointment-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.appointment-form-title {
+  margin: 0;
+  color: #263238;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.appointment-form-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #6b7280;
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.appointment-form-close:hover:not(:disabled) {
+  border-color: #d1d5db;
+  background-color: #f3f4f6;
+  color: #263238;
+}
+
+.appointment-form-close:focus-visible {
+  outline: 3px solid rgba(42, 157, 143, 0.25);
+  outline-offset: 2px;
+}
+
+.appointment-form-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.appointment-form {
+  width: 100%;
+}
+
+.appointment-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.appointment-form-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.appointment-form-field--full {
+  grid-column: 1 / -1;
+}
+
+.appointment-form-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.appointment-form-label > span:not(.appointment-form-optional) {
+  color: #dc2626;
+}
+
+.appointment-form-optional {
+  margin-left: 0.25rem;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.appointment-form-control {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.625rem;
+  outline: none;
+  background-color: #ffffff;
+  color: #263238;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.appointment-form-control:hover:not(:disabled) {
+  border-color: #9ca3af;
+}
+
+.appointment-form-control:focus {
+  border-color: #2a9d8f;
+  box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.12);
+}
+
+.appointment-form-control::placeholder {
+  color: #9ca3af;
+}
+
+.appointment-form-control.is-invalid {
+  border-color: #dc2626;
+}
+
+.appointment-form-control.is-invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.appointment-form-control.is-valid {
+  border-color: #2a9d8f;
+}
+
+.appointment-form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.appointment-form-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.appointment-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.appointment-secondary-button {
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.appointment-secondary-button:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+  color: #263238;
+}
+
+/* =========================================================
+   Button spinner
+   ========================================================= */
+
+.appointment-button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: appointment-spin 700ms linear infinite;
+}
+
+/* =========================================================
+   Loading
+   ========================================================= */
+
+.appointments-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 260px;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.appointments-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2a9d8f;
+  border-radius: 50%;
+  animation: appointment-spin 700ms linear infinite;
+}
+
+@keyframes appointment-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   Empty state
+   ========================================================= */
+
+.appointments-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 320px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.appointments-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background-color: rgba(42, 157, 143, 0.08);
+  font-size: 1.75rem;
+}
+
+.appointments-empty-title {
+  margin: 0 0 0.5rem;
+  color: #263238;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.appointments-empty-text {
+  max-width: 360px;
+  margin: 0 0 1.25rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* =========================================================
    Appointments table
    ========================================================= */
 
@@ -188,14 +506,6 @@
   margin: 0;
   border-collapse: collapse;
 }
-
-/*
- * Actualmente tu HTML no tiene <thead>.
- *
- * Por eso no dependemos de estilos de thead/th.
- * Si posteriormente agregas encabezados, estos estilos
- * pueden volver a utilizarse.
- */
 
 .appointments-table tbody tr {
   border-bottom: 1px solid #eeeeee;
@@ -258,174 +568,27 @@
   min-height: 30px;
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  background-color: rgba(42, 157, 143, 0.1);
-  color: #237f74;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
 }
 
-/*
- * Estados disponibles para cuando el HTML utilice:
- *
- * class="appointment-status appointment-status--pending"
- */
-
-.appointment-status--pending {
-  background-color: rgba(234, 179, 8, 0.14);
-  color: #a16207;
+.appointment-status--scheduled {
+  background-color: rgba(42, 157, 143, 0.1);
+  color: #237f74;
 }
 
-/* =========================================================
-   Responsive - Large tablet / small desktop
-   ========================================================= */
-
-@media (max-width: 1199.98px) {
-  .appointments-layout {
-    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-    gap: 1.25rem;
-  }
-
-  .calendar-card .card-body {
-    padding: 1rem;
-  }
-
-  .summary-body {
-    padding: 1.25rem;
-  }
-
-  .appointments-header {
-    padding-right: 1.25rem;
-    padding-left: 1.25rem;
-  }
+.appointment-status--confirmed {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
 }
 
-/* =========================================================
-   Tablet
-   ========================================================= */
-
-@media (max-width: 991.98px) {
-  .appointments-layout {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  .appointments-sidebar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 1.25rem;
-  }
-
-  .appointments-card {
-    width: 100%;
-  }
+.appointment-status--cancelled {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
 }
 
-/* =========================================================
-   Mobile
-   ========================================================= */
-
-@media (max-width: 767.98px) {
-  .appointments-layout {
-    gap: 1rem;
-  }
-
-  .appointments-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .calendar-card .card-body {
-    padding: 0.875rem;
-  }
-
-  .summary-body {
-    padding: 1.125rem;
-  }
-
-  .summary-header {
-    margin-bottom: 1rem;
-  }
-
-  .summary-list {
-    gap: 0.625rem;
-  }
-
-  .summary-item-content {
-    min-height: 40px;
-    padding: 0.5rem 0.625rem;
-  }
-
-  .appointments-header {
-    min-height: 64px;
-    padding: 0.875rem 1rem;
-  }
-
-  .appointments-title {
-    font-size: 1rem;
-  }
-
-  .appointments-table {
-    min-width: 620px;
-  }
-
-  .appointments-table td {
-    padding: 0.875rem;
-  }
-}
-
-/* =========================================================
-   Small mobile
-   ========================================================= */
-
-@media (max-width: 575.98px) {
-  .appointments-layout {
-    gap: 0.875rem;
-  }
-
-  .appointments-sidebar {
-    gap: 0.875rem;
-  }
-
-  .summary-body {
-    padding: 1rem;
-  }
-
-  .summary-list {
-    gap: 0.5rem;
-  }
-
-  .summary-item dt {
-    font-size: 0.875rem;
-  }
-
-  .summary-item dd {
-    font-size: 0.95rem;
-  }
-
-  .summary-item-content {
-    min-height: 38px;
-  }
-
-  .appointments-table {
-    min-width: 580px;
-  }
-
-  .appointments-table td {
-    padding: 0.75rem;
-  }
-
-  .appointment-time,
-  .customer-name {
-    font-size: 0.875rem;
-  }
-
-  .customer-phone {
-    font-size: 0.8125rem;
-  }
-}
 /* =========================================================
    Pagination
    ========================================================= */
@@ -518,10 +681,125 @@
 }
 
 /* =========================================================
-   Responsive Pagination
+   Responsive - Large tablet / small desktop
+   ========================================================= */
+
+@media (max-width: 1199.98px) {
+  .appointments-layout {
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .calendar-card .card-body {
+    padding: 1rem;
+  }
+
+  .summary-body {
+    padding: 1.25rem;
+  }
+
+  .appointments-header {
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
+  }
+
+  .appointment-form-section {
+    padding: 1.25rem;
+  }
+}
+
+/* =========================================================
+   Responsive - Tablet
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+  .appointments-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .appointments-sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .appointments-card {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   Responsive - Mobile
    ========================================================= */
 
 @media (max-width: 767.98px) {
+  .appointments-layout {
+    gap: 1rem;
+  }
+
+  .appointments-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .calendar-card .card-body {
+    padding: 0.875rem;
+  }
+
+  .summary-body {
+    padding: 1.125rem;
+  }
+
+  .summary-header {
+    margin-bottom: 1rem;
+  }
+
+  .summary-list {
+    gap: 0.625rem;
+  }
+
+  .summary-item-content {
+    min-height: 40px;
+    padding: 0.5rem 0.625rem;
+  }
+
+  .appointments-header {
+    align-items: flex-start;
+    flex-direction: column;
+    min-height: auto;
+    padding: 1rem;
+  }
+
+  .appointments-title {
+    font-size: 1rem;
+  }
+
+  .new-appointment-button {
+    width: 100%;
+  }
+
+  .appointment-form-section {
+    padding: 1rem;
+  }
+
+  .appointment-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-form-field--full {
+    grid-column: auto;
+  }
+
+  .appointments-table {
+    min-width: 620px;
+  }
+
+  .appointments-table td {
+    padding: 0.875rem;
+  }
+
   .appointments-pagination {
     align-items: stretch;
     flex-direction: column;
@@ -554,7 +832,75 @@
   }
 }
 
+/* =========================================================
+   Responsive - Small mobile
+   ========================================================= */
+
 @media (max-width: 575.98px) {
+  .appointments-layout {
+    gap: 0.875rem;
+  }
+
+  .appointments-sidebar {
+    gap: 0.875rem;
+  }
+
+  .summary-body {
+    padding: 1rem;
+  }
+
+  .summary-list {
+    gap: 0.5rem;
+  }
+
+  .summary-item dt {
+    font-size: 0.875rem;
+  }
+
+  .summary-item dd {
+    font-size: 0.95rem;
+  }
+
+  .summary-item-content {
+    min-height: 38px;
+  }
+
+  .appointment-form-section {
+    padding: 0.875rem;
+  }
+
+  .appointment-form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .appointment-primary-button,
+  .appointment-secondary-button {
+    width: 100%;
+  }
+
+  .appointments-empty {
+    min-height: 280px;
+    padding: 2rem 1rem;
+  }
+
+  .appointments-table {
+    min-width: 580px;
+  }
+
+  .appointments-table td {
+    padding: 0.75rem;
+  }
+
+  .appointment-time,
+  .customer-name {
+    font-size: 0.875rem;
+  }
+
+  .customer-phone {
+    font-size: 0.8125rem;
+  }
+
   .pagination-button {
     min-width: 36px;
     padding: 0;

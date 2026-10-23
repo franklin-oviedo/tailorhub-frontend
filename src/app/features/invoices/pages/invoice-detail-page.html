@@ -1,0 +1,863 @@
+<section class="invoice-detail-page">
+  <header class="detail-header">
+    <div class="detail-heading">
+      <a routerLink="/invoices" class="back-link">← Volver a facturas</a>
+      @if (invoice()) {
+        <div class="detail-title-row">
+          <div>
+            <h2 class="detail-title">Factura {{ invoice()!.invoiceNumber || 'Sin número' }}</h2>
+            <p class="detail-subtitle">Pedido {{ documentViewModel()!.orderReference || '-' }}</p>
+          </div>
+          <span [class]="statusClass(invoice()!.status)">{{ statusLabel(invoice()!.status) }}</span>
+        </div>
+      } @else {
+        <h2 class="detail-title">Factura</h2>
+      }
+    </div>
+    @if (invoice()) {
+      <div class="detail-actions">
+        <button
+          type="button"
+          class="btn th-btn-primary"
+          [disabled]="loading() || issuing() || registeringPayment() || cancelling()"
+          (click)="runPrimaryAction()"
+        >
+          {{ primaryActionLabel() }}
+        </button>
+        <details class="actions-menu">
+          <summary>Más acciones</summary>
+          <div class="actions-menu-list">
+            <button type="button" class="menu-action" (click)="showPreview()">Previsualizar</button>
+            @if (actions().canExport) {
+              <button type="button" class="menu-action" (click)="exportPdf()">Exportar PDF</button>
+              <button type="button" class="menu-action" (click)="printInvoice()">Imprimir</button>
+            }
+            @if (actions().canEditDraft) {
+              <button type="button" class="menu-action" (click)="openDraftForm()">
+                Editar borrador
+              </button>
+            }
+            @if (actions().canIssue) {
+              <button type="button" class="menu-action" (click)="openIssueForm()">
+                Emitir factura
+              </button>
+            }
+            @if (actions().canCreateCreditNote) {
+              <button type="button" class="menu-action" (click)="openCreditNoteForm()">
+                Nota de crédito
+              </button>
+            }
+            @if (actions().canCreateDebitNote) {
+              <button type="button" class="menu-action" (click)="openDebitNoteForm()">
+                Nota de débito
+              </button>
+            }
+            @if (actions().canCancel) {
+              <div class="destructive-actions">
+                <button
+                  type="button"
+                  class="menu-action menu-action-danger"
+                  (click)="openCancelForm()"
+                >
+                  Cancelar factura
+                </button>
+              </div>
+            }
+          </div>
+        </details>
+      </div>
+    }
+  </header>
+  @if (errorMessage()) {
+    <div class="feedback feedback-error" role="alert">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="feedback feedback-success" role="status">{{ successMessage() }}</div>
+  }
+  @if (loading()) {
+    <div class="detail-loading" role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <div>
+        <strong>Cargando factura</strong>
+        <span>Estamos preparando la información...</span>
+      </div>
+    </div>
+  } @else if (invoice() && documentViewModel()) {
+    <section class="financial-summary" aria-label="Resumen financiero">
+      <article class="metric-card">
+        <span class="metric-label">Total</span>
+        <strong class="metric-value">{{
+          invoice()!.total | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Pagado</span>
+        <strong class="metric-value">{{
+          invoice()!.amountPaid | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </article>
+      <article class="metric-card metric-card-pending">
+        <span class="metric-label">Pendiente</span>
+        <strong class="metric-value">{{
+          invoice()!.balance | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </article>
+      <div class="payment-progress">
+        <div class="payment-progress-header">
+          <span>Progreso de pago</span>
+          <strong>{{ paymentProgress() }}%</strong>
+        </div>
+        <div class="progress-track" aria-label="Progreso de pago">
+          <div class="progress-fill" [style.width.%]="paymentProgress()"></div>
+        </div>
+        <span class="payment-progress-detail"
+          >{{ invoice()!.amountPaid | currency: invoice()!.currency : 'symbol' : '1.2-2' }} de
+          {{ invoice()!.total | currency: invoice()!.currency : 'symbol' : '1.2-2' }}</span
+        >
+      </div>
+    </section>
+    <section class="detail-grid">
+      <article class="th-card detail-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Información de la factura</h3>
+              <p>Datos principales del documento.</p>
+            </div>
+            @if (documentViewModel()!.orderId) {
+              <a [routerLink]="['/orders', documentViewModel()!.orderId]" class="inline-link"
+                >Ver pedido →</a
+              >
+            }
+          </div>
+          <dl class="info-list">
+            <div class="info-row">
+              <dt>Número</dt>
+              <dd>{{ invoice()!.invoiceNumber || 'Sin número' }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>Pedido</dt>
+              <dd>{{ documentViewModel()!.orderReference || '-' }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>Estado</dt>
+              <dd>{{ statusLabel(invoice()!.status) }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>Emitida</dt>
+              <dd>
+                {{
+                  invoice()!.issuedAt
+                    ? (invoice()!.issuedAt | date: 'dd/MM/yyyy, h:mm a')
+                    : 'Sin emitir'
+                }}
+              </dd>
+            </div>
+            <div class="info-row">
+              <dt>Vencimiento</dt>
+              <dd>
+                {{ invoice()!.dueAt ? (invoice()!.dueAt | date: 'dd/MM/yyyy') : 'Sin vencimiento' }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+      <article class="th-card detail-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Cliente</h3>
+              <p>Información guardada al generar la factura.</p>
+            </div>
+          </div>
+          <div class="customer-summary">
+            <strong>{{ documentViewModel()!.customerName || '-' }}</strong>
+            <span>{{ documentViewModel()!.customerEmail || 'Sin correo' }}</span>
+            <span>{{ documentViewModel()!.customerPhone || 'Sin teléfono' }}</span>
+            <span>RNC/Cédula: {{ documentViewModel()!.customerRnc || '-' }}</span>
+          </div>
+        </div>
+      </article>
+      <article class="th-card detail-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Información fiscal</h3>
+              <p>Datos fiscales asociados al documento.</p>
+            </div>
+          </div>
+          <dl class="info-list">
+            <div class="info-row">
+              <dt>Tipo</dt>
+              <dd>{{ invoice()!.fiscalDocumentType || '-' }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>NCF / e-NCF</dt>
+              <dd>{{ invoice()!.fiscalNumber || 'Sin asignar' }}</dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+      <article class="th-card detail-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Desglose financiero</h3>
+              <p>Resumen de importes registrados.</p>
+            </div>
+          </div>
+          <dl class="info-list financial-list">
+            <div class="info-row">
+              <dt>Subtotal</dt>
+              <dd>
+                {{ invoice()!.subtotal | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+              </dd>
+            </div>
+            <div class="info-row">
+              <dt>Descuento</dt>
+              <dd>
+                {{ invoice()!.discountAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+              </dd>
+            </div>
+            <div class="info-row">
+              <dt>Base imponible</dt>
+              <dd>
+                {{ invoice()!.taxableAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+              </dd>
+            </div>
+            <div class="info-row">
+              <dt>Exento</dt>
+              <dd>
+                {{ invoice()!.exemptAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+              </dd>
+            </div>
+            <div class="info-row">
+              <dt>ITBIS</dt>
+              <dd>
+                {{ invoice()!.taxAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+              </dd>
+            </div>
+            <div class="info-row total-row">
+              <dt>Total</dt>
+              <dd>{{ invoice()!.total | currency: invoice()!.currency : 'symbol' : '1.2-2' }}</dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+    </section>
+    <article class="th-card items-card">
+      <div class="th-card-body items-card-body">
+        <header class="items-header">
+          <div>
+            <h3>Ítems facturados</h3>
+            <p>{{ invoice()!.items.length }} ítem{{ invoice()!.items.length === 1 ? '' : 's' }} en esta factura.</p>
+          </div>
+        </header>
+        <div class="th-table-shell">
+          <div class="th-table-scroll">
+            <table class="table items-table">
+              <thead>
+                <tr>
+                  <th class="description-column">Descripción</th>
+                  <th class="quantity-column">Cantidad</th>
+                  <th class="amount-column">Precio</th>
+                  <th class="amount-column">Descuento</th>
+                  <th class="amount-column">ITBIS</th>
+                  <th class="amount-column">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of paginatedItems(); track line.id) {
+                  <tr>
+                    <td data-label="Descripción">
+                      <span class="item-description">{{ line.description || 'Sin descripción' }}</span>
+                    </td>
+                    <td data-label="Cantidad" class="quantity-cell">
+                      <span class="table-value">{{ line.quantity }}</span>
+                    </td>
+                    <td data-label="Precio" class="amount-cell">
+                      <span class="table-value">
+                        {{ line.unitPrice | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+                      </span>
+                    </td>
+                    <td data-label="Descuento" class="amount-cell">
+                      <span class="table-value">
+                        {{ line.discountAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+                      </span>
+                    </td>
+                    <td data-label="ITBIS" class="amount-cell">
+                      <span class="table-value">
+                        {{ line.taxAmount | currency: invoice()!.currency : 'symbol' : '1.2-2' }}
+                      </span>
+                    </td>
+                    <td data-label="Total" class="amount-cell total-cell">
+                      <strong>{{ line.lineTotal | currency: invoice()!.currency : 'symbol' : '1.2-2' }}</strong>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="items-empty">No hay ítems registrados en esta factura.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if (invoice()!.items.length > itemsPageSize) {
+          <nav class="section-pagination" aria-label="Paginación de ítems facturados">
+            <p class="section-pagination-meta">
+              Mostrando {{ itemsPaginationStart() }} - {{ itemsPaginationEnd() }} de {{ invoice()!.items.length }} ítems
+            </p>
+            <div class="section-pagination-actions">
+              <button
+                type="button"
+                class="pagination-button"
+                [disabled]="itemsPage() === 1"
+                (click)="previousItemsPage()"
+              >
+                <span aria-hidden="true">←</span>
+                <span>Anterior</span>
+              </button>
+              <span class="pagination-current">Página {{ itemsPage() }} de {{ itemsTotalPages() }}</span>
+              <button
+                type="button"
+                class="pagination-button"
+                [disabled]="itemsPage() === itemsTotalPages()"
+                (click)="nextItemsPage()"
+              >
+                <span>Siguiente</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </nav>
+        }
+      </div>
+    </article>
+    @if (draftEditVisible()) {
+      <article class="th-card form-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Editar borrador</h3>
+              <p>Actualiza únicamente los datos permitidos antes de emitir la factura.</p>
+            </div>
+          </div>
+          <form class="operation-form" [formGroup]="draftForm" (ngSubmit)="saveDraft()">
+            <div class="form-field">
+              <label for="draft-currency">Moneda</label>
+              <input
+                id="draft-currency"
+                class="form-control th-input"
+                type="text"
+                formControlName="currency"
+                placeholder="DOP"
+              />
+            </div>
+            <div class="form-field">
+              <label for="draft-due-at">Vencimiento</label>
+              <input
+                id="draft-due-at"
+                class="form-control th-input"
+                type="datetime-local"
+                formControlName="dueAt"
+              />
+            </div>
+            <div class="form-field form-field-full">
+              <label for="draft-notes">Notas</label>
+              <textarea
+                id="draft-notes"
+                class="form-control th-input"
+                rows="3"
+                formControlName="notes"
+                placeholder="Notas de la factura"
+              ></textarea>
+            </div>
+            <div class="form-field form-field-full">
+              <label for="draft-terms">Términos y condiciones</label>
+              <textarea
+                id="draft-terms"
+                class="form-control th-input"
+                rows="3"
+                formControlName="termsAndConditions"
+                placeholder="Términos y condiciones"
+              ></textarea>
+            </div>
+            <div class="form-actions form-field-full">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn th-btn-primary" [disabled]="savingDraft()">
+                {{ savingDraft() ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </article>
+    }
+    @if (creditFormVisible()) {
+      <article class="th-card form-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Nota de crédito</h3>
+              <p>Registra una corrección asociada a esta factura.</p>
+            </div>
+          </div>
+          <form class="operation-form" [formGroup]="creditNoteForm" (ngSubmit)="createCreditNote()">
+            <div class="form-field">
+              <label for="credit-reason">Motivo</label>
+              <input
+                id="credit-reason"
+                class="form-control th-input"
+                type="text"
+                formControlName="reason"
+              />
+            </div>
+            <div class="form-field">
+              <label for="credit-amount">Monto</label>
+              <input
+                id="credit-amount"
+                class="form-control th-input"
+                type="number"
+                step="0.01"
+                min="0.01"
+                formControlName="amount"
+              />
+            </div>
+            <div class="form-field form-field-full">
+              <label for="credit-fiscal">NCF / e-NCF</label>
+              <input
+                id="credit-fiscal"
+                class="form-control th-input"
+                type="text"
+                formControlName="fiscalNumber"
+              />
+            </div>
+            <div class="form-actions form-field-full">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn th-btn-primary" [disabled]="creatingCreditNote()">
+                {{ creatingCreditNote() ? 'Creando...' : 'Guardar nota de crédito' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </article>
+    }
+    @if (debitFormVisible()) {
+      <article class="th-card form-card">
+        <div class="th-card-body">
+          <div class="section-heading">
+            <div>
+              <h3>Nota de débito</h3>
+              <p>Registra un cargo adicional relacionado con esta factura.</p>
+            </div>
+          </div>
+          <form class="operation-form" [formGroup]="debitNoteForm" (ngSubmit)="createDebitNote()">
+            <div class="form-field">
+              <label for="debit-reason">Motivo</label>
+              <input
+                id="debit-reason"
+                class="form-control th-input"
+                type="text"
+                formControlName="reason"
+              />
+            </div>
+            <div class="form-field">
+              <label for="debit-amount">Monto</label>
+              <input
+                id="debit-amount"
+                class="form-control th-input"
+                type="number"
+                step="0.01"
+                min="0.01"
+                formControlName="amount"
+              />
+            </div>
+            <div class="form-field form-field-full">
+              <label for="debit-fiscal">NCF / e-NCF</label>
+              <input
+                id="debit-fiscal"
+                class="form-control th-input"
+                type="text"
+                formControlName="fiscalNumber"
+              />
+            </div>
+            <div class="form-actions form-field-full">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn th-btn-primary" [disabled]="creatingDebitNote()">
+                {{ creatingDebitNote() ? 'Creando...' : 'Guardar nota de débito' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </article>
+    }
+    <article class="th-card history-card">
+      <div class="th-card-body">
+        <div class="section-heading">
+          <div>
+            <h3>Historial financiero</h3>
+            <p>Pagos, notas de crédito y notas de débito relacionadas.</p>
+          </div>
+        </div>
+        <div class="history-grid">
+          <section class="history-block">
+            <div class="history-block-header">
+              <h4>Pagos</h4>
+              <span>{{ invoice()!.payments.length }}</span>
+            </div>
+            @if (invoice()!.payments.length > 0) {
+              <div class="history-list">
+                @for (payment of paginatedPayments(); track payment.id) {
+                  <div class="history-item">
+                    <div>
+                      <strong>{{
+                        payment.amount | currency: invoice()!.currency : 'symbol' : '1.2-2'
+                      }}</strong>
+                      <span
+                        >{{ payment.paymentMethod
+                        }}{{ payment.reference ? ' · ' + payment.reference : '' }}</span
+                      >
+                    </div>
+                    <time>{{ payment.paidAt ? (payment.paidAt | date: 'dd/MM/yyyy') : '-' }}</time>
+                  </div>
+                }
+              </div>
+              @if (invoice()!.payments.length > historyPageSize) {
+                <nav class="section-pagination" aria-label="Paginación de pagos">
+                  <p class="section-pagination-meta">
+                    Página {{ paymentsPage() }} de {{ paymentsTotalPages() }}
+                  </p>
+                  <div class="section-pagination-actions">
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="paymentsPage() === 1"
+                      (click)="previousPaymentsPage()"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="paymentsPage() === paymentsTotalPages()"
+                      (click)="nextPaymentsPage()"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </nav>
+              }
+            } @else {
+              <p class="history-empty">Aún no se han registrado pagos.</p>
+            }
+          </section>
+          <section class="history-block">
+            <div class="history-block-header">
+              <h4>Notas de crédito</h4>
+              <span>{{ invoice()!.creditNotes.length }}</span>
+            </div>
+            @if (invoice()!.creditNotes.length > 0) {
+              <div class="history-list">
+                @for (note of paginatedCreditNotes(); track note.id) {
+                  <div class="history-item">
+                    <div>
+                      <strong>{{
+                        note.amount | currency: invoice()!.currency : 'symbol' : '1.2-2'
+                      }}</strong>
+                      <span>{{ note.reason }}</span>
+                    </div>
+                    <time>{{ note.createdAt ? (note.createdAt | date: 'dd/MM/yyyy') : '-' }}</time>
+                  </div>
+                }
+              </div>
+              @if (invoice()!.creditNotes.length > historyPageSize) {
+                <nav class="section-pagination" aria-label="Paginación de notas de crédito">
+                  <p class="section-pagination-meta">
+                    Página {{ creditNotesPage() }} de {{ creditNotesTotalPages() }}
+                  </p>
+                  <div class="section-pagination-actions">
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="creditNotesPage() === 1"
+                      (click)="previousCreditNotesPage()"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="creditNotesPage() === creditNotesTotalPages()"
+                      (click)="nextCreditNotesPage()"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </nav>
+              }
+            } @else {
+              <p class="history-empty">No hay notas de crédito registradas.</p>
+            }
+          </section>
+          <section class="history-block">
+            <div class="history-block-header">
+              <h4>Notas de débito</h4>
+              <span>{{ invoice()!.debitNotes.length }}</span>
+            </div>
+            @if (invoice()!.debitNotes.length > 0) {
+              <div class="history-list">
+                @for (note of paginatedDebitNotes(); track note.id) {
+                  <div class="history-item">
+                    <div>
+                      <strong>{{
+                        note.amount | currency: invoice()!.currency : 'symbol' : '1.2-2'
+                      }}</strong>
+                      <span>{{ note.reason }}</span>
+                    </div>
+                    <time>{{ note.createdAt ? (note.createdAt | date: 'dd/MM/yyyy') : '-' }}</time>
+                  </div>
+                }
+              </div>
+              @if (invoice()!.debitNotes.length > historyPageSize) {
+                <nav class="section-pagination" aria-label="Paginación de notas de débito">
+                  <p class="section-pagination-meta">
+                    Página {{ debitNotesPage() }} de {{ debitNotesTotalPages() }}
+                  </p>
+                  <div class="section-pagination-actions">
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="debitNotesPage() === 1"
+                      (click)="previousDebitNotesPage()"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      class="pagination-button"
+                      [disabled]="debitNotesPage() === debitNotesTotalPages()"
+                      (click)="nextDebitNotesPage()"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </nav>
+              }
+            } @else {
+              <p class="history-empty">No hay notas de débito registradas.</p>
+            }
+          </section>
+        </div>
+      </div>
+    </article>
+    @if (previewVisible()) {
+      <section class="preview-section">
+        <header class="preview-toolbar">
+          <div>
+            <h3>Vista previa</h3>
+            <p>Así se verá el documento al imprimir o exportar.</p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-outline-secondary" (click)="printInvoice()">
+              Imprimir
+            </button>
+            <button type="button" class="btn th-btn-primary" (click)="exportPdf()">
+              Exportar PDF
+            </button>
+          </div>
+        </header>
+        <div class="preview-wrapper" aria-label="Previsualización de factura">
+          <div #previewDocument class="invoice-print-target">
+            <app-invoice-document [viewModel]="documentViewModel()!" />
+          </div>
+        </div>
+      </section>
+    }
+  }
+</section>
+<ng-template #issueDialogTemplate>
+  <div class="action-dialog">
+    <h3 class="action-dialog-title">Emitir factura</h3>
+    <p class="action-dialog-message">
+      Después de emitirla, los datos principales de esta factura ya no podrán editarse directamente.
+    </p>
+    @if (invoice()) {
+      <dl class="action-dialog-summary">
+        <div>
+          <dt>Factura</dt>
+          <dd>{{ invoice()!.invoiceNumber || '-' }}</dd>
+        </div>
+        <div>
+          <dt>Cliente</dt>
+          <dd>{{ documentViewModel()?.customerName || '-' }}</dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd>{{ invoice()!.total | currency: invoice()!.currency : 'symbol' : '1.2-2' }}</dd>
+        </div>
+      </dl>
+    }
+    <form class="operation-form dialog-form" [formGroup]="issueForm" (ngSubmit)="issueInvoice()">
+      <div class="form-field form-field-full">
+        <label for="issue-fiscal-type">Tipo de comprobante</label>
+        <select
+          id="issue-fiscal-type"
+          class="form-select th-input"
+          formControlName="fiscalDocumentType"
+        >
+          <option value="consumer">Consumo</option>
+          <option value="credit_fiscal">Crédito fiscal</option>
+          <option value="government">Gubernamental</option>
+          <option value="special">Especial</option>
+        </select>
+      </div>
+      <div class="form-field form-field-full">
+        <label for="issue-fiscal-number">NCF / e-NCF <span>Opcional</span></label>
+        <input
+          id="issue-fiscal-number"
+          class="form-control th-input"
+          type="text"
+          formControlName="fiscalNumber"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="issue-due-at">Vencimiento <span>Opcional</span></label>
+        <input
+          id="issue-due-at"
+          class="form-control th-input"
+          type="datetime-local"
+          formControlName="dueAt"
+        />
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="issuing()"
+          (click)="closeActiveDialog()"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="issuing()">
+          {{ issuing() ? 'Emitiendo...' : 'Emitir factura' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+<ng-template #paymentDialogTemplate>
+  <div class="action-dialog">
+    <h3 class="action-dialog-title">Registrar pago</h3>
+    @if (invoice()) {
+      <div class="payment-dialog-balance">
+        <span>Balance pendiente</span>
+        <strong>{{
+          invoice()!.balance | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </div>
+    }
+    <form
+      class="operation-form dialog-form"
+      [formGroup]="paymentForm"
+      (ngSubmit)="registerPayment()"
+    >
+      <div class="form-field form-field-full">
+        <label for="payment-amount">Monto</label>
+        <input
+          id="payment-amount"
+          class="form-control th-input"
+          type="number"
+          step="0.01"
+          min="0.01"
+          formControlName="amount"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="payment-method">Método de pago</label>
+        <select id="payment-method" class="form-select th-input" formControlName="paymentMethod">
+          <option value="cash">Efectivo</option>
+          <option value="card">Tarjeta</option>
+          <option value="bank_transfer">Transferencia</option>
+          <option value="other">Otro</option>
+        </select>
+      </div>
+      <div class="form-field form-field-full">
+        <label for="payment-reference">Referencia <span>Opcional</span></label>
+        <input
+          id="payment-reference"
+          class="form-control th-input"
+          type="text"
+          formControlName="reference"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="payment-notes">Nota <span>Opcional</span></label>
+        <textarea
+          id="payment-notes"
+          class="form-control th-input"
+          rows="2"
+          formControlName="notes"
+        ></textarea>
+      </div>
+      <div class="form-field form-field-full">
+        <label for="payment-date">Fecha de pago <span>Opcional</span></label>
+        <input
+          id="payment-date"
+          class="form-control th-input"
+          type="datetime-local"
+          formControlName="paidAt"
+        />
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="registeringPayment()"
+          (click)="closeActiveDialog()"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="registeringPayment()">
+          {{ registeringPayment() ? 'Registrando...' : 'Registrar pago' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+<ng-template #cancelDialogTemplate>
+  <div class="action-dialog">
+    <h3 class="action-dialog-title">Cancelar factura</h3>
+    <p class="action-dialog-message">
+      Esta factura permanecerá en el historial y quedará marcada como cancelada.
+    </p>
+    <form class="operation-form dialog-form" [formGroup]="cancelForm" (ngSubmit)="cancelInvoice()">
+      <div class="form-field form-field-full">
+        <label for="cancel-reason">Motivo de cancelación</label>
+        <textarea
+          id="cancel-reason"
+          class="form-control th-input"
+          rows="3"
+          formControlName="reason"
+        ></textarea>
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="cancelling()"
+          (click)="closeActiveDialog()"
+        >
+          Volver
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="cancelling()">
+          {{ cancelling() ? 'Cancelando...' : 'Confirmar cancelación' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>

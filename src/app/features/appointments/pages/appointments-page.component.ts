@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Appointment, CreateAppointment, User } from '../../../core/models/domain.models';
+import { Appointment, CreateAppointment } from '../../../core/models/domain.models';
 import { AppointmentsService } from '../data-access/appointments.service';
-import { UsersService } from '../../users/data-access/users.service';
-import { SessionService } from '../../../core/services/session.service';
+import { CustomersService, CustomerWithStore } from '../../customers/data-access/customers.service';
 import { Calendar } from '../../calendar/calendar';
+
+type AppointmentFormField = 'customerId' | 'date' | 'time' | 'notes';
 
 @Component({
   selector: 'app-appointments-page',
@@ -15,43 +16,43 @@ import { Calendar } from '../../calendar/calendar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppointmentsPageComponent {
-  month: number = new Date().getMonth();
-  year: number = new Date().getFullYear();
-
-  appointmentsScheduled: number = 0;
-  appointmentsCancelled: number = 0;
-
-  readonly today = new Date();
+  readonly month = new Date().getMonth();
+  readonly year = new Date().getFullYear();
 
   private readonly fb = inject(FormBuilder);
   private readonly appointmentsService = inject(AppointmentsService);
-  private readonly userService = inject(UsersService);
-  private readonly session = inject(SessionService);
+  private readonly customersService = inject(CustomersService);
 
   // =========================================================
   // State
   // =========================================================
 
+  readonly selectedDate = signal<Date>(new Date());
+
+  readonly allAppointments = signal<Appointment[]>([]);
   readonly appointments = signal<Appointment[]>([]);
-  readonly customers = signal<User[]>([]);
+  readonly customers = signal<CustomerWithStore[]>([]);
+
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly showAppointmentForm = signal(false);
+
+  readonly appointmentsScheduled = computed(() => {
+    return this.appointments().filter((appointment) => appointment.status === 'scheduled').length;
+  });
+
+  readonly appointmentsCancelled = computed(() => {
+    return this.appointments().filter((appointment) => appointment.status === 'cancelled').length;
+  });
 
   // =========================================================
   // Pagination
   // =========================================================
 
-  /**
-   * Número máximo de citas mostradas por página.
-   */
   readonly pageSize = signal(8);
 
-  /**
-   * Página actualmente seleccionada.
-   */
   readonly currentPage = signal(1);
 
-  /**
-   * Cantidad total de páginas.
-   */
   readonly totalPages = computed(() => {
     const totalAppointments = this.appointments().length;
     const pageSize = this.pageSize();
@@ -59,9 +60,6 @@ export class AppointmentsPageComponent {
     return Math.max(1, Math.ceil(totalAppointments / pageSize));
   });
 
-  /**
-   * Citas que se muestran en la página actual.
-   */
   readonly paginatedAppointments = computed(() => {
     const appointments = this.appointments();
     const currentPage = this.currentPage();
@@ -73,16 +71,10 @@ export class AppointmentsPageComponent {
     return appointments.slice(startIndex, endIndex);
   });
 
-  /**
-   * Números de página.
-   */
   readonly pages = computed(() => {
     return Array.from({ length: this.totalPages() }, (_, index) => index + 1);
   });
 
-  /**
-   * Primer registro visible.
-   */
   readonly paginationStart = computed(() => {
     const totalAppointments = this.appointments().length;
 
@@ -93,9 +85,6 @@ export class AppointmentsPageComponent {
     return (this.currentPage() - 1) * this.pageSize() + 1;
   });
 
-  /**
-   * Último registro visible.
-   */
   readonly paginationEnd = computed(() => {
     return Math.min(this.currentPage() * this.pageSize(), this.appointments().length);
   });
@@ -105,9 +94,9 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   readonly form = this.fb.nonNullable.group({
-    clientId: ['', Validators.required],
-    employeeId: [this.session.user()?.id || '', Validators.required],
-    startsAt: ['', Validators.required],
+    customerId: ['', Validators.required],
+    date: [this.formatDateForInput(new Date()), Validators.required],
+    time: ['', Validators.required],
     notes: ['', Validators.maxLength(500)],
   });
 
@@ -124,20 +113,60 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   onDateSelected(date: Date): void {
-    console.log('Fecha seleccionada:', date);
+    this.selectedDate.set(date);
+
+    this.form.controls.date.setValue(this.formatDateForInput(date));
+
+    this.currentPage.set(1);
+
+    this.filterAppointmentsBySelectedDate();
+  }
+
+  // =========================================================
+  // Appointment form
+  // =========================================================
+
+  openAppointmentForm(): void {
+    const selectedDate = this.selectedDate();
+
+    this.form.reset({
+      customerId: '',
+      date: this.formatDateForInput(selectedDate),
+      time: '',
+      notes: '',
+    });
+
+    this.showAppointmentForm.set(true);
+  }
+
+  closeAppointmentForm(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.form.reset({
+      customerId: '',
+      date: this.formatDateForInput(this.selectedDate()),
+      time: '',
+      notes: '',
+    });
+
+    this.showAppointmentForm.set(false);
   }
 
   // =========================================================
   // Validation
   // =========================================================
 
-  isInvalid(field: 'clientId' | 'employeeId' | 'startsAt' | 'notes'): boolean {
+  isInvalid(field: AppointmentFormField): boolean {
     const control = this.form.controls[field];
+
     return control.invalid && (control.touched || control.dirty);
   }
 
-  isValid(field: 'clientId' | 'employeeId' | 'startsAt' | 'notes'): boolean {
+  isValid(field: AppointmentFormField): boolean {
     const control = this.form.controls[field];
+
     return control.valid && (control.touched || control.dirty);
   }
 
@@ -174,43 +203,46 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   book(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.saving()) {
       this.form.markAllAsTouched();
       return;
     }
 
     const raw = this.form.getRawValue();
 
+    const scheduledAt = this.buildScheduledAt(raw.date, raw.time);
+
     const payload: CreateAppointment = {
-      clientId: raw.clientId,
-
-      employeeId: this.session.user()?.id || '',
-
-      startsAt: new Date(raw.startsAt),
-
-      endsAt: new Date(new Date(raw.startsAt).getTime() + 30 * 60 * 1000),
-
+      customerId: raw.customerId,
+      scheduledAt,
       status: 'scheduled',
-
       notes: raw.notes.trim(),
     };
 
-    this.appointmentsService.create(payload).subscribe(() => {
-      this.form.reset({
-        clientId: '',
+    this.saving.set(true);
 
-        employeeId: this.session.user()?.id || '',
+    this.appointmentsService.create(payload).subscribe({
+      next: () => {
+        const selectedDate = this.createLocalDate(raw.date);
 
-        startsAt: '',
+        this.selectedDate.set(selectedDate);
+        this.currentPage.set(1);
+        this.showAppointmentForm.set(false);
 
-        notes: '',
-      });
+        this.form.reset({
+          customerId: '',
+          date: raw.date,
+          time: '',
+          notes: '',
+        });
 
-      // Después de crear volvemos
-      // a la primera página.
-      this.currentPage.set(1);
+        this.loadAppointments();
+      },
+      error: (error) => {
+        console.error('Error al crear la cita:', error);
 
-      this.load();
+        this.saving.set(false);
+      },
     });
   }
 
@@ -219,26 +251,19 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   remove(id: string): void {
-    this.appointmentsService.remove(id).subscribe(() => {
-      this.load();
-    });
-  }
-
-  // =========================================================
-  // Appointment status
-  // =========================================================
-
-  appointmentStatusClass(status: Appointment['status']): string {
-    switch (status) {
-      case 'scheduled':
-        return 'bg-success-subtle text-success-emphasis border border-success-subtle';
-
-      case 'cancelled':
-        return 'bg-danger-subtle text-danger-emphasis border border-danger-subtle';
-
-      default:
-        return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+    if (!id) {
+      return;
     }
+
+    this.appointmentsService.remove(id).subscribe({
+      next: () => {
+        this.currentPage.set(1);
+        this.loadAppointments();
+      },
+      error: (error) => {
+        console.error('Error al eliminar la cita:', error);
+      },
+    });
   }
 
   // =========================================================
@@ -246,39 +271,116 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   private load(): void {
+    this.loadAppointments();
+    this.loadCustomers();
+  }
+
+  private loadAppointments(): void {
+    this.loading.set(true);
+
     this.appointmentsService
       .list({
         page: 1,
-        limit: 20,
+        limit: 100,
       })
-      .subscribe((response) => {
-        this.appointments.set(response.data);
+      .subscribe({
+        next: (response) => {
+          this.allAppointments.set(response.data);
+          this.appointments.set(response.data);
 
-        this.appointmentsScheduled = response.data.filter(
-          (appointment) => appointment.status === 'scheduled',
-        ).length;
+          this.currentPage.set(1);
 
-        this.appointmentsCancelled = response.data.filter(
-          (appointment) => appointment.status === 'cancelled',
-        ).length;
+          this.loading.set(false);
+          this.saving.set(false);
+        },
+        error: (error) => {
+          console.error('Error al cargar las citas:', error);
 
-        /*
-         * Si después de eliminar registros
-         * la página actual deja de existir,
-         * regresamos automáticamente a
-         * la última página válida.
-         */
-        if (this.currentPage() > this.totalPages()) {
-          this.currentPage.set(this.totalPages());
-        }
+          this.allAppointments.set([]);
+          this.appointments.set([]);
+
+          this.loading.set(false);
+          this.saving.set(false);
+        },
+      });
+  }
+
+  private loadCustomers(): void {
+    this.customersService
+      .listAll()
+      .subscribe({
+        next: (customers) => {
+          this.customers.set(customers);
+        },
+        error: (error) => {
+          console.error('Error al cargar los clientes:', error);
+
+          this.customers.set([]);
+        },
+      });
+  }
+
+  // =========================================================
+  // Filtering
+  // =========================================================
+
+  private filterAppointmentsBySelectedDate(): void {
+    const selectedDate = this.selectedDate();
+
+    const filteredAppointments = this.allAppointments()
+      .filter((appointment) => {
+        const scheduledAt = new Date(appointment.scheduledAt);
+
+        return this.isSameDate(scheduledAt, selectedDate);
+      })
+      .sort((firstAppointment, secondAppointment) => {
+        const firstDate = new Date(firstAppointment.scheduledAt).getTime();
+
+        const secondDate = new Date(secondAppointment.scheduledAt).getTime();
+
+        return firstDate - secondDate;
       });
 
-    this.userService
-      .list({
-        role: 'client',
-      })
-      .subscribe((response) => {
-        this.customers.set(response.data);
-      });
+    this.appointments.set(filteredAppointments);
+
+    if (this.currentPage() > this.totalPages()) {
+      this.currentPage.set(this.totalPages());
+    }
+  }
+
+  private isSameDate(firstDate: Date, secondDate: Date): boolean {
+    return (
+      firstDate.getFullYear() === secondDate.getFullYear() &&
+      firstDate.getMonth() === secondDate.getMonth() &&
+      firstDate.getDate() === secondDate.getDate()
+    );
+  }
+
+  // =========================================================
+  // Date helpers
+  // =========================================================
+
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  private buildScheduledAt(date: string, time: string): Date {
+    const [year, month, day] = date.split('-').map(Number);
+
+    const [hours, minutes] = time.split(':').map(Number);
+
+    return new Date(year, month - 1, day, hours, minutes, 0, 0);
+  }
+
+  private createLocalDate(date: string): Date {
+    const [year, month, day] = date.split('-').map(Number);
+
+    return new Date(year, month - 1, day);
   }
 }

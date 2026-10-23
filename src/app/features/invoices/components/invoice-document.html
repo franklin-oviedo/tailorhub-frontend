@@ -1,0 +1,93 @@
+<article class="invoice-document">
+  <header class="invoice-document-header">
+    <div class="invoice-company">
+      <h2 class="invoice-company-name">Factura de Tailor Hub</h2>
+      <p class="invoice-company-row">Documento de facturación</p>
+    </div>
+
+    <div class="invoice-meta">
+      <h1>Factura</h1>
+      <p><strong>No.:</strong> {{ viewModel().invoiceNumber || '-' }}</p>
+      <p><strong>Pedido:</strong> {{ viewModel().orderReference || '-' }}</p>
+      <p><strong>Estado:</strong> {{ viewModel().statusLabel }}</p>
+      <p><strong>Tipo:</strong> {{ viewModel().fiscalDocumentType || '-' }}</p>
+      @if (viewModel().fiscalNumber) {
+        <p><strong>Comprobante:</strong> {{ viewModel().fiscalNumber }}</p>
+      }
+      @if (viewModel().issuedAt) {
+        <p><strong>Fecha:</strong> {{ viewModel().issuedAt | date: 'shortDate' }}</p>
+      }
+      @if (viewModel().dueDate) {
+        <p><strong>Vence:</strong> {{ viewModel().dueDate | date: 'shortDate' }}</p>
+      }
+    </div>
+  </header>
+
+  <section class="invoice-customer">
+    <h3>Cliente</h3>
+    <p><strong>{{ viewModel().customerName || '-' }}</strong></p>
+    <p>{{ viewModel().customerEmail || '-' }}</p>
+    <p>{{ viewModel().customerPhone || '-' }}</p>
+    @if (viewModel().customerRnc) {
+      <p>RNC: {{ viewModel().customerRnc }}</p>
+    }
+    @if (viewModel().customerAddress) {
+      <p>{{ viewModel().customerAddress }}</p>
+    }
+  </section>
+
+  <div class="invoice-lines-shell">
+    <table class="invoice-lines-table">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="number-col">Cant.</th>
+          <th class="number-col">Precio</th>
+          <th class="number-col">Desc.</th>
+          <th class="number-col">Impuesto</th>
+          <th class="number-col">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of viewModel().lines; track line.id) {
+          <tr>
+            <td>{{ line.description }}</td>
+            <td class="number-col">{{ line.quantity }}</td>
+            <td class="number-col">{{ line.unitPrice | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</td>
+            <td class="number-col">{{ line.discountAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</td>
+            <td class="number-col">{{ line.taxAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</td>
+            <td class="number-col">{{ line.lineTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <section class="invoice-totals" aria-label="Totales de factura">
+    <p><span>Subtotal</span><strong>{{ viewModel().subtotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p><span>Descuento</span><strong>{{ viewModel().discountTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p><span>Base imponible</span><strong>{{ viewModel().taxableAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p><span>Monto exento</span><strong>{{ viewModel().exemptAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p><span>ITBIS / Impuestos</span><strong>{{ viewModel().taxTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p class="grand-total">
+      <span>Total</span>
+      <strong>{{ viewModel().grandTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong>
+    </p>
+    <p><span>Pagado</span><strong>{{ viewModel().amountPaid | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    <p><span>Balance</span><strong>{{ viewModel().balance | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+  </section>
+
+  @if (viewModel().notes) {
+    <section class="invoice-notes">
+      <h3>Notas</h3>
+      <p>{{ viewModel().notes }}</p>
+    </section>
+  }
+
+  @if (viewModel().termsAndConditions) {
+    <section class="invoice-terms">
+      <h3>Términos y condiciones</h3>
+      <p>{{ viewModel().termsAndConditions }}</p>
+    </section>
+  }
+</article>
