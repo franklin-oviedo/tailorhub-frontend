@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CustomerWithStore, CustomersService } from '../data-access/customers.service';
+import {
+  CustomerMeasurement,
+  CustomerWithStore,
+  CustomersService
+} from '../data-access/customers.service';
 import { CustomersPageComponent } from './customers-page.component';
 
 describe('CustomersPageComponent', () => {
@@ -30,7 +34,27 @@ describe('CustomersPageComponent', () => {
   const customersServiceStub = {
     listAll: vi.fn(),
     create: vi.fn(),
-    update: vi.fn()
+    update: vi.fn(),
+    measurement: vi.fn(),
+    createMeasurement: vi.fn(),
+    updateMeasurement: vi.fn()
+  };
+
+  const measurement: CustomerMeasurement = {
+    id: 'm-1',
+    chest: 36,
+    waist: 32,
+    hips: 40,
+    neck: 15,
+    sleeve: 34,
+    inseam: 32,
+    notes: 'Prefiere ajuste slim.',
+    customer: {
+      id: 'c-1',
+      name: 'Customer One',
+      email: 'customer1@example.com',
+      phone: '809-222-2222'
+    }
   };
 
   beforeEach(async () => {
@@ -165,6 +189,180 @@ describe('CustomersPageComponent', () => {
     });
     expect(component.customers()[0]).toEqual(updatedCustomer);
     expect(component.updateSuccessMessage()).toContain('Cliente actualizado correctamente');
+  });
+
+  it('should open customer details and load customer measurements', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(of(measurement));
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+
+    expect(customersServiceStub.measurement).toHaveBeenCalledWith('c-1');
+    expect(component.detailsModalOpen()).toBe(true);
+    expect(component.detailsLoading()).toBe(false);
+    expect(component.customerMeasurement()).toEqual(measurement);
+  });
+
+  it('should set details error message when loading measurements fails', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(throwError(() => new Error('request failed')));
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+
+    expect(component.detailsLoading()).toBe(false);
+    expect(component.detailsErrorMessage()).toContain('No fue posible cargar las medidas del cliente');
+  });
+
+  it('should enable create measurement form when backend says measurement not found', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(
+      throwError(() => ({ error: { message: 'Customer measurement not found.' } }))
+    );
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+
+    expect(component.canCreateMeasurement()).toBe(true);
+    expect(component.detailsErrorMessage()).toBe('');
+    expect(component.measurementFormOpen()).toBe(false);
+  });
+
+  it('should open measurement form only after clicking add button action', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(
+      throwError(() => ({ error: { message: 'Customer measurement not found.' } }))
+    );
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+
+    expect(component.measurementFormOpen()).toBe(false);
+
+    component.openCreateMeasurementForm();
+
+    expect(component.measurementFormOpen()).toBe(true);
+  });
+
+  it('should create measurement from details modal form', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(
+      throwError(() => ({ error: { message: 'Customer measurement not found.' } }))
+    );
+    customersServiceStub.createMeasurement.mockReturnValue(of(measurement));
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+    component.openCreateMeasurementForm();
+    component.createMeasurementForm.setValue({
+      chest: 36,
+      waist: 32,
+      hips: 40,
+      neck: 15,
+      sleeve: 34,
+      inseam: 32,
+      notes: 'Ajuste clasico'
+    });
+
+    component.createCustomerMeasurement();
+
+    expect(customersServiceStub.createMeasurement).toHaveBeenCalledWith({
+      customerId: 'c-1',
+      chest: 36,
+      waist: 32,
+      hips: 40,
+      neck: 15,
+      sleeve: 34,
+      inseam: 32,
+      notes: 'Ajuste clasico'
+    });
+    expect(component.customerMeasurement()).toEqual(measurement);
+    expect(component.measurementCreateSuccessMessage()).toContain('Medidas registradas correctamente');
+    expect(component.canCreateMeasurement()).toBe(false);
+    expect(component.measurementFormOpen()).toBe(false);
+  });
+
+  it('should open edit form when customer already has measurement', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(of(measurement));
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+    component.openEditMeasurementForm();
+
+    expect(component.measurementFormOpen()).toBe(true);
+    expect(component.createMeasurementForm.getRawValue()).toEqual({
+      chest: 36,
+      waist: 32,
+      hips: 40,
+      neck: 15,
+      sleeve: 34,
+      inseam: 32,
+      notes: 'Prefiere ajuste slim.'
+    });
+  });
+
+  it('should update measurement from details modal form', async () => {
+    customersServiceStub.listAll.mockReturnValue(of([customer]));
+    customersServiceStub.measurement.mockReturnValue(of(measurement));
+
+    const updatedMeasurement: CustomerMeasurement = {
+      ...measurement,
+      chest: 37,
+      notes: 'Actualizado'
+    };
+    customersServiceStub.updateMeasurement.mockReturnValue(of(updatedMeasurement));
+
+    fixture = TestBed.createComponent(CustomersPageComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    component.openCustomerDetails(customer);
+    component.openEditMeasurementForm();
+    component.createMeasurementForm.setValue({
+      chest: 37,
+      waist: 32,
+      hips: 40,
+      neck: 15,
+      sleeve: 34,
+      inseam: 32,
+      notes: 'Actualizado'
+    });
+
+    component.updateCustomerMeasurement();
+
+    expect(customersServiceStub.updateMeasurement).toHaveBeenCalledWith('c-1', {
+      customerId: 'c-1',
+      chest: 37,
+      waist: 32,
+      hips: 40,
+      neck: 15,
+      sleeve: 34,
+      inseam: 32,
+      notes: 'Actualizado'
+    });
+    expect(component.customerMeasurement()).toEqual(updatedMeasurement);
+    expect(component.measurementCreateSuccessMessage()).toContain('Medidas actualizadas correctamente');
+    expect(component.measurementFormOpen()).toBe(false);
   });
 
   it('should set update error message when update fails', async () => {

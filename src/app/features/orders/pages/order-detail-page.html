@@ -5,7 +5,7 @@
       @if (order()) {
         <div class="detail-title-row">
           <div>
-            <h2 class="detail-title">Detalle de pedido</h2>
+            <h1 class="detail-title">Detalle de pedido</h1>
             <p class="detail-subtitle">{{ order()!.id }}</p>
           </div>
           <span [class]="orderStatusClass(order()!.status)">
@@ -13,7 +13,7 @@
           </span>
         </div>
       } @else {
-        <h2 class="detail-title">Detalle de pedido</h2>
+        <h1 class="detail-title">Detalle de pedido</h1>
       }
     </div>
     @if (order()) {
@@ -31,7 +31,7 @@
   </header>
 
   @if (errorMessage()) {
-    <div class="feedback feedback-error" role="alert">{{ errorMessage() }}</div>
+    <div class="feedback feedback-error" role="status" aria-live="polite">{{ errorMessage() }}</div>
   }
 
   @if (successMessage()) {

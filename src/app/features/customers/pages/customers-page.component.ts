@@ -1,7 +1,13 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { CustomerWithStore, CustomersService } from '../data-access/customers.service';
+import {
+  CreateCustomerMeasurementPayload,
+  CustomerMeasurement,
+  CustomerWithStore,
+  CustomersService
+} from '../data-access/customers.service';
 
 @Component({
   selector: 'app-customers-page',
@@ -20,7 +26,18 @@ export class CustomersPageComponent {
   readonly updating = signal(false);
   readonly createModalOpen = signal(false);
   readonly editModalOpen = signal(false);
+  readonly detailsModalOpen = signal(false);
   readonly editingCustomerId = signal<string | null>(null);
+  readonly selectedCustomer = signal<CustomerWithStore | null>(null);
+  readonly customerMeasurement = signal<CustomerMeasurement | null>(null);
+  readonly detailsLoading = signal(false);
+  readonly creatingMeasurement = signal(false);
+  readonly updatingMeasurement = signal(false);
+  readonly measurementFormOpen = signal(false);
+  readonly canCreateMeasurement = signal(false);
+  readonly detailsErrorMessage = signal('');
+  readonly measurementCreateSuccessMessage = signal('');
+  readonly measurementCreateErrorMessage = signal('');
   readonly errorMessage = signal('');
   readonly createErrorMessage = signal('');
   readonly createSuccessMessage = signal('');
@@ -70,6 +87,16 @@ export class CustomersPageComponent {
     name: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.minLength(7)]]
+  });
+
+  readonly createMeasurementForm = this.fb.group({
+    chest: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    waist: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    hips: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    neck: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    sleeve: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    inseam: [null as number | null, [Validators.required, Validators.min(0.1)]],
+    notes: ['', [Validators.maxLength(500)]]
   });
 
   constructor() {
@@ -144,6 +171,235 @@ export class CustomersPageComponent {
     });
     this.updateErrorMessage.set('');
     this.updateSuccessMessage.set('');
+  }
+
+  openCustomerDetails(customer: CustomerWithStore): void {
+    this.selectedCustomer.set(customer);
+    this.customerMeasurement.set(null);
+    this.canCreateMeasurement.set(false);
+    this.measurementCreateSuccessMessage.set('');
+    this.measurementCreateErrorMessage.set('');
+    this.measurementFormOpen.set(false);
+    this.detailsErrorMessage.set('');
+    this.createMeasurementForm.reset({
+      chest: null,
+      waist: null,
+      hips: null,
+      neck: null,
+      sleeve: null,
+      inseam: null,
+      notes: ''
+    });
+    this.detailsModalOpen.set(true);
+    this.detailsLoading.set(true);
+
+    this.customersService.measurement(customer.id).subscribe({
+      next: (measurement) => {
+        this.customerMeasurement.set(measurement);
+        this.canCreateMeasurement.set(false);
+        this.detailsLoading.set(false);
+      },
+      error: (error: unknown) => {
+        const message = this.resolveErrorMessage(
+          error,
+          'No fue posible cargar las medidas del cliente.'
+        );
+
+        if (this.isMeasurementNotFoundError(message)) {
+          this.canCreateMeasurement.set(true);
+          this.detailsErrorMessage.set('');
+        } else {
+          this.detailsErrorMessage.set(message);
+        }
+
+        this.detailsLoading.set(false);
+      }
+    });
+  }
+
+  editSelectedCustomer(): void {
+    const customer = this.selectedCustomer();
+
+    if (!customer) {
+      return;
+    }
+
+    this.closeCustomerDetails();
+    this.startEdit(customer);
+  }
+
+  closeCustomerDetails(): void {
+    this.detailsModalOpen.set(false);
+    this.detailsLoading.set(false);
+    this.creatingMeasurement.set(false);
+    this.updatingMeasurement.set(false);
+    this.measurementFormOpen.set(false);
+    this.canCreateMeasurement.set(false);
+    this.detailsErrorMessage.set('');
+    this.measurementCreateSuccessMessage.set('');
+    this.measurementCreateErrorMessage.set('');
+    this.selectedCustomer.set(null);
+    this.customerMeasurement.set(null);
+  }
+
+  createCustomerMeasurement(): void {
+    const customer = this.selectedCustomer();
+
+    if (!customer || this.createMeasurementForm.invalid || this.creatingMeasurement()) {
+      this.createMeasurementForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.createMeasurementForm.getRawValue();
+
+    if (
+      raw.chest === null ||
+      raw.waist === null ||
+      raw.hips === null ||
+      raw.neck === null ||
+      raw.sleeve === null ||
+      raw.inseam === null
+    ) {
+      this.createMeasurementForm.markAllAsTouched();
+      return;
+    }
+
+    const payload: CreateCustomerMeasurementPayload = {
+      customerId: customer.id,
+      chest: Number(raw.chest),
+      waist: Number(raw.waist),
+      hips: Number(raw.hips),
+      neck: Number(raw.neck),
+      sleeve: Number(raw.sleeve),
+      inseam: Number(raw.inseam),
+      notes: raw.notes.trim()
+    };
+
+    this.creatingMeasurement.set(true);
+    this.measurementCreateSuccessMessage.set('');
+    this.measurementCreateErrorMessage.set('');
+
+    this.customersService.createMeasurement(payload).subscribe({
+      next: (measurement) => {
+        this.customerMeasurement.set(measurement);
+        this.canCreateMeasurement.set(false);
+        this.measurementFormOpen.set(false);
+        this.detailsErrorMessage.set('');
+        this.measurementCreateSuccessMessage.set('Medidas registradas correctamente.');
+        this.creatingMeasurement.set(false);
+      },
+      error: (error: unknown) => {
+        this.measurementCreateErrorMessage.set(
+          this.resolveErrorMessage(error, 'No fue posible registrar las medidas del cliente.')
+        );
+        this.creatingMeasurement.set(false);
+      }
+    });
+  }
+
+  updateCustomerMeasurement(): void {
+    const customer = this.selectedCustomer();
+
+    if (!customer || this.createMeasurementForm.invalid || this.updatingMeasurement()) {
+      this.createMeasurementForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.createMeasurementForm.getRawValue();
+    const payload: CreateCustomerMeasurementPayload = {
+      customerId: customer.id,
+      chest: Number(raw.chest),
+      waist: Number(raw.waist),
+      hips: Number(raw.hips),
+      neck: Number(raw.neck),
+      sleeve: Number(raw.sleeve),
+      inseam: Number(raw.inseam),
+      notes: raw.notes.trim()
+    };
+
+    this.updatingMeasurement.set(true);
+    this.measurementCreateSuccessMessage.set('');
+    this.measurementCreateErrorMessage.set('');
+
+    this.customersService.updateMeasurement(customer.id, payload).subscribe({
+      next: (measurement) => {
+        this.customerMeasurement.set(measurement);
+        this.measurementFormOpen.set(false);
+        this.measurementCreateSuccessMessage.set('Medidas actualizadas correctamente.');
+        this.updatingMeasurement.set(false);
+      },
+      error: (error: unknown) => {
+        this.measurementCreateErrorMessage.set(
+          this.resolveErrorMessage(error, 'No fue posible actualizar las medidas del cliente.')
+        );
+        this.updatingMeasurement.set(false);
+      }
+    });
+  }
+
+  openCreateMeasurementForm(): void {
+    this.measurementCreateErrorMessage.set('');
+    this.measurementCreateSuccessMessage.set('');
+    this.createMeasurementForm.reset({
+      chest: null,
+      waist: null,
+      hips: null,
+      neck: null,
+      sleeve: null,
+      inseam: null,
+      notes: ''
+    });
+    this.measurementFormOpen.set(true);
+  }
+
+  openEditMeasurementForm(): void {
+    const measurement = this.customerMeasurement();
+
+    if (!measurement) {
+      return;
+    }
+
+    this.measurementCreateErrorMessage.set('');
+    this.measurementCreateSuccessMessage.set('');
+    this.createMeasurementForm.reset({
+      chest: measurement.chest,
+      waist: measurement.waist,
+      hips: measurement.hips,
+      neck: measurement.neck,
+      sleeve: measurement.sleeve,
+      inseam: measurement.inseam,
+      notes: measurement.notes ?? ''
+    });
+    this.measurementFormOpen.set(true);
+  }
+
+  closeMeasurementForm(): void {
+    if (this.creatingMeasurement() || this.updatingMeasurement()) {
+      return;
+    }
+
+    this.measurementFormOpen.set(false);
+    this.measurementCreateErrorMessage.set('');
+  }
+
+  formatMeasurementValue(value: number): string {
+    const normalized = Number(value);
+
+    if (!Number.isFinite(normalized)) {
+      return String(value);
+    }
+
+    return Number.isInteger(normalized)
+      ? normalized.toString()
+      : normalized.toString().replace(/(\.\d*?[1-9])0+$/, '$1');
+  }
+
+  isMeasurementCreateInvalid(
+    field: 'chest' | 'waist' | 'hips' | 'neck' | 'sleeve' | 'inseam' | 'notes'
+  ): boolean {
+    const control = this.createMeasurementForm.controls[field];
+
+    return control.invalid && (control.touched || control.dirty);
   }
 
   cancelEdit(): void {
@@ -251,5 +507,25 @@ export class CustomersPageComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  private resolveErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      const backendMessage = error.error?.message;
+
+      if (Array.isArray(backendMessage) && backendMessage.length > 0) {
+        return String(backendMessage[0]);
+      }
+
+      if (typeof backendMessage === 'string' && backendMessage.trim()) {
+        return backendMessage;
+      }
+    }
+
+    return fallback;
+  }
+
+  private isMeasurementNotFoundError(message: string): boolean {
+    return message.toLowerCase().includes('customer measurement not found');
   }
 }

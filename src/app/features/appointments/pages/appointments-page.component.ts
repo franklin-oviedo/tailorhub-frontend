@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  TemplateRef,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Appointment, CreateAppointment } from '../../../core/models/domain.models';
 import { AppointmentsService } from '../data-access/appointments.service';
 import { CustomersService, CustomerWithStore } from '../../customers/data-access/customers.service';
@@ -10,18 +20,27 @@ type AppointmentFormField = 'customerId' | 'date' | 'time' | 'notes';
 
 @Component({
   selector: 'app-appointments-page',
-  imports: [ReactiveFormsModule, DatePipe, Calendar],
+  imports: [ReactiveFormsModule, DatePipe, Calendar, MatDialogModule],
   templateUrl: './appointments-page.html',
   styleUrl: './appointments-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppointmentsPageComponent {
+export class AppointmentsPageComponent implements OnDestroy {
   readonly month = new Date().getMonth();
   readonly year = new Date().getFullYear();
+  readonly minAppointmentDate = this.formatDateForInput(new Date());
+  readonly minAppointmentTime = '08:00';
+  readonly maxAppointmentTime = '16:00';
 
   private readonly fb = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
   private readonly appointmentsService = inject(AppointmentsService);
   private readonly customersService = inject(CustomersService);
+
+  @ViewChild('appointmentDialogTemplate')
+  private readonly appointmentDialogTemplate?: TemplateRef<unknown>;
+
+  private activeDialogRef: MatDialogRef<unknown> | null = null;
 
   // =========================================================
   // State
@@ -35,7 +54,6 @@ export class AppointmentsPageComponent {
 
   readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly showAppointmentForm = signal(false);
 
   readonly appointmentsScheduled = computed(() => {
     return this.appointments().filter((appointment) => appointment.status === 'scheduled').length;
@@ -108,6 +126,10 @@ export class AppointmentsPageComponent {
     this.load();
   }
 
+  ngOnDestroy(): void {
+    this.closeActiveDialog();
+  }
+
   // =========================================================
   // Calendar
   // =========================================================
@@ -127,6 +149,10 @@ export class AppointmentsPageComponent {
   // =========================================================
 
   openAppointmentForm(): void {
+    if (!this.appointmentDialogTemplate) {
+      return;
+    }
+
     const selectedDate = this.selectedDate();
 
     this.form.reset({
@@ -136,7 +162,7 @@ export class AppointmentsPageComponent {
       notes: '',
     });
 
-    this.showAppointmentForm.set(true);
+    this.openDialog(this.appointmentDialogTemplate);
   }
 
   closeAppointmentForm(): void {
@@ -151,7 +177,7 @@ export class AppointmentsPageComponent {
       notes: '',
     });
 
-    this.showAppointmentForm.set(false);
+    this.closeActiveDialog();
   }
 
   // =========================================================
@@ -210,7 +236,34 @@ export class AppointmentsPageComponent {
 
     const raw = this.form.getRawValue();
 
+    this.clearControlError('date', 'pastDate');
+    this.clearControlError('time', 'minLeadTime');
+    this.clearControlError('time', 'businessHours');
+
+    const selectedDate = this.createLocalDate(raw.date);
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (selectedDate < todayStart) {
+      this.addControlError('date', 'pastDate');
+      this.form.controls.date.markAsTouched();
+      return;
+    }
+
+    if (!this.isWithinBusinessHours(raw.time)) {
+      this.addControlError('time', 'businessHours');
+      this.form.controls.time.markAsTouched();
+      return;
+    }
+
     const scheduledAt = this.buildScheduledAt(raw.date, raw.time);
+    const minimumAllowed = new Date(now.getTime() + 60 * 60 * 1000);
+
+    if (scheduledAt < minimumAllowed) {
+      this.addControlError('time', 'minLeadTime');
+      this.form.controls.time.markAsTouched();
+      return;
+    }
 
     const payload: CreateAppointment = {
       customerId: raw.customerId,
@@ -227,7 +280,7 @@ export class AppointmentsPageComponent {
 
         this.selectedDate.set(selectedDate);
         this.currentPage.set(1);
-        this.showAppointmentForm.set(false);
+        this.closeActiveDialog();
 
         this.form.reset({
           customerId: '',
@@ -275,6 +328,25 @@ export class AppointmentsPageComponent {
     this.loadCustomers();
   }
 
+  private openDialog(template: TemplateRef<unknown>): void {
+    this.closeActiveDialog();
+
+    this.activeDialogRef = this.dialog.open(template, {
+      panelClass: ['th-dialog-panel', 'th-appointments-dialog-panel'],
+      width: 'min(780px, calc(100vw - 2rem))',
+      maxWidth: '96vw',
+      maxHeight: '92vh',
+      autoFocus: true,
+      restoreFocus: true,
+      disableClose: false,
+    });
+  }
+
+  private closeActiveDialog(): void {
+    this.activeDialogRef?.close();
+    this.activeDialogRef = null;
+  }
+
   private loadAppointments(): void {
     this.loading.set(true);
 
@@ -286,7 +358,7 @@ export class AppointmentsPageComponent {
       .subscribe({
         next: (response) => {
           this.allAppointments.set(response.data);
-          this.appointments.set(response.data);
+          this.filterAppointmentsBySelectedDate();
 
           this.currentPage.set(1);
 
@@ -382,5 +454,42 @@ export class AppointmentsPageComponent {
     const [year, month, day] = date.split('-').map(Number);
 
     return new Date(year, month - 1, day);
+  }
+
+  private isWithinBusinessHours(time: string): boolean {
+    const [hours, minutes] = time.split(':').map(Number);
+
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+      return false;
+    }
+
+    const totalMinutes = hours * 60 + minutes;
+    const startMinutes = 8 * 60;
+    const endMinutes = 16 * 60;
+
+    return totalMinutes >= startMinutes && totalMinutes <= endMinutes;
+  }
+
+  private addControlError(field: AppointmentFormField, errorKey: string): void {
+    const control = this.form.controls[field];
+    const currentErrors = control.errors ?? {};
+
+    control.setErrors({
+      ...currentErrors,
+      [errorKey]: true,
+    });
+  }
+
+  private clearControlError(field: AppointmentFormField, errorKey: string): void {
+    const control = this.form.controls[field];
+    const currentErrors = control.errors;
+
+    if (!currentErrors || !currentErrors[errorKey]) {
+      return;
+    }
+
+    const { [errorKey]: _, ...restErrors } = currentErrors;
+
+    control.setErrors(Object.keys(restErrors).length > 0 ? restErrors : null);
   }
 }

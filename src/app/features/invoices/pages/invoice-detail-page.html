@@ -30,7 +30,6 @@
             <button type="button" class="menu-action" (click)="showPreview()">Previsualizar</button>
             @if (actions().canExport) {
               <button type="button" class="menu-action" (click)="exportPdf()">Exportar PDF</button>
-              <button type="button" class="menu-action" (click)="printInvoice()">Imprimir</button>
             }
             @if (actions().canEditDraft) {
               <button type="button" class="menu-action" (click)="openDraftForm()">
@@ -69,7 +68,7 @@
     }
   </header>
   @if (errorMessage()) {
-    <div class="feedback feedback-error" role="alert">{{ errorMessage() }}</div>
+    <div class="feedback feedback-error" role="status" aria-live="polite">{{ errorMessage() }}</div>
   }
   @if (successMessage()) {
     <div class="feedback feedback-success" role="status">{{ successMessage() }}</div>
@@ -394,108 +393,7 @@
         </div>
       </article>
     }
-    @if (creditFormVisible()) {
-      <article class="th-card form-card">
-        <div class="th-card-body">
-          <div class="section-heading">
-            <div>
-              <h3>Nota de crédito</h3>
-              <p>Registra una corrección asociada a esta factura.</p>
-            </div>
-          </div>
-          <form class="operation-form" [formGroup]="creditNoteForm" (ngSubmit)="createCreditNote()">
-            <div class="form-field">
-              <label for="credit-reason">Motivo</label>
-              <input
-                id="credit-reason"
-                class="form-control th-input"
-                type="text"
-                formControlName="reason"
-              />
-            </div>
-            <div class="form-field">
-              <label for="credit-amount">Monto</label>
-              <input
-                id="credit-amount"
-                class="form-control th-input"
-                type="number"
-                step="0.01"
-                min="0.01"
-                formControlName="amount"
-              />
-            </div>
-            <div class="form-field form-field-full">
-              <label for="credit-fiscal">NCF / e-NCF</label>
-              <input
-                id="credit-fiscal"
-                class="form-control th-input"
-                type="text"
-                formControlName="fiscalNumber"
-              />
-            </div>
-            <div class="form-actions form-field-full">
-              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn th-btn-primary" [disabled]="creatingCreditNote()">
-                {{ creatingCreditNote() ? 'Creando...' : 'Guardar nota de crédito' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </article>
-    }
-    @if (debitFormVisible()) {
-      <article class="th-card form-card">
-        <div class="th-card-body">
-          <div class="section-heading">
-            <div>
-              <h3>Nota de débito</h3>
-              <p>Registra un cargo adicional relacionado con esta factura.</p>
-            </div>
-          </div>
-          <form class="operation-form" [formGroup]="debitNoteForm" (ngSubmit)="createDebitNote()">
-            <div class="form-field">
-              <label for="debit-reason">Motivo</label>
-              <input
-                id="debit-reason"
-                class="form-control th-input"
-                type="text"
-                formControlName="reason"
-              />
-            </div>
-            <div class="form-field">
-              <label for="debit-amount">Monto</label>
-              <input
-                id="debit-amount"
-                class="form-control th-input"
-                type="number"
-                step="0.01"
-                min="0.01"
-                formControlName="amount"
-              />
-            </div>
-            <div class="form-field form-field-full">
-              <label for="debit-fiscal">NCF / e-NCF</label>
-              <input
-                id="debit-fiscal"
-                class="form-control th-input"
-                type="text"
-                formControlName="fiscalNumber"
-              />
-            </div>
-            <div class="form-actions form-field-full">
-              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn th-btn-primary" [disabled]="creatingDebitNote()">
-                {{ creatingDebitNote() ? 'Creando...' : 'Guardar nota de débito' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </article>
-    }
+
     <article class="th-card history-card">
       <div class="th-card-body">
         <div class="section-heading">
@@ -655,34 +553,36 @@
         </div>
       </div>
     </article>
-    @if (previewVisible()) {
-      <section class="preview-section">
-        <header class="preview-toolbar">
-          <div>
-            <h3>Vista previa</h3>
-            <p>Así se verá el documento al imprimir o exportar.</p>
-          </div>
-          <div>
-            <button type="button" class="btn btn-outline-secondary" (click)="printInvoice()">
-              Imprimir
-            </button>
-            <button type="button" class="btn th-btn-primary" (click)="exportPdf()">
-              Exportar PDF
-            </button>
-          </div>
-        </header>
-        <div class="preview-wrapper" aria-label="Previsualización de factura">
-          <div #previewDocument class="invoice-print-target">
-            <app-invoice-document [viewModel]="documentViewModel()!" />
-          </div>
-        </div>
-      </section>
-    }
+    <div class="preview-print-host" aria-hidden="true">
+      <div #previewDocument class="invoice-print-target">
+        <app-invoice-document [viewModel]="documentViewModel()!" />
+      </div>
+    </div>
   }
 </section>
+<ng-template #previewDialogTemplate>
+  @if (documentViewModel()) {
+    <section class="preview-section">
+      <header class="preview-toolbar">
+        <div>
+          <h3>Vista previa</h3>
+          <p>Así se verá el documento al imprimir o exportar.</p>
+        </div>
+        <div>
+          <button type="button" class="btn th-btn-primary" (click)="exportPdf()">
+            Exportar PDF
+          </button>
+        </div>
+      </header>
+      <div class="preview-wrapper" aria-label="Previsualización de factura">
+        <app-invoice-document [viewModel]="documentViewModel()!" />
+      </div>
+    </section>
+  }
+</ng-template>
 <ng-template #issueDialogTemplate>
-  <div class="action-dialog">
-    <h3 class="action-dialog-title">Emitir factura</h3>
+  <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="issue-dialog-title">
+    <h3 id="issue-dialog-title" class="action-dialog-title">Emitir factura</h3>
     <p class="action-dialog-message">
       Después de emitirla, los datos principales de esta factura ya no podrán editarse directamente.
     </p>
@@ -751,8 +651,8 @@
   </div>
 </ng-template>
 <ng-template #paymentDialogTemplate>
-  <div class="action-dialog">
-    <h3 class="action-dialog-title">Registrar pago</h3>
+  <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title">
+    <h3 id="payment-dialog-title" class="action-dialog-title">Registrar pago</h3>
     @if (invoice()) {
       <div class="payment-dialog-balance">
         <span>Balance pendiente</span>
@@ -829,9 +729,155 @@
     </form>
   </div>
 </ng-template>
+<ng-template #creditNoteDialogTemplate>
+  <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="credit-note-dialog-title">
+    <h3 id="credit-note-dialog-title" class="action-dialog-title">Nota de crédito</h3>
+    <p class="action-dialog-message">
+      Registra un ajuste a favor del cliente. Este movimiento impactará el balance de la factura.
+    </p>
+    @if (invoice()) {
+      <div class="payment-dialog-balance">
+        <span>Balance actual</span>
+        <strong>{{
+          invoice()!.balance | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </div>
+    }
+    <form
+      class="operation-form dialog-form"
+      [formGroup]="creditNoteForm"
+      (ngSubmit)="createCreditNote()"
+    >
+      @if (creditNoteErrorMessage()) {
+        <div class="feedback feedback-error form-field-full" role="status" aria-live="polite">
+          {{ creditNoteErrorMessage() }}
+        </div>
+      }
+      <div class="form-field form-field-full">
+        <label for="credit-reason">Motivo</label>
+        <input
+          id="credit-reason"
+          class="form-control th-input"
+          type="text"
+          formControlName="reason"
+          placeholder="Describe el motivo del ajuste"
+          [class.is-invalid]="creditNoteForm.controls.reason.touched && creditNoteForm.controls.reason.invalid"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="credit-amount">Monto</label>
+        <input
+          id="credit-amount"
+          class="form-control th-input"
+          type="number"
+          step="0.01"
+          min="0.01"
+          formControlName="amount"
+          [class.is-invalid]="creditNoteForm.controls.amount.touched && creditNoteForm.controls.amount.invalid"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="credit-fiscal">NCF / e-NCF <span>Opcional</span></label>
+        <input
+          id="credit-fiscal"
+          class="form-control th-input"
+          type="text"
+          formControlName="fiscalNumber"
+          placeholder="Número fiscal de respaldo"
+        />
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="creatingCreditNote()"
+          (click)="closeActiveDialog()"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="creatingCreditNote()">
+          {{ creatingCreditNote() ? 'Guardando...' : 'Guardar nota de crédito' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+<ng-template #debitNoteDialogTemplate>
+  <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="debit-note-dialog-title">
+    <h3 id="debit-note-dialog-title" class="action-dialog-title">Nota de débito</h3>
+    <p class="action-dialog-message">
+      Registra un cargo adicional sobre la factura. Verifica el motivo y el monto antes de guardar.
+    </p>
+    @if (invoice()) {
+      <div class="payment-dialog-balance">
+        <span>Balance actual</span>
+        <strong>{{
+          invoice()!.balance | currency: invoice()!.currency : 'symbol' : '1.2-2'
+        }}</strong>
+      </div>
+    }
+    <form
+      class="operation-form dialog-form"
+      [formGroup]="debitNoteForm"
+      (ngSubmit)="createDebitNote()"
+    >
+      @if (debitNoteErrorMessage()) {
+        <div class="feedback feedback-error form-field-full" role="status" aria-live="polite">
+          {{ debitNoteErrorMessage() }}
+        </div>
+      }
+      <div class="form-field form-field-full">
+        <label for="debit-reason">Motivo</label>
+        <input
+          id="debit-reason"
+          class="form-control th-input"
+          type="text"
+          formControlName="reason"
+          placeholder="Describe el cargo adicional"
+          [class.is-invalid]="debitNoteForm.controls.reason.touched && debitNoteForm.controls.reason.invalid"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="debit-amount">Monto</label>
+        <input
+          id="debit-amount"
+          class="form-control th-input"
+          type="number"
+          step="0.01"
+          min="0.01"
+          formControlName="amount"
+          [class.is-invalid]="debitNoteForm.controls.amount.touched && debitNoteForm.controls.amount.invalid"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="debit-fiscal">NCF / e-NCF <span>Opcional</span></label>
+        <input
+          id="debit-fiscal"
+          class="form-control th-input"
+          type="text"
+          formControlName="fiscalNumber"
+          placeholder="Número fiscal de respaldo"
+        />
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="creatingDebitNote()"
+          (click)="closeActiveDialog()"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="creatingDebitNote()">
+          {{ creatingDebitNote() ? 'Guardando...' : 'Guardar nota de débito' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
 <ng-template #cancelDialogTemplate>
-  <div class="action-dialog">
-    <h3 class="action-dialog-title">Cancelar factura</h3>
+  <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="cancel-dialog-title">
+    <h3 id="cancel-dialog-title" class="action-dialog-title">Cancelar factura</h3>
     <p class="action-dialog-message">
       Esta factura permanecerá en el historial y quedará marcada como cancelada.
     </p>

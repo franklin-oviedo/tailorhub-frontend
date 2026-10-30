@@ -33,6 +33,12 @@
   color: var(--th-primary);
 }
 
+.back-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--th-secondary) 60%, white 40%);
+  outline-offset: 2px;
+  border-radius: 0.35rem;
+}
+
 .detail-title-row {
   display: flex;
   align-items: flex-end;

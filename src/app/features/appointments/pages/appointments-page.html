@@ -83,193 +83,6 @@
       </button>
     </header>
 
-    <!-- Appointment form -->
-    @if (showAppointmentForm()) {
-      <section
-        class="appointment-form-section"
-        aria-labelledby="appointment-form-title"
-      >
-        <div class="appointment-form-header">
-          <div>
-            <span class="appointments-eyebrow">
-              Agendar
-            </span>
-
-            <h3
-              id="appointment-form-title"
-              class="appointment-form-title"
-            >
-              Nueva cita
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            class="appointment-form-close"
-            aria-label="Cerrar formulario"
-            [disabled]="saving()"
-            (click)="closeAppointmentForm()"
-          >
-            ×
-          </button>
-        </div>
-
-        <form
-          class="appointment-form"
-          [formGroup]="form"
-          (ngSubmit)="book()"
-          novalidate
-        >
-          <div class="appointment-form-grid">
-            <!-- Customer -->
-            <div class="appointment-form-field">
-              <label
-                class="appointment-form-label"
-                for="appointment-customer"
-              >
-                Cliente
-                <span aria-hidden="true">*</span>
-              </label>
-
-              <select
-                id="appointment-customer"
-                class="appointment-form-control"
-                formControlName="customerId"
-                [class.is-invalid]="isInvalid('customerId')"
-                [class.is-valid]="isValid('customerId')"
-              >
-                <option value="">
-                  Selecciona un cliente
-                </option>
-
-                @for (customer of customers(); track customer.id) {
-                  <option [value]="customer.id">
-                    {{ customer.name }}
-                  </option>
-                }
-              </select>
-
-              @if (isInvalid('customerId')) {
-                <span class="appointment-form-error">
-                  Debes seleccionar un cliente.
-                </span>
-              }
-            </div>
-
-            <!-- Date -->
-            <div class="appointment-form-field">
-              <label
-                class="appointment-form-label"
-                for="appointment-date"
-              >
-                Fecha
-                <span aria-hidden="true">*</span>
-              </label>
-
-              <input
-                id="appointment-date"
-                type="date"
-                class="appointment-form-control"
-                formControlName="date"
-                [class.is-invalid]="isInvalid('date')"
-                [class.is-valid]="isValid('date')"
-              />
-
-              @if (isInvalid('date')) {
-                <span class="appointment-form-error">
-                  Debes seleccionar una fecha.
-                </span>
-              }
-            </div>
-
-            <!-- Time -->
-            <div class="appointment-form-field">
-              <label
-                class="appointment-form-label"
-                for="appointment-time"
-              >
-                Hora
-                <span aria-hidden="true">*</span>
-              </label>
-
-              <input
-                id="appointment-time"
-                type="time"
-                class="appointment-form-control"
-                formControlName="time"
-                [class.is-invalid]="isInvalid('time')"
-                [class.is-valid]="isValid('time')"
-              />
-
-              @if (isInvalid('time')) {
-                <span class="appointment-form-error">
-                  Debes seleccionar una hora.
-                </span>
-              }
-            </div>
-
-            <!-- Notes -->
-            <div class="appointment-form-field appointment-form-field--full">
-              <label
-                class="appointment-form-label"
-                for="appointment-notes"
-              >
-                Notas
-                <span class="appointment-form-optional">
-                  Opcional
-                </span>
-              </label>
-
-              <textarea
-                id="appointment-notes"
-                class="appointment-form-control appointment-form-textarea"
-                formControlName="notes"
-                rows="4"
-                maxlength="500"
-                placeholder="Ej. Primera prueba de traje, ajuste final, toma de medidas..."
-                [class.is-invalid]="isInvalid('notes')"
-                [class.is-valid]="isValid('notes')"
-              ></textarea>
-
-              @if (form.controls.notes.hasError('maxlength')) {
-                <span class="appointment-form-error">
-                  Las notas no pueden superar los 500 caracteres.
-                </span>
-              }
-            </div>
-          </div>
-
-          <div class="appointment-form-actions">
-            <button
-              type="button"
-              class="appointment-secondary-button"
-              [disabled]="saving()"
-              (click)="closeAppointmentForm()"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              class="appointment-primary-button"
-              [disabled]="saving()"
-            >
-              @if (saving()) {
-                <span
-                  class="appointment-button-spinner"
-                  aria-hidden="true"
-                ></span>
-
-                <span>Agendando...</span>
-              } @else {
-                <span>Agendar cita</span>
-              }
-            </button>
-          </div>
-        </form>
-      </section>
-    }
-
     <!-- Loading -->
     @if (loading()) {
       <div
@@ -436,3 +249,212 @@
     }
   </section>
 </div>
+
+<ng-template #appointmentDialogTemplate>
+  <section
+    class="appointment-form-section appointment-form-section--dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="appointment-form-title"
+    aria-describedby="appointment-form-description"
+  >
+    <div class="appointment-form-header">
+      <div>
+        <span class="appointments-eyebrow">
+          Agendar
+        </span>
+
+        <h3
+          id="appointment-form-title"
+          class="appointment-form-title"
+        >
+          Nueva cita
+        </h3>
+        <p id="appointment-form-description" class="visually-hidden">
+          Completa los datos para registrar una nueva cita en la fecha seleccionada.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="appointment-form-close"
+        aria-label="Cerrar formulario"
+        [disabled]="saving()"
+        (click)="closeAppointmentForm()"
+      >
+        ×
+      </button>
+    </div>
+
+    <form
+      class="appointment-form"
+      [formGroup]="form"
+      (ngSubmit)="book()"
+      novalidate
+    >
+      <div class="appointment-form-grid">
+        <!-- Customer -->
+        <div class="appointment-form-field">
+          <label
+            class="appointment-form-label"
+            for="appointment-customer"
+          >
+            Cliente
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <select
+            id="appointment-customer"
+            class="appointment-form-control"
+            formControlName="customerId"
+            [class.is-invalid]="isInvalid('customerId')"
+            [class.is-valid]="isValid('customerId')"
+            [attr.aria-describedby]="isInvalid('customerId') ? 'appointment-customer-error' : null"
+          >
+            <option value="">
+              Selecciona un cliente
+            </option>
+
+            @for (customer of customers(); track customer.id) {
+              <option [value]="customer.id">
+                {{ customer.name }}
+              </option>
+            }
+          </select>
+
+          @if (isInvalid('customerId')) {
+            <span id="appointment-customer-error" class="appointment-form-error" role="status" aria-live="polite">
+              Debes seleccionar un cliente.
+            </span>
+          }
+        </div>
+
+        <!-- Date -->
+        <div class="appointment-form-field">
+          <label
+            class="appointment-form-label"
+            for="appointment-date"
+          >
+            Fecha
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <input
+            id="appointment-date"
+            type="date"
+            class="appointment-form-control"
+            formControlName="date"
+                [attr.min]="minAppointmentDate"
+            [class.is-invalid]="isInvalid('date')"
+            [class.is-valid]="isValid('date')"
+            [attr.aria-describedby]="isInvalid('date') ? 'appointment-date-error' : null"
+          />
+
+          @if (isInvalid('date')) {
+                <span id="appointment-date-error" class="appointment-form-error" role="status" aria-live="polite">
+                  @if (form.controls.date.hasError('pastDate')) {
+                    No puedes agendar citas en dias pasados.
+                  } @else {
+                    Debes seleccionar una fecha.
+                  }
+                </span>
+          }
+        </div>
+
+        <!-- Time -->
+        <div class="appointment-form-field">
+          <label
+            class="appointment-form-label"
+            for="appointment-time"
+          >
+            Hora
+            <span aria-hidden="true">*</span>
+          </label>
+
+          <input
+            id="appointment-time"
+            type="time"
+            class="appointment-form-control"
+            formControlName="time"
+            [attr.min]="minAppointmentTime"
+            [attr.max]="maxAppointmentTime"
+            [class.is-invalid]="isInvalid('time')"
+            [class.is-valid]="isValid('time')"
+            [attr.aria-describedby]="isInvalid('time') ? 'appointment-time-error' : null"
+          />
+
+          @if (isInvalid('time')) {
+                <span id="appointment-time-error" class="appointment-form-error" role="status" aria-live="polite">
+              @if (form.controls.time.hasError('businessHours')) {
+                El horario de citas es de 8:00 a.m. a 4:00 p.m.
+              } @else if (form.controls.time.hasError('minLeadTime')) {
+                    La cita debe programarse con al menos 1 hora de anticipacion.
+                  } @else {
+                    Debes seleccionar una hora.
+                  }
+                </span>
+          }
+        </div>
+
+        <!-- Notes -->
+        <div class="appointment-form-field appointment-form-field--full">
+          <label
+            class="appointment-form-label"
+            for="appointment-notes"
+          >
+            Notas
+            <span class="appointment-form-optional">
+              Opcional
+            </span>
+          </label>
+
+          <textarea
+            id="appointment-notes"
+            class="appointment-form-control appointment-form-textarea"
+            formControlName="notes"
+            rows="4"
+            maxlength="500"
+            placeholder="Ej. Primera prueba de traje, ajuste final, toma de medidas..."
+            [class.is-invalid]="isInvalid('notes')"
+            [class.is-valid]="isValid('notes')"
+            [attr.aria-describedby]="form.controls.notes.hasError('maxlength') ? 'appointment-notes-error' : null"
+          ></textarea>
+
+          @if (form.controls.notes.hasError('maxlength')) {
+            <span id="appointment-notes-error" class="appointment-form-error" role="status" aria-live="polite">
+              Las notas no pueden superar los 500 caracteres.
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="appointment-form-actions">
+        <button
+          type="button"
+          class="appointment-secondary-button"
+          [disabled]="saving()"
+          (click)="closeAppointmentForm()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="appointment-primary-button"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            <span
+              class="appointment-button-spinner"
+              aria-hidden="true"
+            ></span>
+
+            <span>Agendando...</span>
+          } @else {
+            <span>Agendar cita</span>
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+</ng-template>

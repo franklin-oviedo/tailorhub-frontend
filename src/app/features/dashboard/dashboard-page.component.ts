@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 
 import { SessionService } from '../../core/services/session.service';
 import { UsersService } from '../users/data-access/users.service';
@@ -7,7 +8,7 @@ import { OrdersService } from '../orders/data-access/orders.service';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [],
+  imports: [NgOptimizedImage],
   templateUrl: 'dashboard-page.html',
   styleUrl: 'dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

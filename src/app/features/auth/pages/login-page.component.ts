@@ -3,15 +3,14 @@ import { NgOptimizedImage } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../data-access/auth.service';
 
 @Component({
   selector: 'app-login-page',
   imports: [
+    NgOptimizedImage,
     ReactiveFormsModule,
-    RouterLink,
-    NgbAlertModule
+    RouterLink
   ],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',

@@ -3,7 +3,6 @@ import { NgOptimizedImage } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../data-access/auth.service';
 
 @Component({
@@ -11,8 +10,7 @@ import { AuthService } from '../data-access/auth.service';
   imports: [
     NgOptimizedImage,
     ReactiveFormsModule,
-    RouterLink,
-    NgbAlertModule
+    RouterLink
   ],
   templateUrl: './forgot-password-page.html',
   styleUrl: './forgot-password-page.scss',

@@ -4,6 +4,8 @@
 .invoice-fiscal-report-page {
   display: grid;
   gap: 1rem;
+  max-height: min(88vh, 980px);
+  overflow: auto;
 }
 .report-header {
   display: flex;
@@ -13,6 +15,9 @@
 }
 .report-heading {
   min-width: 0;
+}
+.report-close-button {
+  align-self: flex-start;
 }
 .back-link {
   display: inline-flex;
@@ -323,6 +328,9 @@
   }
 }
 @media (max-width: 767.98px) {
+  .invoice-fiscal-report-page {
+    max-height: min(90vh, 980px);
+  }
   .report-form {
     grid-template-columns: 1fr;
   }
@@ -335,6 +343,9 @@
   .report-table-toolbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .report-close-button {
+    width: 100%;
   }
   .report-page-size {
     width: 100%;

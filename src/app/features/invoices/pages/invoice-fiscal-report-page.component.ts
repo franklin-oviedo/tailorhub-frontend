@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
 import { FiscalDocumentType } from '../../../core/models/invoices/fiscal-document-type.enum';
 import { InvoiceStatus } from '../../../core/models/invoices/invoice-status.enum';
@@ -9,7 +10,7 @@ import { InvoicesService } from '../data-access/invoices.service';
 
 @Component({
   selector: 'app-invoice-fiscal-report-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MatDialogModule],
   templateUrl: './invoice-fiscal-report-page.html',
   styleUrl: './invoice-fiscal-report-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +18,9 @@ import { InvoicesService } from '../data-access/invoices.service';
 export class InvoiceFiscalReportPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly invoicesService = inject(InvoicesService);
+  private readonly dialogRef = inject(MatDialogRef<InvoiceFiscalReportPageComponent>, {
+    optional: true,
+  });
 
   readonly loading = signal(false);
   readonly hasSearched = signal(false);
@@ -24,6 +28,7 @@ export class InvoiceFiscalReportPageComponent {
   readonly reportRows = signal<FiscalReportRecord[]>([]);
   readonly currentPage = signal(1);
   readonly pageSize = signal(15);
+  readonly isDialogMode = computed(() => Boolean(this.dialogRef));
 
   readonly form = this.fb.nonNullable.group({
     dateFrom: ['', Validators.required],
@@ -190,6 +195,10 @@ export class InvoiceFiscalReportPageComponent {
     }
 
     return String(value);
+  }
+
+  closeDialog(): void {
+    this.dialogRef?.close();
   }
 
   private humanizeColumn(column: string): string {

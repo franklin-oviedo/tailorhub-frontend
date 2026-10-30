@@ -14,7 +14,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 import {
   CancelInvoicePayload,
@@ -53,16 +52,24 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   private readonly invoicesService = inject(InvoicesService);
   private readonly fb = inject(FormBuilder);
   private readonly dialog = inject(MatDialog);
-  private readonly snackbar = inject(MatSnackBar);
 
   @ViewChild('previewDocument')
   private readonly previewDocument?: ElementRef<HTMLElement>;
+
+  @ViewChild('previewDialogTemplate')
+  private readonly previewDialogTemplate?: TemplateRef<unknown>;
 
   @ViewChild('issueDialogTemplate')
   private readonly issueDialogTemplate?: TemplateRef<unknown>;
 
   @ViewChild('paymentDialogTemplate')
   private readonly paymentDialogTemplate?: TemplateRef<unknown>;
+
+  @ViewChild('creditNoteDialogTemplate')
+  private readonly creditNoteDialogTemplate?: TemplateRef<unknown>;
+
+  @ViewChild('debitNoteDialogTemplate')
+  private readonly debitNoteDialogTemplate?: TemplateRef<unknown>;
 
   @ViewChild('cancelDialogTemplate')
   private readonly cancelDialogTemplate?: TemplateRef<unknown>;
@@ -71,7 +78,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
 
   readonly invoice = signal<InvoiceDocument | null>(null);
   readonly loading = signal(true);
-  readonly previewVisible = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
 
@@ -81,10 +87,10 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   readonly creatingCreditNote = signal(false);
   readonly creatingDebitNote = signal(false);
   readonly cancelling = signal(false);
+  readonly creditNoteErrorMessage = signal('');
+  readonly debitNoteErrorMessage = signal('');
 
   readonly draftEditVisible = signal(false);
-  readonly creditFormVisible = signal(false);
-  readonly debitFormVisible = signal(false);
 
   readonly itemsPage = signal(1);
   readonly paymentsPage = signal(1);
@@ -108,7 +114,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   });
 
   readonly paymentForm = this.fb.nonNullable.group({
-    amount: [0, [Validators.required, Validators.min(0.01)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     paymentMethod: [PaymentMethod.CASH, Validators.required],
     reference: [''],
     notes: [''],
@@ -117,13 +123,13 @@ export class InvoiceDetailPageComponent implements OnDestroy {
 
   readonly creditNoteForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required, Validators.minLength(3)]],
-    amount: [0, [Validators.required, Validators.min(0.01)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     fiscalNumber: [''],
   });
 
   readonly debitNoteForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required, Validators.minLength(3)]],
-    amount: [0, [Validators.required, Validators.min(0.01)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     fiscalNumber: [''],
   });
 
@@ -283,7 +289,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     }
 
     this.paymentForm.patchValue({
-      amount: currentInvoice.balance > 0 ? currentInvoice.balance : 0,
+      amount: currentInvoice.balance > 0 ? currentInvoice.balance : null,
     });
 
     this.closeInlineForms();
@@ -291,17 +297,35 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   }
 
   openCreditNoteForm(): void {
-    this.closeActiveDialog();
-    this.closeInlineForms();
+    if (!this.creditNoteDialogTemplate) {
+      return;
+    }
 
-    this.creditFormVisible.set(true);
+    this.creditNoteForm.reset({
+      reason: '',
+      amount: null,
+      fiscalNumber: '',
+    });
+    this.creditNoteErrorMessage.set('');
+
+    this.closeInlineForms();
+    this.openDialog(this.creditNoteDialogTemplate);
   }
 
   openDebitNoteForm(): void {
-    this.closeActiveDialog();
-    this.closeInlineForms();
+    if (!this.debitNoteDialogTemplate) {
+      return;
+    }
 
-    this.debitFormVisible.set(true);
+    this.debitNoteForm.reset({
+      reason: '',
+      amount: null,
+      fiscalNumber: '',
+    });
+    this.debitNoteErrorMessage.set('');
+
+    this.closeInlineForms();
+    this.openDialog(this.debitNoteDialogTemplate);
   }
 
   openCancelForm(): void {
@@ -466,8 +490,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
         next: () => {
           this.closeActiveDialog();
 
-          this.notify('Pago registrado correctamente.');
-
           this.reloadAfterOperation(currentInvoice.id, 'Pago registrado correctamente.');
         },
         error: () => {
@@ -489,7 +511,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     const amount = this.toFinitePositiveNumber(raw.amount);
 
     if (amount === null) {
-      this.showError('Ingresa un monto válido mayor que cero.');
+      this.creditNoteErrorMessage.set('Ingresa un monto valido mayor que cero.');
       return;
     }
 
@@ -503,6 +525,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     }
 
     this.creatingCreditNote.set(true);
+    this.creditNoteErrorMessage.set('');
     this.clearMessages();
 
     this.invoicesService
@@ -514,14 +537,13 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.creditFormVisible.set(false);
-
-          this.notify('Nota de crédito creada correctamente.');
+          this.closeActiveDialog();
+          this.creditNoteErrorMessage.set('');
 
           this.reloadAfterOperation(currentInvoice.id, 'Nota de crédito creada correctamente.');
         },
         error: () => {
-          this.showError('No fue posible crear la nota de crédito.');
+          this.creditNoteErrorMessage.set('No fue posible crear la nota de credito. Verifica los datos e intentalo nuevamente.');
         },
       });
   }
@@ -539,7 +561,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     const amount = this.toFinitePositiveNumber(raw.amount);
 
     if (amount === null) {
-      this.showError('Ingresa un monto válido mayor que cero.');
+      this.debitNoteErrorMessage.set('Ingresa un monto valido mayor que cero.');
       return;
     }
 
@@ -553,6 +575,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     }
 
     this.creatingDebitNote.set(true);
+    this.debitNoteErrorMessage.set('');
     this.clearMessages();
 
     this.invoicesService
@@ -564,14 +587,13 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.debitFormVisible.set(false);
-
-          this.notify('Nota de débito creada correctamente.');
+          this.closeActiveDialog();
+          this.debitNoteErrorMessage.set('');
 
           this.reloadAfterOperation(currentInvoice.id, 'Nota de débito creada correctamente.');
         },
         error: () => {
-          this.showError('No fue posible crear la nota de débito.');
+          this.debitNoteErrorMessage.set('No fue posible crear la nota de debito. Verifica los datos e intentalo nuevamente.');
         },
       });
   }
@@ -613,13 +635,16 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   }
 
   showPreview(): void {
-    this.previewVisible.set(true);
+    if (!this.previewDialogTemplate) {
+      this.showError('No fue posible abrir la previsualización.');
+      return;
+    }
 
-    queueMicrotask(() => {
-      this.previewDocument?.nativeElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+    this.openDialog(this.previewDialogTemplate, {
+      width: 'min(1120px, calc(100vw - 2rem))',
+      maxWidth: '98vw',
+      maxHeight: '92vh',
+      panelClass: 'th-preview-dialog-panel',
     });
   }
 
@@ -665,14 +690,10 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     }
   }
 
-  printInvoice(): void {
-    this.printDocumentOnly();
-  }
-
   exportPdf(): void {
     this.printDocumentOnly();
 
-    this.notify('Selecciona "Guardar como PDF" en la ventana de impresión.');
+    this.showSuccess('Selecciona "Guardar como PDF" en la ventana de impresión.');
   }
 
   statusLabel(status: InvoiceStatus): string {
@@ -749,17 +770,34 @@ export class InvoiceDetailPageComponent implements OnDestroy {
 
   private closeInlineForms(): void {
     this.draftEditVisible.set(false);
-    this.creditFormVisible.set(false);
-    this.debitFormVisible.set(false);
   }
 
-  private openDialog(template: TemplateRef<unknown>): void {
+  private openDialog(
+    template: TemplateRef<unknown>,
+    config?: {
+      width?: string;
+      maxWidth?: string;
+      maxHeight?: string;
+      panelClass?: string | string[];
+    },
+  ): void {
     this.closeActiveDialog();
 
+    const panelClass = ['th-dialog-panel'];
+
+    if (config?.panelClass) {
+      if (Array.isArray(config.panelClass)) {
+        panelClass.push(...config.panelClass);
+      } else {
+        panelClass.push(config.panelClass);
+      }
+    }
+
     this.activeDialogRef = this.dialog.open(template, {
-      panelClass: 'th-dialog-panel',
-      width: 'min(560px, calc(100vw - 2rem))',
-      maxWidth: '95vw',
+      panelClass,
+      width: config?.width ?? 'min(560px, calc(100vw - 2rem))',
+      maxWidth: config?.maxWidth ?? '95vw',
+      maxHeight: config?.maxHeight,
       autoFocus: true,
       restoreFocus: true,
       disableClose: false,
@@ -790,38 +828,32 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   }
 
   private printDocumentOnly(): void {
-    if (!this.previewVisible()) {
-      this.previewVisible.set(true);
+    const previewElement = this.previewDocument?.nativeElement;
+
+    if (!previewElement) {
+      this.showError('No fue posible preparar el documento.');
+      return;
     }
 
-    setTimeout(() => {
-      const previewElement = this.previewDocument?.nativeElement;
+    const popup = window.open('', '_blank', 'width=1024,height=768');
 
-      if (!previewElement) {
-        this.notify('No fue posible preparar el documento.');
-        return;
-      }
+    if (!popup) {
+      this.showError('Tu navegador bloqueó la ventana de impresión.');
+      return;
+    }
 
-      const popup = window.open('', '_blank', 'noopener,noreferrer,width=1024,height=768');
+    const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map((node) => node.outerHTML)
+      .join('\n');
 
-      if (!popup) {
-        this.notify('Tu navegador bloqueó la ventana de impresión.');
-        return;
-      }
+    popup.document.open();
 
-      const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-        .map((node) => node.outerHTML)
-        .join('\n');
-
-      popup.document.open();
-
-      popup.document.write(
-        `<!doctype html>
-
-
+    popup.document.write(
+      `<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<base href="${document.baseURI}">
 <title>Factura</title>
 ${headStyles}
 <style>
@@ -834,45 +866,36 @@ body{padding:16px}
 ${previewElement.innerHTML}
 </body>
 </html>`,
-      );
+    );
 
-      popup.document.close();
+    popup.document.close();
 
-      const doPrint = () => {
-        popup.focus();
-        popup.print();
-      };
+    const doPrint = () => {
+      popup.focus();
+      popup.print();
+    };
 
-      if (popup.document.readyState === 'complete') {
-        setTimeout(doPrint, 60);
-      } else {
-        popup.addEventListener('load', () => setTimeout(doPrint, 60), {
-          once: true,
-        });
-      }
-
-      popup.addEventListener('afterprint', () => popup.close(), {
+    if (popup.document.readyState === 'complete') {
+      setTimeout(doPrint, 120);
+    } else {
+      popup.addEventListener('load', () => setTimeout(doPrint, 120), {
         once: true,
       });
-    });
-  }
+    }
 
-  private notify(message: string): void {
-    this.snackbar.open(message, 'Cerrar', {
-      duration: 3200,
+    popup.addEventListener('afterprint', () => popup.close(), {
+      once: true,
     });
   }
 
   private showSuccess(message: string): void {
     this.errorMessage.set('');
     this.successMessage.set(message);
-    this.notify(message);
   }
 
   private showError(message: string): void {
     this.successMessage.set('');
     this.errorMessage.set(message);
-    this.notify(message);
   }
 
   private clearMessages(): void {
@@ -942,7 +965,7 @@ ${previewElement.innerHTML}
     });
 
     this.paymentForm.reset({
-      amount: invoice.balance > 0 ? invoice.balance : 0,
+      amount: invoice.balance > 0 ? invoice.balance : null,
       paymentMethod: PaymentMethod.CASH,
       reference: '',
       notes: '',
@@ -951,13 +974,13 @@ ${previewElement.innerHTML}
 
     this.creditNoteForm.reset({
       reason: '',
-      amount: 0,
+      amount: null,
       fiscalNumber: '',
     });
 
     this.debitNoteForm.reset({
       reason: '',
-      amount: 0,
+      amount: null,
       fiscalNumber: '',
     });
 

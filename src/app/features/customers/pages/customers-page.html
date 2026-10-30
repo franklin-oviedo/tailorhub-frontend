@@ -58,7 +58,8 @@
 
         <div
             class="customers-error"
-            role="alert"
+            role="status"
+            aria-live="polite"
         >
             {{ errorMessage() }}
         </div>
@@ -106,13 +107,15 @@
                                 </td>
 
                                 <td>
-                                    <button
-                                        type="button"
-                                        class="customers-btn customers-btn--ghost customers-btn--small"
-                                        (click)="startEdit(customer)"
-                                    >
-                                        Editar
-                                    </button>
+                                    <div class="customers-row-actions">
+                                        <button
+                                            type="button"
+                                            class="customers-btn customers-btn--ghost customers-btn--small"
+                                            (click)="openCustomerDetails(customer)"
+                                        >
+                                            Ver info
+                                        </button>
+                                    </div>
                                 </td>
 
                             </tr>
@@ -292,7 +295,7 @@
                     </div>
 
                     @if (createErrorMessage()) {
-                        <div class="customers-create-feedback customers-create-feedback--error" role="alert">
+                        <div class="customers-create-feedback customers-create-feedback--error" role="status" aria-live="polite">
                             {{ createErrorMessage() }}
                         </div>
                     }
@@ -396,7 +399,7 @@
                     </div>
 
                     @if (updateErrorMessage()) {
-                        <div class="customers-create-feedback customers-create-feedback--error" role="alert">
+                        <div class="customers-create-feedback customers-create-feedback--error" role="status" aria-live="polite">
                             {{ updateErrorMessage() }}
                         </div>
                     }
@@ -424,6 +427,406 @@
                         </button>
                     </div>
                 </form>
+            </section>
+        </div>
+    }
+
+    @if (detailsModalOpen() && selectedCustomer()) {
+        <div class="customers-modal-backdrop" (click)="closeCustomerDetails()">
+            <section
+                class="customers-modal customers-modal--details"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="customers-details-title"
+                (click)="$event.stopPropagation()"
+            >
+                <div class="customers-modal-header">
+                    <h2 id="customers-details-title" class="customers-create-title">Informacion del cliente</h2>
+                    <button
+                        type="button"
+                        class="customers-modal-close"
+                        aria-label="Cerrar modal"
+                        (click)="closeCustomerDetails()"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div class="customers-details-content">
+                    <section class="customers-details-section" aria-label="Datos generales del cliente">
+                        <div class="customers-details-header-actions">
+                            <h3 class="customers-details-subtitle">Datos generales</h3>
+                            <button
+                                type="button"
+                                class="customers-btn customers-btn--secondary customers-btn--small"
+                                (click)="editSelectedCustomer()"
+                            >
+                                Editar cliente
+                            </button>
+                        </div>
+                        <div class="customers-details-grid">
+                            <div>
+                                <span class="customers-details-label">Nombre</span>
+                                <span class="customers-details-value">{{ selectedCustomer()!.name }}</span>
+                            </div>
+                            <div>
+                                <span class="customers-details-label">Telefono</span>
+                                <span class="customers-details-value">{{ selectedCustomer()!.phone }}</span>
+                            </div>
+                            <div>
+                                <span class="customers-details-label">Correo</span>
+                                <span class="customers-details-value">{{ selectedCustomer()!.email }}</span>
+                            </div>
+                            <div>
+                                <span class="customers-details-label">Tienda</span>
+                                <span class="customers-details-value">{{ selectedCustomer()!.store.name }}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    @if (detailsLoading()) {
+                        <div class="customers-status" role="status" aria-live="polite">
+                            Cargando medidas del cliente...
+                        </div>
+                    }
+
+                    @if (!detailsLoading() && detailsErrorMessage()) {
+                        <div class="customers-create-feedback customers-create-feedback--error" role="status" aria-live="polite">
+                            {{ detailsErrorMessage() }}
+                        </div>
+                    }
+
+                    @if (!detailsLoading() && canCreateMeasurement()) {
+                        <section class="customers-details-section" aria-label="Formulario de medidas del cliente">
+                            <div class="customers-details-actions">
+                                <button
+                                    type="button"
+                                    class="customers-btn customers-btn--primary customers-btn--small"
+                                    (click)="openCreateMeasurementForm()"
+                                >
+                                    Agregar medidas
+                                </button>
+                            </div>
+
+                            @if (measurementFormOpen()) {
+                                <h3 class="customers-details-subtitle">Registrar medidas del cliente</h3>
+
+                                <form
+                                    class="customers-measurement-form"
+                                    [formGroup]="createMeasurementForm"
+                                    (ngSubmit)="createCustomerMeasurement()"
+                                    novalidate
+                                >
+                                    <div class="customers-details-grid">
+                                        <div class="customers-create-field">
+                                            <label for="measurement-chest">Pecho</label>
+                                            <input
+                                                id="measurement-chest"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="chest"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('chest')"
+                                            />
+                                        </div>
+
+                                        <div class="customers-create-field">
+                                            <label for="measurement-waist">Cintura</label>
+                                            <input
+                                                id="measurement-waist"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="waist"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('waist')"
+                                            />
+                                        </div>
+
+                                        <div class="customers-create-field">
+                                            <label for="measurement-hips">Cadera</label>
+                                            <input
+                                                id="measurement-hips"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="hips"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('hips')"
+                                            />
+                                        </div>
+
+                                        <div class="customers-create-field">
+                                            <label for="measurement-neck">Cuello</label>
+                                            <input
+                                                id="measurement-neck"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="neck"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('neck')"
+                                            />
+                                        </div>
+
+                                        <div class="customers-create-field">
+                                            <label for="measurement-sleeve">Manga</label>
+                                            <input
+                                                id="measurement-sleeve"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="sleeve"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('sleeve')"
+                                            />
+                                        </div>
+
+                                        <div class="customers-create-field">
+                                            <label for="measurement-inseam">Entrepierna</label>
+                                            <input
+                                                id="measurement-inseam"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="inseam"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('inseam')"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="customers-create-field customers-measurement-notes-field">
+                                        <label for="measurement-notes">Notas</label>
+                                        <textarea
+                                            id="measurement-notes"
+                                            class="form-control"
+                                            formControlName="notes"
+                                            rows="3"
+                                            maxlength="500"
+                                            placeholder="Preferencias de ajuste, observaciones, etc."
+                                            [class.is-invalid]="isMeasurementCreateInvalid('notes')"
+                                        ></textarea>
+                                    </div>
+
+                                    @if (measurementCreateSuccessMessage()) {
+                                        <div class="customers-create-feedback customers-create-feedback--success" role="status" aria-live="polite">
+                                            {{ measurementCreateSuccessMessage() }}
+                                        </div>
+                                    }
+
+                                    @if (measurementCreateErrorMessage()) {
+                                        <div class="customers-create-feedback customers-create-feedback--error" role="status" aria-live="polite">
+                                            {{ measurementCreateErrorMessage() }}
+                                        </div>
+                                    }
+
+                                    <div class="customers-create-actions customers-update-actions">
+                                        <button
+                                            type="button"
+                                            class="customers-btn customers-btn--secondary"
+                                            [disabled]="creatingMeasurement()"
+                                            (click)="closeMeasurementForm()"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            class="customers-btn customers-btn--primary"
+                                            [disabled]="creatingMeasurement() || createMeasurementForm.invalid"
+                                        >
+                                            @if (creatingMeasurement()) {
+                                                Guardando medidas...
+                                            } @else {
+                                                Registrar medidas
+                                            }
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                        </section>
+                    }
+
+                    @if (!detailsLoading() && customerMeasurement(); as measurement) {
+                        <section class="customers-details-section" aria-label="Medidas del cliente">
+                            <h3 class="customers-details-subtitle">Medidas para confeccionar</h3>
+                            <div class="customers-details-actions">
+                                <button
+                                    type="button"
+                                    class="customers-btn customers-btn--secondary customers-btn--small"
+                                    (click)="openEditMeasurementForm()"
+                                >
+                                    Editar medidas
+                                </button>
+                            </div>
+                            <div class="customers-details-grid">
+                                <div>
+                                    <span class="customers-details-label">Pecho</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.chest) }}</span>
+                                </div>
+                                <div>
+                                    <span class="customers-details-label">Cintura</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.waist) }}</span>
+                                </div>
+                                <div>
+                                    <span class="customers-details-label">Cadera</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.hips) }}</span>
+                                </div>
+                                <div>
+                                    <span class="customers-details-label">Cuello</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.neck) }}</span>
+                                </div>
+                                <div>
+                                    <span class="customers-details-label">Manga</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.sleeve) }}</span>
+                                </div>
+                                <div>
+                                    <span class="customers-details-label">Entrepierna</span>
+                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.inseam) }}</span>
+                                </div>
+                            </div>
+
+                            <div class="customers-details-notes">
+                                <span class="customers-details-label">Notas</span>
+                                <p class="customers-details-value customers-details-value--notes">
+                                    {{ measurement.notes || 'Sin notas registradas.' }}
+                                </p>
+                            </div>
+
+                            @if (measurementFormOpen()) {
+                                <form
+                                    class="customers-measurement-form"
+                                    [formGroup]="createMeasurementForm"
+                                    (ngSubmit)="updateCustomerMeasurement()"
+                                    novalidate
+                                >
+                                    <div class="customers-details-grid">
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-chest">Pecho</label>
+                                            <input
+                                                id="measurement-edit-chest"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="chest"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('chest')"
+                                            />
+                                        </div>
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-waist">Cintura</label>
+                                            <input
+                                                id="measurement-edit-waist"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="waist"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('waist')"
+                                            />
+                                        </div>
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-hips">Cadera</label>
+                                            <input
+                                                id="measurement-edit-hips"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="hips"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('hips')"
+                                            />
+                                        </div>
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-neck">Cuello</label>
+                                            <input
+                                                id="measurement-edit-neck"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="neck"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('neck')"
+                                            />
+                                        </div>
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-sleeve">Manga</label>
+                                            <input
+                                                id="measurement-edit-sleeve"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="sleeve"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('sleeve')"
+                                            />
+                                        </div>
+                                        <div class="customers-create-field">
+                                            <label for="measurement-edit-inseam">Entrepierna</label>
+                                            <input
+                                                id="measurement-edit-inseam"
+                                                type="number"
+                                                class="form-control"
+                                                formControlName="inseam"
+                                                min="0.1"
+                                                step="0.1"
+                                                [class.is-invalid]="isMeasurementCreateInvalid('inseam')"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="customers-create-field customers-measurement-notes-field">
+                                        <label for="measurement-edit-notes">Notas</label>
+                                        <textarea
+                                            id="measurement-edit-notes"
+                                            class="form-control"
+                                            formControlName="notes"
+                                            rows="3"
+                                            maxlength="500"
+                                            placeholder="Preferencias de ajuste, observaciones, etc."
+                                            [class.is-invalid]="isMeasurementCreateInvalid('notes')"
+                                        ></textarea>
+                                    </div>
+
+                                    @if (measurementCreateSuccessMessage()) {
+                                        <div class="customers-create-feedback customers-create-feedback--success" role="status" aria-live="polite">
+                                            {{ measurementCreateSuccessMessage() }}
+                                        </div>
+                                    }
+
+                                    @if (measurementCreateErrorMessage()) {
+                                        <div class="customers-create-feedback customers-create-feedback--error" role="status" aria-live="polite">
+                                            {{ measurementCreateErrorMessage() }}
+                                        </div>
+                                    }
+
+                                    <div class="customers-create-actions customers-update-actions">
+                                        <button
+                                            type="button"
+                                            class="customers-btn customers-btn--secondary"
+                                            [disabled]="updatingMeasurement()"
+                                            (click)="closeMeasurementForm()"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            class="customers-btn customers-btn--primary"
+                                            [disabled]="updatingMeasurement() || createMeasurementForm.invalid"
+                                        >
+                                            @if (updatingMeasurement()) {
+                                                Guardando cambios...
+                                            } @else {
+                                                Guardar medidas
+                                            }
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                        </section>
+                    }
+                </div>
             </section>
         </div>
     }

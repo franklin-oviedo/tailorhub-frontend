@@ -140,7 +140,7 @@
   </article>
 
   @if (errorMessage()) {
-    <div class="feedback feedback-error" role="alert">
+    <div class="feedback feedback-error" role="status" aria-live="polite">
       {{ errorMessage() }}
     </div>
   }

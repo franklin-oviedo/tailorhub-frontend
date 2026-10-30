@@ -10,6 +10,7 @@ import {
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
 import { InvoiceDocument, InvoiceListQuery } from '../../../core/models/invoices/invoice.models';
 import { FiscalDocumentType } from '../../../core/models/invoices/fiscal-document-type.enum';
@@ -17,10 +18,11 @@ import { InvoiceStatus } from '../../../core/models/invoices/invoice-status.enum
 import { INVOICE_STATUS_LABELS } from '../../../core/models/invoices/invoice-status-labels.const';
 import { StoreContextService } from '../../../core/services/store-context.service';
 import { InvoicesService } from '../data-access/invoices.service';
+import { InvoiceFiscalReportPageComponent } from './invoice-fiscal-report-page.component';
 
 @Component({
   selector: 'app-invoices-page',
-  imports: [CurrencyPipe, DatePipe, RouterLink, ReactiveFormsModule],
+  imports: [CurrencyPipe, DatePipe, RouterLink, ReactiveFormsModule, MatDialogModule],
   templateUrl: './invoices-page.html',
   styleUrl: './invoices-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +31,7 @@ export class InvoicesPageComponent {
   private readonly invoicesService = inject(InvoicesService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
   private readonly storeContext = inject(StoreContextService);
 
   private loadedStoreId: string | null = null;
@@ -219,7 +222,20 @@ export class InvoicesPageComponent {
   }
 
   openFiscalReport(): void {
-    this.router.navigate(['/invoices/fiscal-report']);
+    try {
+      this.dialog.open(InvoiceFiscalReportPageComponent, {
+        panelClass: ['th-dialog-panel', 'th-fiscal-report-dialog-panel'],
+        width: 'min(1240px, calc(100vw - 2rem))',
+        maxWidth: '98vw',
+        maxHeight: '92vh',
+        autoFocus: true,
+        restoreFocus: true,
+        disableClose: false,
+      });
+    } catch {
+      // Fallback route if dialog initialization is unavailable.
+      this.router.navigate(['/invoices/fiscal-report']);
+    }
   }
 
   goToPage(page: number): void {

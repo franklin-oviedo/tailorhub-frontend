@@ -76,7 +76,8 @@
           @if (isInvalid('fullName')) {
             <div
               class="invalid-feedback d-block"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               Ingresa tu nombre completo.
             </div>
@@ -110,7 +111,8 @@
           @if (isInvalid('email')) {
             <div
               class="invalid-feedback d-block"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               Ingresa un correo electrónico válido.
             </div>
@@ -144,7 +146,8 @@
           @if (isInvalid('password')) {
             <div
               class="invalid-feedback d-block"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               La contraseña debe tener al menos 6 caracteres.
             </div>
@@ -191,7 +194,8 @@
           @if (isInvalid('role')) {
             <div
               class="invalid-feedback d-block"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               Selecciona un rol.
             </div>
@@ -224,7 +228,8 @@
           @if (isInvalid('storeId')) {
             <div
               class="invalid-feedback d-block"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               El Store ID es requerido.
             </div>
@@ -235,13 +240,9 @@
 
         <!-- Error -->
         @if (errorMessage()) {
-          <ngb-alert
-            type="danger"
-            [dismissible]="false"
-            class="auth-alert"
-          >
+          <div class="auth-feedback auth-feedback--error" role="status" aria-live="polite">
             {{ errorMessage() }}
-          </ngb-alert>
+          </div>
         }
 
 

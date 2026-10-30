@@ -148,7 +148,8 @@
           @if (errorMessage()) {
             <div
               class="feedback feedback-error"
-              role="alert"
+              role="status"
+              aria-live="polite"
             >
               {{ errorMessage() }}
             </div>
