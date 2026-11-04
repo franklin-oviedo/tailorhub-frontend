@@ -798,12 +798,67 @@
     grid-column: auto;
   }
 
-  .appointments-table {
-    min-width: 620px;
+  .appointments-table-wrapper {
+    overflow: visible;
+  }
+
+  .appointments-table,
+  .appointments-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .appointments-table tbody {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .appointments-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    overflow: hidden;
+  }
+
+  .appointments-table tbody tr:hover {
+    background-color: #ffffff;
   }
 
   .appointments-table td {
+    display: block;
+    width: 100%;
     padding: 0.875rem;
+    border: 0;
+  }
+
+  .appointments-table td::before {
+    display: block;
+    margin-bottom: 0.18rem;
+    color: #6b7280;
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+  }
+
+  .appointments-table td:nth-child(1)::before {
+    content: 'Hora';
+  }
+
+  .appointments-table td:nth-child(2)::before {
+    content: 'Cliente';
+  }
+
+  .appointments-table td:nth-child(3)::before {
+    content: 'Teléfono';
+  }
+
+  .appointments-table td:nth-child(4)::before {
+    content: 'Estado';
   }
 
   .appointments-pagination {
@@ -888,10 +943,6 @@
   .appointments-empty {
     min-height: 280px;
     padding: 2rem 1rem;
-  }
-
-  .appointments-table {
-    min-width: 580px;
   }
 
   .appointments-table td {

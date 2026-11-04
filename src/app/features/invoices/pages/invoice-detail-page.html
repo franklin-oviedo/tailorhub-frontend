@@ -332,68 +332,6 @@
         }
       </div>
     </article>
-    @if (draftEditVisible()) {
-      <article class="th-card form-card">
-        <div class="th-card-body">
-          <div class="section-heading">
-            <div>
-              <h3>Editar borrador</h3>
-              <p>Actualiza únicamente los datos permitidos antes de emitir la factura.</p>
-            </div>
-          </div>
-          <form class="operation-form" [formGroup]="draftForm" (ngSubmit)="saveDraft()">
-            <div class="form-field">
-              <label for="draft-currency">Moneda</label>
-              <input
-                id="draft-currency"
-                class="form-control th-input"
-                type="text"
-                formControlName="currency"
-                placeholder="DOP"
-              />
-            </div>
-            <div class="form-field">
-              <label for="draft-due-at">Vencimiento</label>
-              <input
-                id="draft-due-at"
-                class="form-control th-input"
-                type="datetime-local"
-                formControlName="dueAt"
-              />
-            </div>
-            <div class="form-field form-field-full">
-              <label for="draft-notes">Notas</label>
-              <textarea
-                id="draft-notes"
-                class="form-control th-input"
-                rows="3"
-                formControlName="notes"
-                placeholder="Notas de la factura"
-              ></textarea>
-            </div>
-            <div class="form-field form-field-full">
-              <label for="draft-terms">Términos y condiciones</label>
-              <textarea
-                id="draft-terms"
-                class="form-control th-input"
-                rows="3"
-                formControlName="termsAndConditions"
-                placeholder="Términos y condiciones"
-              ></textarea>
-            </div>
-            <div class="form-actions form-field-full">
-              <button type="button" class="btn btn-outline-secondary" (click)="closeAllForms()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn th-btn-primary" [disabled]="savingDraft()">
-                {{ savingDraft() ? 'Guardando...' : 'Guardar cambios' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </article>
-    }
-
     <article class="th-card history-card">
       <div class="th-card-body">
         <div class="section-heading">
@@ -579,6 +517,151 @@
       </div>
     </section>
   }
+</ng-template>
+<ng-template #draftDialogTemplate>
+  <div
+    class="action-dialog action-dialog-draft"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="draft-dialog-title"
+  >
+    <h3 id="draft-dialog-title" class="action-dialog-title">Editar borrador</h3>
+    <p class="action-dialog-message">
+      Actualiza únicamente los datos permitidos antes de emitir la factura.
+    </p>
+    <form
+      class="operation-form dialog-form dialog-form-draft"
+      [formGroup]="draftForm"
+      (ngSubmit)="saveDraft()"
+    >
+      <div class="form-field">
+        <label for="draft-currency">Moneda</label>
+        <input
+          id="draft-currency"
+          class="form-control th-input"
+          type="text"
+          formControlName="currency"
+          placeholder="DOP"
+        />
+      </div>
+      <div class="form-field">
+        <label for="draft-due-at">Vencimiento</label>
+        <input
+          id="draft-due-at"
+          class="form-control th-input"
+          type="datetime-local"
+          formControlName="dueAt"
+        />
+      </div>
+      <div class="form-field form-field-full">
+        <label for="draft-notes">Notas</label>
+        <textarea
+          id="draft-notes"
+          class="form-control th-input"
+          rows="3"
+          formControlName="notes"
+          placeholder="Notas de la factura"
+        ></textarea>
+      </div>
+      <div class="form-field form-field-full">
+        <label for="draft-terms">Términos y condiciones</label>
+        <textarea
+          id="draft-terms"
+          class="form-control th-input"
+          rows="3"
+          formControlName="termsAndConditions"
+          placeholder="Términos y condiciones"
+        ></textarea>
+      </div>
+      <div class="form-field form-field-full draft-config-grid">
+        <section class="draft-config-card" aria-label="Configuración de descuento">
+          <label for="draft-enable-discount">Descuento opcional</label>
+          <div class="tax-option-shell">
+            <label class="tax-toggle" for="draft-enable-discount">
+              <input
+                id="draft-enable-discount"
+                class="form-check-input"
+                type="checkbox"
+                formControlName="enableDiscount"
+              />
+              <span>Aplicar descuento a esta factura</span>
+            </label>
+            @if (draftForm.controls.enableDiscount.value) {
+              <div class="tax-rate-field">
+                <label for="draft-discount-type">Tipo de descuento</label>
+                <select
+                  id="draft-discount-type"
+                  class="form-select th-input"
+                  formControlName="discountType"
+                >
+                  <option value="fixed_amount">Monto fijo</option>
+                  <option value="percentage">Porcentaje</option>
+                </select>
+              </div>
+              <div class="tax-rate-field">
+                <label for="draft-discount-value">Valor del descuento</label>
+                <input
+                  id="draft-discount-value"
+                  class="form-control th-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  formControlName="discountValue"
+                  placeholder="Ej. 500 o 10"
+                />
+                @if (draftForm.controls.discountValue.touched && draftForm.controls.discountValue.invalid) {
+                  <small class="field-error">Ingresa un valor de descuento mayor que cero.</small>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="draft-config-card" aria-label="Configuración de ITBIS">
+          <label for="draft-include-tax">Valor fiscal opcional (ITBIS)</label>
+          <div class="tax-option-shell">
+            <label class="tax-toggle" for="draft-include-tax">
+              <input
+                id="draft-include-tax"
+                class="form-check-input"
+                type="checkbox"
+                formControlName="includeTax"
+              />
+              <span>Incluir ITBIS en esta factura</span>
+            </label>
+            @if (draftForm.controls.includeTax.value) {
+              <div class="tax-rate-field">
+                <label for="draft-tax-rate">Tasa ITBIS (%) <span>Opcional</span></label>
+                <input
+                  id="draft-tax-rate"
+                  class="form-control th-input"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  formControlName="taxRate"
+                  placeholder="Ej. 18"
+                />
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+      <div class="form-actions form-field-full">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="savingDraft()"
+          (click)="closeActiveDialog()"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn th-btn-primary" [disabled]="savingDraft()">
+          {{ savingDraft() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
 </ng-template>
 <ng-template #issueDialogTemplate>
   <div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="issue-dialog-title">

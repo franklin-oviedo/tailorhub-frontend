@@ -147,6 +147,60 @@
   font-weight: 700;
 }
 
+.order-items-summary {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--th-stroke);
+}
+
+.order-items-summary h4 {
+  margin: 0 0 0.55rem;
+  color: var(--th-primary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.order-items-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--th-primary) 3%, white 97%);
+}
+
+.order-item-name {
+  color: var(--th-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.order-item-qty {
+  color: var(--th-text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.order-items-empty {
+  margin: 0;
+  color: var(--th-text-soft);
+  font-size: 0.8rem;
+}
+
 .customer-summary {
   display: grid;
   gap: 0.35rem;
@@ -595,5 +649,14 @@
 
   .invoices-table tbody td {
     grid-column: 1 !important;
+  }
+
+  .order-item-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-item-qty {
+    white-space: normal;
   }
 }

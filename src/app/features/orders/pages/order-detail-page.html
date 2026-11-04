@@ -74,6 +74,23 @@
               <dd>{{ order()!.totalAmount | currency: 'DOP':'symbol':'1.2-2' }}</dd>
             </div>
           </dl>
+          <div class="order-items-summary">
+            <h4>Pedido</h4>
+            @if (order()!.items.length > 0) {
+              <ul class="order-items-list">
+                @for (item of order()!.items; track item.productId + '-' + $index) {
+                  <li class="order-item-row">
+                    <span class="order-item-name">
+                      {{ orderItemName(item) }}
+                    </span>
+                    <span class="order-item-qty">Cantidad: {{ item.quantity }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="order-items-empty">Este pedido no tiene ítems registrados.</p>
+            }
+          </div>
         </div>
       </article>
 

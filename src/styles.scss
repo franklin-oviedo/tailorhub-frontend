@@ -31,6 +31,8 @@ html,
 body {
 	margin: 0;
 	min-height: 100%;
+	width: 100%;
+	overflow-x: clip;
 	font-family: 'Montserrat', 'Segoe UI', sans-serif;
 	color: var(--th-text);
 	background: linear-gradient(165deg, #ffffff 0%, #f5f5f5 58%, #e9edf0 100%);
@@ -38,6 +40,13 @@ body {
 
 * {
 	box-sizing: border-box;
+}
+
+form,
+input,
+select,
+textarea {
+	max-width: 100%;
 }
 
 :focus-visible {
@@ -55,6 +64,21 @@ body {
 	color: var(--th-text);
 	background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
 	box-shadow: 0 1px 0 rgba(26, 42, 64, 0.04);
+}
+
+.th-input.form-control[type='number'],
+.th-input.form-control[type='text'],
+.th-input.form-control[type='email'],
+.th-input.form-control[type='tel'],
+.th-input.form-control[type='datetime-local'],
+.th-input.form-select {
+	font-size: 0.92rem;
+}
+
+textarea.th-input.form-control {
+	min-height: 110px;
+	line-height: 1.45;
+	resize: vertical;
 }
 
 .th-input.form-control:focus,
@@ -421,4 +445,24 @@ mat-card {
 
 .th-appointments-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
 	padding: 0.85rem;
+}
+
+@media (max-width: 767.98px) {
+	.th-input.form-control,
+	.th-input.form-select {
+		min-height: 2.75rem;
+		padding: 0.56rem 0.72rem;
+		font-size: 0.88rem;
+	}
+
+	.th-btn-primary.btn,
+	.btn-outline-secondary {
+		min-height: 2.75rem;
+		padding: 0.55rem 0.82rem;
+		font-size: 0.88rem;
+	}
+
+	textarea.th-input.form-control {
+		min-height: 96px;
+	}
 }

@@ -38,7 +38,7 @@ export class ProductDetailPageComponent {
     if (!id) {
       this.loading.set(false);
       this.errorMessage.set(
-        'No se encontró el producto solicitado.'
+        'No se encontró el servicio solicitado.'
       );
       return;
     }
@@ -51,7 +51,7 @@ export class ProductDetailPageComponent {
       error: () => {
         this.loading.set(false);
         this.errorMessage.set(
-          'No fue posible cargar la información del producto.'
+          'No fue posible cargar la información del servicio.'
         );
       }
     });

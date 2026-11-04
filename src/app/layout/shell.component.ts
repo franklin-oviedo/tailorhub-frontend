@@ -53,8 +53,8 @@ export class ShellComponent {
       ]
     },
     {
-      label: 'Productos',
-      path: '/products',
+      label: 'Servicios',
+      path: '/services',
       roles: [
         'client',
         'employee',
@@ -105,6 +105,15 @@ export class ShellComponent {
       ]
     },
     {
+      label: 'Empleados',
+      path: '/employees',
+      roles: [
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
       label: 'Usuarios',
       path: '/users',
       roles: [
@@ -144,7 +153,7 @@ export class ShellComponent {
       return 'Hola';
     }
 
-    return `Hola, ${user.employee?.name ?? user.customer?.name ?? 'Usuario'}`;
+    return `Hola, ${user.fullName ?? user.employee?.name ?? user.customer?.name ?? 'Usuario'}`;
   });
 
   logout(): void {

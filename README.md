@@ -76,7 +76,7 @@ Estructura por dominio:
 	- `dashboard`
 	- `users`
 	- `stores`
-	- `products`
+	- `products` (servicios)
 	- `orders`
 	- `appointments`
 
@@ -88,7 +88,7 @@ Estructura por dominio:
 - `/dashboard`
 - `/users`
 - `/stores`
-- `/products`
+- `/services`
 - `/orders`
 - `/appointments`
 
@@ -103,7 +103,7 @@ Endpoints soportados por frontend en servicios:
 - Auth: `/auth/register`, `/auth/login`
 - Users: `/users/me`, `/users`, `/users/:id`
 - Stores: `/stores`, `/stores/:id`
-- Products: `/products`, `/products/:id`
+- Services (Products API): `/products`, `/products/:id`
 - Orders: `/orders`, `/orders/:id`, `/orders/:id/status`
 - Appointments: `/appointments`, `/appointments/:id`
 

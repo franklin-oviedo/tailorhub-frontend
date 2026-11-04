@@ -445,6 +445,35 @@
   color: var(--th-text-soft);
   font-weight: 500;
 }
+.tax-option-shell {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--th-stroke);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--th-secondary) 5%, white 95%);
+}
+.tax-toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--th-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.tax-toggle .form-check-input {
+  margin-top: 0.1rem;
+}
+.tax-rate-field {
+  display: grid;
+  gap: 0.35rem;
+}
+.field-error {
+  color: var(--th-error);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -619,6 +648,12 @@
   display: grid;
   gap: 0.8rem;
 }
+.action-dialog-draft {
+  gap: 1rem;
+  max-height: 86vh;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
 .action-dialog-title {
   margin: 0;
   color: var(--th-primary);
@@ -664,6 +699,37 @@
 }
 .dialog-form {
   grid-template-columns: 1fr;
+}
+.dialog-form-draft {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
+.dialog-form-draft .form-field {
+  min-width: 0;
+}
+.dialog-form-draft .form-field-full {
+  grid-column: 1 / -1;
+}
+.dialog-form-draft textarea.th-input {
+  min-height: 96px;
+}
+.dialog-form-draft .form-actions {
+  margin-top: 0.1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--th-stroke);
+}
+.draft-config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.draft-config-card {
+  min-width: 0;
+}
+.draft-config-card > label {
+  display: inline-block;
+  margin-bottom: 0.45rem;
 }
 .payment-dialog-balance {
   display: flex;
@@ -779,6 +845,12 @@
     max-height: calc(min(88vh, 900px) - 8rem);
   }
   .operation-form {
+    grid-template-columns: 1fr;
+  }
+  .dialog-form-draft {
+    grid-template-columns: 1fr;
+  }
+  .draft-config-grid {
     grid-template-columns: 1fr;
   }
   .form-field-full {

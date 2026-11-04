@@ -17,24 +17,24 @@ export class ProductsService {
   private readonly config = inject(ApiConfigService);
 
   list(query: ProductsQuery = {}): Observable<PaginatedResponse<Product>> {
-    return this.http.get<PaginatedResponse<Product>>(`${this.config.baseUrl}/products`, {
+    return this.http.get<PaginatedResponse<Product>>(`${this.config.baseUrl}/services`, {
       params: query as never
     });
   }
 
   detail(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.config.baseUrl}/products/${id}`);
+    return this.http.get<Product>(`${this.config.baseUrl}/services/${id}`);
   }
 
   create(payload: Omit<Product, 'id'>): Observable<Product> {
-    return this.http.post<Product>(`${this.config.baseUrl}/products`, payload);
+    return this.http.post<Product>(`${this.config.baseUrl}/services`, payload);
   }
 
   update(productId: string, payload: Partial<Product>): Observable<Product> {
-    return this.http.patch<Product>(`${this.config.baseUrl}/products/${productId}`, payload);
+    return this.http.patch<Product>(`${this.config.baseUrl}/services/${productId}`, payload);
   }
 
   remove(productId: string): Observable<void> {
-    return this.http.delete<void>(`${this.config.baseUrl}/products/${productId}`);
+    return this.http.delete<void>(`${this.config.baseUrl}/services/${productId}`);
   }
 }

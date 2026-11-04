@@ -13,9 +13,16 @@ export class SessionService {
   constructor(private readonly storeContext: StoreContextService) {}
 
   setUser(user: User): void {
+    const storeId = this.resolveStoreId(user);
+
     this.user.set(user);
     localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
-    this.storeContext.setStoreId(user.store.id);
+
+    if (storeId) {
+      this.storeContext.setStoreId(storeId);
+    } else {
+      this.storeContext.clearStoreId();
+    }
   }
 
   clear(): void {
@@ -36,5 +43,17 @@ export class SessionService {
       localStorage.removeItem(SESSION_USER_KEY);
       return null;
     }
+  }
+
+  private resolveStoreId(user: User): string | null {
+    if (typeof user.store?.id === 'string' && user.store.id.trim().length > 0) {
+      return user.store.id.trim();
+    }
+
+    if (typeof user.storeId === 'string' && user.storeId.trim().length > 0) {
+      return user.storeId.trim();
+    }
+
+    return null;
   }
 }

@@ -9,6 +9,30 @@ export interface UsersQuery {
   limit?: number;
   search?: string;
   role?: UserRole;
+  isActive?: boolean;
+}
+
+export interface CreateUserPayload {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role?: UserRole;
+  storeId?: string;
+}
+
+export interface UpdateUserPayload {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  role?: UserRole;
+  storeId?: string;
+  isActive?: boolean;
+}
+
+export interface DisableUserResponse {
+  message: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -28,11 +52,15 @@ export class UsersService {
     return this.http.get<User>(`${this.config.baseUrl}/users/${userId}`);
   }
 
-  update(userId: string, payload: Partial<User>): Observable<User> {
+  create(payload: CreateUserPayload): Observable<User> {
+    return this.http.post<User>(`${this.config.baseUrl}/users`, payload);
+  }
+
+  update(userId: string, payload: UpdateUserPayload): Observable<User> {
     return this.http.patch<User>(`${this.config.baseUrl}/users/${userId}`, payload);
   }
 
-  remove(userId: string): Observable<void> {
-    return this.http.delete<void>(`${this.config.baseUrl}/users/${userId}`);
+  disable(userId: string): Observable<DisableUserResponse> {
+    return this.http.patch<DisableUserResponse>(`${this.config.baseUrl}/users/${userId}/disable`, {});
   }
 }

@@ -15,7 +15,12 @@ export interface PaginatedResponse<T> {
 export interface User {
   id: string;
   role: UserRole;
-  store: Store;
+  store?: Store;
+  storeId?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  isActive?: boolean;
   employee: Employee | null;
   customer: Customer | null;
   createdAt: string;

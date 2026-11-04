@@ -118,6 +118,7 @@ export class OrdersPageComponent {
   readonly form = this.fb.nonNullable.group({
     customerId: ['', Validators.required],
     items: ['', Validators.required],
+    quantity: [1, [Validators.required, Validators.min(1)]],
     notes: ['', Validators.maxLength(500)],
   });
 
@@ -137,13 +138,13 @@ export class OrdersPageComponent {
   // Form validation
   // =========================================================
 
-  isInvalid(field: 'customerId' | 'items' | 'notes'): boolean {
+  isInvalid(field: 'customerId' | 'items' | 'quantity' | 'notes'): boolean {
     const control = this.form.controls[field];
 
     return control.invalid && (control.touched || control.dirty);
   }
 
-  isValid(field: 'customerId' | 'items' | 'notes'): boolean {
+  isValid(field: 'customerId' | 'items' | 'quantity' | 'notes'): boolean {
     const control = this.form.controls[field];
 
     return control.valid && (control.touched || control.dirty);
@@ -188,29 +189,24 @@ export class OrdersPageComponent {
     this.successMessage.set('');
 
     const raw = this.form.getRawValue();
+    const selectedProduct = this.products().find((product) => product.id === raw.items);
+    const quantity = Number(raw.quantity);
+
+    if (!selectedProduct || !Number.isFinite(quantity) || quantity < 1) {
+      this.loading.set(false);
+      this.errorMessage.set('Selecciona un servicio válido y una cantidad mayor o igual a 1.');
+      this.form.controls.quantity.markAsTouched();
+      return;
+    }
 
     const payload: CreateOrder = {
       customerId: raw.customerId.trim(),
-      items: raw.items
-        .split(',')
-        .map((itemId) => {
-          const product = this.products().find((product) => product.id === itemId);
-
-          return product
-            ? {
-                productId: product.id,
-                quantity: 1,
-              }
-            : null;
-        })
-        .filter(
-          (
-            item,
-          ): item is {
-            productId: string;
-            quantity: number;
-          } => item !== null,
-        ),
+      items: [
+        {
+          productId: selectedProduct.id,
+          quantity,
+        },
+      ],
 
       notes: raw.notes.trim(),
     };
@@ -224,6 +220,7 @@ export class OrdersPageComponent {
         this.form.reset({
           customerId: '',
           items: '',
+          quantity: 1,
           notes: '',
         });
 
@@ -245,6 +242,10 @@ export class OrdersPageComponent {
     if (this.generatingInvoiceOrderId() !== null) {
       return;
     }
+
+    const includeTax = window.confirm(
+      '¿Desea incluir ITBIS en la factura?\n\nAceptar: incluir ITBIS\nCancelar: factura sin ITBIS.',
+    );
 
     const sanitizedOrderId = orderId.trim();
     if (!sanitizedOrderId) {
@@ -268,9 +269,36 @@ export class OrdersPageComponent {
 
         this.invoicesService.createDraftFromOrderMinimal(sanitizedOrderId).subscribe({
           next: (invoice) => {
-            this.generatingInvoiceOrderId.set(null);
-            this.successMessage.set('Factura borrador generada correctamente.');
-            this.router.navigate(['/invoices', invoice.id]);
+            if (includeTax) {
+              this.generatingInvoiceOrderId.set(null);
+              this.successMessage.set('Factura borrador generada correctamente.');
+              this.router.navigate(['/invoices', invoice.id]);
+              return;
+            }
+
+            this.invoicesService
+              .updateDraft(invoice.id, {
+                items: invoice.items.map((item) => ({
+                  id: item.id,
+                  isTaxable: false,
+                  taxRate: 0,
+                })),
+              })
+              .subscribe({
+                next: () => {
+                  this.generatingInvoiceOrderId.set(null);
+                  this.successMessage.set('Factura borrador generada sin ITBIS.');
+                  this.router.navigate(['/invoices', invoice.id]);
+                },
+                error: (error) => {
+                  this.generatingInvoiceOrderId.set(null);
+                  const backendMessage = this.parseApiErrorMessage(error);
+                  this.errorMessage.set(
+                    backendMessage ??
+                      'No fue posible aplicar la opción fiscal sin ITBIS a la factura.',
+                  );
+                },
+              });
           },
           error: (error) => {
             this.generatingInvoiceOrderId.set(null);

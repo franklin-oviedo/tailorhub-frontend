@@ -8,6 +8,7 @@ import { InvoiceDocument } from '../../../core/models/invoices/invoice.models';
 import { INVOICE_STATUS_LABELS } from '../../../core/models/invoices/invoice-status-labels.const';
 import { InvoiceStatus } from '../../../core/models/invoices/invoice-status.enum';
 import { InvoicesService } from '../../invoices/data-access/invoices.service';
+import { ProductsService } from '../../products/data-access/products.service';
 import { OrdersService } from '../data-access/orders.service';
 import { hasFiniteOrderValues } from '../utils/order-numeric-validation.util';
 
@@ -22,6 +23,7 @@ export class OrderDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly ordersService = inject(OrdersService);
   private readonly invoicesService = inject(InvoicesService);
+  private readonly productsService = inject(ProductsService);
 
   readonly loading = signal(false);
   readonly invoicesLoading = signal(false);
@@ -30,6 +32,7 @@ export class OrderDetailPageComponent {
   readonly successMessage = signal('');
   readonly order = signal<Order | null>(null);
   readonly invoices = signal<InvoiceDocument[]>([]);
+  readonly productNamesById = signal<Record<string, string>>({});
 
   constructor() {
     const orderId = this.route.snapshot.paramMap.get('id');
@@ -39,6 +42,7 @@ export class OrderDetailPageComponent {
       return;
     }
 
+    this.loadProductNamesById();
     this.loadOrder(orderId);
     this.loadOrderInvoices(orderId);
   }
@@ -91,6 +95,10 @@ export class OrderDetailPageComponent {
       return;
     }
 
+    const includeTax = window.confirm(
+      '¿Desea incluir ITBIS en la factura?\n\nAceptar: incluir ITBIS\nCancelar: factura sin ITBIS.',
+    );
+
     const sanitizedOrderId = currentOrder.id.trim();
 
     if (!sanitizedOrderId) {
@@ -115,10 +123,37 @@ export class OrderDetailPageComponent {
         this.order.set(order);
 
         this.invoicesService.createDraftFromOrderMinimal(sanitizedOrderId).subscribe({
-          next: () => {
-            this.creatingInvoice.set(false);
-            this.successMessage.set('Factura borrador generada correctamente.');
-            this.loadOrderInvoices(sanitizedOrderId);
+          next: (invoice) => {
+            if (includeTax) {
+              this.creatingInvoice.set(false);
+              this.successMessage.set('Factura borrador generada correctamente.');
+              this.loadOrderInvoices(sanitizedOrderId);
+              return;
+            }
+
+            this.invoicesService
+              .updateDraft(invoice.id, {
+                items: invoice.items.map((item) => ({
+                  id: item.id,
+                  isTaxable: false,
+                  taxRate: 0,
+                })),
+              })
+              .subscribe({
+                next: () => {
+                  this.creatingInvoice.set(false);
+                  this.successMessage.set('Factura borrador generada sin ITBIS.');
+                  this.loadOrderInvoices(sanitizedOrderId);
+                },
+                error: (error) => {
+                  this.creatingInvoice.set(false);
+                  const backendMessage = this.parseApiErrorMessage(error);
+                  this.errorMessage.set(
+                    backendMessage ??
+                      'No fue posible aplicar la opción fiscal sin ITBIS a la factura.',
+                  );
+                },
+              });
           },
           error: (error) => {
             this.creatingInvoice.set(false);
@@ -190,6 +225,26 @@ export class OrderDetailPageComponent {
     }
   }
 
+  orderItemName(item: Order['items'][number]): string {
+    if (typeof item.productName === 'string' && item.productName.trim().length > 0) {
+      return item.productName;
+    }
+
+    const productId = typeof item.productId === 'string' ? item.productId.trim() : '';
+
+    if (productId) {
+      const mappedName = this.productNamesById()[productId];
+
+      if (typeof mappedName === 'string' && mappedName.trim().length > 0) {
+        return mappedName;
+      }
+
+      return productId;
+    }
+
+    return 'Servicio sin nombre';
+  }
+
   invoiceOrderRef(invoice: InvoiceDocument): string {
     const orderNumber = invoice.orderSnapshot.orderNumber;
 
@@ -225,5 +280,29 @@ export class OrderDetailPageComponent {
     }
 
     return null;
+  }
+
+  private loadProductNamesById(): void {
+    this.productsService.list({ page: 1, limit: 200 }).subscribe({
+      next: (response) => {
+        const mappedNames = response.data.reduce<Record<string, string>>((acc, product) => {
+          if (typeof product.id === 'string' && typeof product.name === 'string') {
+            const productId = product.id.trim();
+            const productName = product.name.trim();
+
+            if (productId && productName) {
+              acc[productId] = productName;
+            }
+          }
+
+          return acc;
+        }, {});
+
+        this.productNamesById.set(mappedNames);
+      },
+      error: () => {
+        this.productNamesById.set({});
+      }
+    });
   }
 }

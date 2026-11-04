@@ -9,11 +9,11 @@
 
         <div class="panel-header">
           <h2>
-            Nuevo producto
+            Nuevo servicio
           </h2>
 
           <p>
-            Agrega un producto al catálogo.
+            Agrega un servicio al catálogo.
           </p>
         </div>
 
@@ -48,7 +48,7 @@
 
             @if (isInvalid('name')) {
               <div class="invalid-feedback d-block">
-                Ingresa el nombre del producto.
+                Ingresa el nombre del servicio.
               </div>
             }
 
@@ -109,7 +109,7 @@
               class="form-control th-input"
               formControlName="description"
               rows="4"
-              placeholder="Descripción del producto..."
+              placeholder="Descripción del servicio..."
             ></textarea>
 
           </div>
@@ -129,7 +129,7 @@
               for="productActive"
               class="form-check-label"
             >
-              Producto activo
+              Servicio activo
             </label>
 
           </div>
@@ -170,7 +170,7 @@
 
               <span>Guardando...</span>
             } @else {
-              <span>Crear producto</span>
+              <span>Crear servicio</span>
             }
           </button>
 
@@ -191,7 +191,7 @@
           </h2>
 
           <p class="catalog-description">
-            Productos disponibles
+            Servicios disponibles
           </p>
         </div>
 
@@ -218,7 +218,7 @@
           ></span>
 
           <span>
-            Cargando productos...
+            Cargando servicios...
           </span>
         </div>
 
@@ -276,7 +276,7 @@
 
                 <a
                   class="product-link"
-                  [routerLink]="['/products', product.id]"
+                  [routerLink]="['/services', product.id]"
                 >
                   Ver detalle
 
@@ -306,11 +306,11 @@
           </div>
 
           <h3>
-            No hay productos
+            No hay servicios
           </h3>
 
           <p>
-            Aún no existen productos registrados en el catálogo.
+            Aún no existen servicios registrados en el catálogo.
           </p>
 
         </div>

@@ -119,7 +119,7 @@ export class ProductsPageComponent {
       .subscribe({
         next: () => {
           this.successMessage.set(
-            'Producto creado correctamente.'
+            'Servicio creado correctamente.'
           );
 
           this.resetForm();
@@ -127,7 +127,7 @@ export class ProductsPageComponent {
         },
         error: () => {
           this.errorMessage.set(
-            'No fue posible crear el producto. Inténtalo nuevamente.'
+            'No fue posible crear el servicio. Inténtalo nuevamente.'
           );
         }
       });
@@ -162,7 +162,7 @@ export class ProductsPageComponent {
           this.products.set([]);
 
           this.errorMessage.set(
-            'No fue posible cargar los productos.'
+            'No fue posible cargar los servicios.'
           );
         }
       });

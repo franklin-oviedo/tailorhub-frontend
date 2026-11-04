@@ -22,11 +22,13 @@ import {
   InvoiceDocument,
   IssueInvoicePayload,
   RegisterInvoicePaymentPayload,
+  UpdateInvoiceDraftItemPayload,
   UpdateInvoiceDraftPayload,
 } from '../../../core/models/invoices/invoice.models';
 import { InvoiceStatus } from '../../../core/models/invoices/invoice-status.enum';
 import { PaymentMethod } from '../../../core/models/invoices/payment-method.enum';
 import { FiscalDocumentType } from '../../../core/models/invoices/fiscal-document-type.enum';
+import { DiscountType } from '../../../core/models/invoices/discount-type.enum';
 import { INVOICE_STATUS_LABELS } from '../../../core/models/invoices/invoice-status-labels.const';
 import { InvoicesService } from '../data-access/invoices.service';
 import { InvoiceDocumentComponent } from '../components/invoice-document.component';
@@ -62,6 +64,9 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   @ViewChild('issueDialogTemplate')
   private readonly issueDialogTemplate?: TemplateRef<unknown>;
 
+  @ViewChild('draftDialogTemplate')
+  private readonly draftDialogTemplate?: TemplateRef<unknown>;
+
   @ViewChild('paymentDialogTemplate')
   private readonly paymentDialogTemplate?: TemplateRef<unknown>;
 
@@ -75,6 +80,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   private readonly cancelDialogTemplate?: TemplateRef<unknown>;
 
   private activeDialogRef: MatDialogRef<unknown> | null = null;
+  private draftHadDiscount = false;
 
   readonly invoice = signal<InvoiceDocument | null>(null);
   readonly loading = signal(true);
@@ -90,8 +96,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   readonly creditNoteErrorMessage = signal('');
   readonly debitNoteErrorMessage = signal('');
 
-  readonly draftEditVisible = signal(false);
-
   readonly itemsPage = signal(1);
   readonly paymentsPage = signal(1);
   readonly creditNotesPage = signal(1);
@@ -105,6 +109,11 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     dueAt: [''],
     notes: [''],
     termsAndConditions: [''],
+    enableDiscount: [false],
+    discountType: [DiscountType.FIXED_AMOUNT],
+    discountValue: [null as number | null, [Validators.min(0)]],
+    includeTax: [true],
+    taxRate: [18 as number | null, [Validators.min(0), Validators.max(100)]],
   });
 
   readonly issueForm = this.fb.nonNullable.group({
@@ -262,10 +271,15 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   }
 
   openDraftForm(): void {
-    this.closeActiveDialog();
-    this.closeInlineForms();
+    if (!this.draftDialogTemplate) {
+      return;
+    }
 
-    this.draftEditVisible.set(true);
+    this.openDialog(this.draftDialogTemplate, {
+      width: 'min(760px, calc(100vw - 2rem))',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+    });
   }
 
   openIssueForm(): void {
@@ -273,7 +287,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       return;
     }
 
-    this.closeInlineForms();
     this.openDialog(this.issueDialogTemplate);
   }
 
@@ -292,7 +305,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       amount: currentInvoice.balance > 0 ? currentInvoice.balance : null,
     });
 
-    this.closeInlineForms();
     this.openDialog(this.paymentDialogTemplate);
   }
 
@@ -308,7 +320,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     });
     this.creditNoteErrorMessage.set('');
 
-    this.closeInlineForms();
     this.openDialog(this.creditNoteDialogTemplate);
   }
 
@@ -324,7 +335,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     });
     this.debitNoteErrorMessage.set('');
 
-    this.closeInlineForms();
     this.openDialog(this.debitNoteDialogTemplate);
   }
 
@@ -333,7 +343,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       return;
     }
 
-    this.closeInlineForms();
     this.openDialog(this.cancelDialogTemplate);
   }
 
@@ -367,6 +376,28 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       payload.termsAndConditions = raw.termsAndConditions.trim();
     }
 
+    const discountValue = this.toFiniteNonNegative(raw.discountValue);
+
+    if (raw.enableDiscount) {
+      if (discountValue === null || discountValue <= 0) {
+        this.draftForm.controls.discountValue.setErrors({ invalidDiscountValue: true });
+        this.draftForm.controls.discountValue.markAsTouched();
+        return;
+      }
+
+      payload.discountType = raw.discountType;
+      payload.discountValue = discountValue;
+    } else if (this.draftHadDiscount) {
+      payload.discountType = raw.discountType;
+      payload.discountValue = 0;
+    }
+
+    const taxDraftItems = this.buildTaxDraftItems(currentInvoice, raw.includeTax, raw.taxRate);
+
+    if (taxDraftItems.length > 0) {
+      payload.items = taxDraftItems;
+    }
+
     this.savingDraft.set(true);
     this.clearMessages();
 
@@ -381,7 +412,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
         next: (invoice) => {
           this.invoice.set(invoice);
           this.patchForms(invoice);
-          this.draftEditVisible.set(false);
+          this.closeActiveDialog();
 
           this.showSuccess('Borrador actualizado correctamente.');
         },
@@ -754,11 +785,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
     this.debitNotesPage.update((page) => Math.min(this.debitNotesTotalPages(), page + 1));
   }
 
-  closeAllForms(): void {
-    this.closeInlineForms();
-    this.closeActiveDialog();
-  }
-
   closeActiveDialog(): void {
     this.activeDialogRef?.close();
     this.activeDialogRef = null;
@@ -766,10 +792,6 @@ export class InvoiceDetailPageComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.closeActiveDialog();
-  }
-
-  private closeInlineForms(): void {
-    this.draftEditVisible.set(false);
   }
 
   private openDialog(
@@ -948,14 +970,75 @@ ${previewElement.innerHTML}
     return parsed;
   }
 
+  private toFiniteTaxRate(value: unknown): number | null {
+    const parsed = typeof value === 'number' ? value : Number(value);
+
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+      return null;
+    }
+
+    return parsed;
+  }
+
+  private toFiniteNonNegative(value: unknown): number | null {
+    const parsed = typeof value === 'number' ? value : Number(value);
+
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return null;
+    }
+
+    return parsed;
+  }
+
+  private buildTaxDraftItems(
+    invoice: InvoiceDocument,
+    includeTax: boolean,
+    taxRateValue: number | null,
+  ): UpdateInvoiceDraftItemPayload[] {
+    const taxRate = this.toFiniteTaxRate(taxRateValue);
+
+    return invoice.items.map((item) => {
+      const draftItem: UpdateInvoiceDraftItemPayload = {
+        id: item.id,
+        isTaxable: includeTax,
+      };
+
+      if (!includeTax) {
+        draftItem.taxRate = 0;
+      } else if (taxRate !== null) {
+        draftItem.taxRate = taxRate;
+      }
+
+      return draftItem;
+    });
+  }
+
+  private resolveDraftTaxRate(invoice: InvoiceDocument): number | null {
+    const itemWithTaxRate = invoice.items.find((item) => item.taxRate > 0);
+
+    if (itemWithTaxRate) {
+      return itemWithTaxRate.taxRate;
+    }
+
+    return null;
+  }
+
   private patchForms(invoice: InvoiceDocument): void {
     this.resetPagination();
+    this.draftHadDiscount = invoice.discountAmount > 0;
+    const includeTax = invoice.items.some((item) => item.taxRate > 0 || item.taxAmount > 0);
+    const taxRate = this.resolveDraftTaxRate(invoice);
 
     this.draftForm.reset({
       currency: invoice.currency || 'DOP',
       dueAt: this.toDateTimeLocal(invoice.dueAt),
       notes: invoice.notes ?? '',
       termsAndConditions: invoice.termsAndConditions ?? '',
+      enableDiscount: this.draftHadDiscount,
+      discountType: DiscountType.FIXED_AMOUNT,
+      discountValue: this.draftHadDiscount ? invoice.discountAmount : null,
+      includeTax,
+      taxRate: includeTax ? taxRate : null,
     });
 
     this.issueForm.reset({

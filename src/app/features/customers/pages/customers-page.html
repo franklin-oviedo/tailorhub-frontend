@@ -517,85 +517,27 @@
                                     (ngSubmit)="createCustomerMeasurement()"
                                     novalidate
                                 >
-                                    <div class="customers-details-grid">
-                                        <div class="customers-create-field">
-                                            <label for="measurement-chest">Pecho</label>
-                                            <input
-                                                id="measurement-chest"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="chest"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('chest')"
-                                            />
+                                    @for (group of measurementGroups; track group.title) {
+                                        <div class="customers-measurement-group">
+                                            <h4 class="customers-measurement-group-title">{{ group.title }}</h4>
+                                            <div class="customers-details-grid">
+                                                @for (field of group.fields; track field.key) {
+                                                    <div class="customers-create-field">
+                                                        <label [for]="'measurement-' + field.key">{{ field.label }}</label>
+                                                        <input
+                                                            [id]="'measurement-' + field.key"
+                                                            type="number"
+                                                            class="form-control"
+                                                            [formControlName]="field.key"
+                                                            min="0.1"
+                                                            step="0.1"
+                                                            [class.is-invalid]="isMeasurementCreateInvalid(field.key)"
+                                                        />
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
-
-                                        <div class="customers-create-field">
-                                            <label for="measurement-waist">Cintura</label>
-                                            <input
-                                                id="measurement-waist"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="waist"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('waist')"
-                                            />
-                                        </div>
-
-                                        <div class="customers-create-field">
-                                            <label for="measurement-hips">Cadera</label>
-                                            <input
-                                                id="measurement-hips"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="hips"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('hips')"
-                                            />
-                                        </div>
-
-                                        <div class="customers-create-field">
-                                            <label for="measurement-neck">Cuello</label>
-                                            <input
-                                                id="measurement-neck"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="neck"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('neck')"
-                                            />
-                                        </div>
-
-                                        <div class="customers-create-field">
-                                            <label for="measurement-sleeve">Manga</label>
-                                            <input
-                                                id="measurement-sleeve"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="sleeve"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('sleeve')"
-                                            />
-                                        </div>
-
-                                        <div class="customers-create-field">
-                                            <label for="measurement-inseam">Entrepierna</label>
-                                            <input
-                                                id="measurement-inseam"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="inseam"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('inseam')"
-                                            />
-                                        </div>
-                                    </div>
+                                    }
 
                                     <div class="customers-create-field customers-measurement-notes-field">
                                         <label for="measurement-notes">Notas</label>
@@ -660,37 +602,24 @@
                                     Editar medidas
                                 </button>
                             </div>
-                            <div class="customers-details-grid">
-                                <div>
-                                    <span class="customers-details-label">Pecho</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.chest) }}</span>
+                            @for (group of measurementDisplayGroups(); track group.title) {
+                                <div class="customers-measurement-group">
+                                    <h4 class="customers-measurement-group-title">{{ group.title }}</h4>
+                                    <div class="customers-details-grid">
+                                        @for (item of group.values; track item.label) {
+                                            <div>
+                                                <span class="customers-details-label">{{ item.label }}</span>
+                                                <span class="customers-details-value">{{ item.value }}</span>
+                                            </div>
+                                        }
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="customers-details-label">Cintura</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.waist) }}</span>
-                                </div>
-                                <div>
-                                    <span class="customers-details-label">Cadera</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.hips) }}</span>
-                                </div>
-                                <div>
-                                    <span class="customers-details-label">Cuello</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.neck) }}</span>
-                                </div>
-                                <div>
-                                    <span class="customers-details-label">Manga</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.sleeve) }}</span>
-                                </div>
-                                <div>
-                                    <span class="customers-details-label">Entrepierna</span>
-                                    <span class="customers-details-value">{{ formatMeasurementValue(measurement.inseam) }}</span>
-                                </div>
-                            </div>
+                            }
 
                             <div class="customers-details-notes">
                                 <span class="customers-details-label">Notas</span>
                                 <p class="customers-details-value customers-details-value--notes">
-                                    {{ measurement.notes || 'Sin notas registradas.' }}
+                                    {{ measurementNotesText(measurement) }}
                                 </p>
                             </div>
 
@@ -701,80 +630,27 @@
                                     (ngSubmit)="updateCustomerMeasurement()"
                                     novalidate
                                 >
-                                    <div class="customers-details-grid">
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-chest">Pecho</label>
-                                            <input
-                                                id="measurement-edit-chest"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="chest"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('chest')"
-                                            />
+                                    @for (group of measurementGroups; track group.title) {
+                                        <div class="customers-measurement-group">
+                                            <h4 class="customers-measurement-group-title">{{ group.title }}</h4>
+                                            <div class="customers-details-grid">
+                                                @for (field of group.fields; track field.key) {
+                                                    <div class="customers-create-field">
+                                                        <label [for]="'measurement-edit-' + field.key">{{ field.label }}</label>
+                                                        <input
+                                                            [id]="'measurement-edit-' + field.key"
+                                                            type="number"
+                                                            class="form-control"
+                                                            [formControlName]="field.key"
+                                                            min="0.1"
+                                                            step="0.1"
+                                                            [class.is-invalid]="isMeasurementCreateInvalid(field.key)"
+                                                        />
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-waist">Cintura</label>
-                                            <input
-                                                id="measurement-edit-waist"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="waist"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('waist')"
-                                            />
-                                        </div>
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-hips">Cadera</label>
-                                            <input
-                                                id="measurement-edit-hips"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="hips"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('hips')"
-                                            />
-                                        </div>
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-neck">Cuello</label>
-                                            <input
-                                                id="measurement-edit-neck"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="neck"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('neck')"
-                                            />
-                                        </div>
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-sleeve">Manga</label>
-                                            <input
-                                                id="measurement-edit-sleeve"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="sleeve"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('sleeve')"
-                                            />
-                                        </div>
-                                        <div class="customers-create-field">
-                                            <label for="measurement-edit-inseam">Entrepierna</label>
-                                            <input
-                                                id="measurement-edit-inseam"
-                                                type="number"
-                                                class="form-control"
-                                                formControlName="inseam"
-                                                min="0.1"
-                                                step="0.1"
-                                                [class.is-invalid]="isMeasurementCreateInvalid('inseam')"
-                                            />
-                                        </div>
-                                    </div>
+                                    }
 
                                     <div class="customers-create-field customers-measurement-notes-field">
                                         <label for="measurement-edit-notes">Notas</label>

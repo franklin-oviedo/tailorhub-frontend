@@ -36,7 +36,7 @@
 
         <!-- Items -->
         <div class="form-field">
-          <label for="orderItems" class="form-label"> Producto </label>
+          <label for="orderItems" class="form-label"> Servicio </label>
 
           <select
             id="orderItems"
@@ -45,7 +45,7 @@
             [class.is-invalid]="isInvalid('items')"
             [class.is-valid]="isValid('items')"
           >
-            <option value="" disabled>Selecciona un producto</option>
+            <option value="" disabled>Selecciona un servicio</option>
 
             @for (product of products(); track product.id) {
               <option [value]="product.id">{{ product.name }} - DOP$ {{ product.price }}</option>
@@ -54,6 +54,26 @@
 
           @if (isInvalid('items')) {
             <div class="invalid-feedback d-block">Los items son obligatorios.</div>
+          }
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-field">
+          <label for="orderQuantity" class="form-label">Cantidad unitaria</label>
+
+          <input
+            id="orderQuantity"
+            class="form-control th-input"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="quantity"
+            [class.is-invalid]="isInvalid('quantity')"
+            [class.is-valid]="isValid('quantity')"
+          />
+
+          @if (isInvalid('quantity')) {
+            <div class="invalid-feedback d-block">La cantidad debe ser mayor o igual a 1.</div>
           }
         </div>
 

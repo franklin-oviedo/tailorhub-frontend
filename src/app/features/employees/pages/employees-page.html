@@ -1,0 +1,265 @@
+<article class="employees-page">
+  <header class="employees-page-header">
+    <div>
+      <h1 class="employees-page-title">Empleados</h1>
+      <p class="employees-page-subtitle">Administra el equipo de trabajo y su estado operativo.</p>
+    </div>
+
+    <button type="button" class="btn employees-btn-minimal employees-btn-primary" (click)="openCreateDialog()">
+      Crear empleado
+    </button>
+  </header>
+
+  @if (successMessage()) {
+    <div class="feedback feedback-success" role="status">{{ successMessage() }}</div>
+  }
+
+  @if (errorMessage()) {
+    <div class="feedback feedback-error" role="status" aria-live="polite">{{ errorMessage() }}</div>
+  }
+
+  <section class="th-card employees-filters-card" aria-label="Filtros de empleados">
+    <div class="th-card-body">
+      <form class="employees-filters-form" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+        <div class="form-floating">
+          <input
+            id="employeesSearch"
+            type="search"
+            class="form-control th-input"
+            formControlName="search"
+            placeholder="Buscar por nombre, correo o teléfono"
+          />
+          <label for="employeesSearch">Buscar</label>
+        </div>
+
+        <div class="form-floating">
+          <select id="employeesStatus" class="form-select th-input" formControlName="active">
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+          <label for="employeesStatus">Estado</label>
+        </div>
+
+        <div class="employees-filters-actions">
+          <button type="submit" class="btn employees-btn-minimal employees-btn-primary">Aplicar</button>
+          <button type="button" class="btn employees-btn-minimal employees-btn-quiet" (click)="clearFilters()">
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="th-card employees-table-card" aria-label="Listado de empleados">
+    <div class="th-card-body">
+      <div class="th-table-shell">
+        <div class="th-table-scroll">
+          <table class="table table-hover align-middle employees-table">
+            <tbody>
+              <tr class="employees-table-heading">
+                <th scope="col">Nombre</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Tienda</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Acciones</th>
+              </tr>
+              @for (employee of paginatedEmployees(); track employee.id) {
+                <tr>
+                  <td>{{ employee.name }}</td>
+                  <td>{{ employee.email || '-' }}</td>
+                  <td>{{ employee.phone || '-' }}</td>
+                  <td>{{ storeName(employee) }}</td>
+                  <td>
+                    <span class="employee-status" [class.employee-status-inactive]="!employee.active">
+                      {{ employee.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>{{ employee.user?.id || '-' }}</td>
+                  <td>
+                    <div class="employees-actions">
+                      <button
+                        type="button"
+                        class="btn employees-btn-minimal employees-btn-quiet"
+                        (click)="openEditDialog(employee)"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn employees-btn-minimal employees-btn-danger"
+                        (click)="removeEmployee(employee)"
+                        [disabled]="removingId() === employee.id"
+                      >
+                        @if (removingId() === employee.id) {
+                          Eliminando...
+                        } @else {
+                          Eliminar
+                        }
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <p class="employees-loading" role="status" aria-live="polite">Cargando empleados...</p>
+      }
+
+      @if (isEmpty()) {
+        <div class="employees-empty" role="status" aria-live="polite">
+          <span class="employees-empty-title">No hay empleados para mostrar</span>
+          <span class="employees-empty-description">Crea un empleado o ajusta los filtros.</span>
+        </div>
+      }
+
+      @if (!loading() && totalPages() > 1) {
+        <nav class="employees-pagination" aria-label="Paginación de empleados">
+          <button
+            type="button"
+            class="btn employees-btn-minimal employees-btn-quiet"
+            (click)="previousPage()"
+            [disabled]="currentPage() <= 1"
+          >
+            Anterior
+          </button>
+          <span class="employees-pagination-status">Página {{ currentPage() }} de {{ totalPages() }}</span>
+          <button
+            type="button"
+            class="btn employees-btn-minimal employees-btn-quiet"
+            (click)="nextPage()"
+            [disabled]="currentPage() >= totalPages()"
+          >
+            Siguiente
+          </button>
+        </nav>
+      }
+    </div>
+  </section>
+</article>
+
+<ng-template #employeeDialogTemplate>
+  <section
+    class="employees-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="employee-dialog-title"
+    aria-describedby="employee-dialog-description"
+  >
+    <header class="employees-dialog-header">
+      <div>
+        <h2 id="employee-dialog-title">{{ dialogTitle() }}</h2>
+        <p id="employee-dialog-description">Completa la información del empleado.</p>
+      </div>
+      <button type="button" class="employees-dialog-close" aria-label="Cerrar" (click)="closeDialog()">×</button>
+    </header>
+
+    <form class="employees-dialog-form" [formGroup]="employeeForm" (ngSubmit)="submitEmployee()" novalidate>
+      <div class="form-floating">
+        <input
+          id="employeeName"
+          type="text"
+          class="form-control th-input"
+          formControlName="name"
+          [class.is-invalid]="isInvalid('name')"
+          placeholder="Nombre"
+        />
+        <label for="employeeName">Nombre</label>
+      </div>
+
+      <div class="form-floating">
+        <input
+          id="employeeEmail"
+          type="email"
+          class="form-control th-input"
+          formControlName="email"
+          [class.is-invalid]="isInvalid('email')"
+          placeholder="Correo"
+        />
+        <label for="employeeEmail">Correo</label>
+      </div>
+
+      <div class="form-floating">
+        <input
+          id="employeePhone"
+          type="text"
+          class="form-control th-input"
+          formControlName="phone"
+          placeholder="Teléfono"
+        />
+        <label for="employeePhone">Teléfono</label>
+      </div>
+
+      <div class="form-floating">
+        <textarea
+          id="employeeNotes"
+          class="form-control th-input"
+          formControlName="notes"
+          placeholder="Notas"
+        ></textarea>
+        <label for="employeeNotes">Notas</label>
+      </div>
+
+      <div class="form-floating">
+        @if (isManager()) {
+          <input
+            id="employeeStore"
+            type="text"
+            class="form-control th-input"
+            [value]="currentStoreId() || ''"
+            disabled
+          />
+        } @else {
+          <select id="employeeStore" class="form-select th-input" formControlName="storeId">
+            <option value="" disabled>Selecciona una tienda</option>
+            @for (store of stores(); track store.id) {
+              <option [value]="store.id">{{ store.name }}</option>
+            }
+          </select>
+        }
+        <label for="employeeStore">Tienda</label>
+      </div>
+
+      <div class="form-floating">
+        <input
+          id="employeeUserId"
+          type="text"
+          class="form-control th-input"
+          formControlName="userId"
+          placeholder="User ID (opcional)"
+        />
+        <label for="employeeUserId">User ID (opcional)</label>
+      </div>
+
+      <div class="form-check employees-active-check">
+        <input id="employeeActive" type="checkbox" class="form-check-input" formControlName="active" />
+        <label class="form-check-label" for="employeeActive">Activo</label>
+      </div>
+
+      <div class="employees-dialog-actions">
+        <button type="button" class="btn employees-btn-minimal employees-btn-quiet" (click)="closeDialog()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn employees-btn-minimal employees-btn-primary"
+          [disabled]="saving() || loadingStores()"
+        >
+          @if (saving()) {
+            Guardando...
+          } @else if (formMode() === 'edit') {
+            Guardar cambios
+          } @else {
+            Crear empleado
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+</ng-template>
