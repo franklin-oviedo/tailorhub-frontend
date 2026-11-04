@@ -2,14 +2,8 @@
   <header class="users-page-header">
     <div>
       <h1 class="users-page-title">Usuarios</h1>
-      <p class="users-page-subtitle">Gestiona usuarios de forma clara y segura.</p>
+      <p class="users-page-subtitle">Edita y administra cuentas de empleados.</p>
     </div>
-
-    @if (canCreateUsers()) {
-      <button type="button" class="btn users-btn-minimal users-btn-primary users-create-button" (click)="openCreateDialog()">
-        Crear usuario
-      </button>
-    }
   </header>
 
   @if (successMessage()) {
@@ -36,18 +30,6 @@
             placeholder="Buscar por nombre, correo o teléfono"
           />
           <label for="usersSearch">Buscar usuario</label>
-        </div>
-
-        <div class="form-floating">
-          <select id="usersRoleFilter" class="form-select th-input" formControlName="role">
-            <option value="all">Todos los roles</option>
-            <option value="super_admin">Super admin</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="employee">Empleado</option>
-            <option value="client">Cliente</option>
-          </select>
-          <label for="usersRoleFilter">Rol</label>
         </div>
 
         <div class="form-floating">
@@ -136,7 +118,7 @@
       @if (!loading() && isEmpty()) {
         <div class="users-empty" role="status" aria-live="polite">
           <span class="users-empty-title">No hay usuarios para mostrar</span>
-          <span class="users-empty-description">Ajusta los filtros o crea un nuevo usuario.</span>
+          <span class="users-empty-description">Ajusta los filtros e intenta nuevamente.</span>
         </div>
       }
 
@@ -178,7 +160,7 @@
     <header class="users-dialog-header">
       <div>
         <h2 id="users-dialog-title">{{ dialogTitle() }}</h2>
-        <p id="users-dialog-description">Completa los datos del usuario y guarda los cambios.</p>
+        <p id="users-dialog-description">Actualiza la información del usuario y guarda los cambios.</p>
       </div>
 
       <button type="button" class="users-dialog-close" aria-label="Cerrar" (click)="closeUserDialog()">
@@ -187,48 +169,6 @@
     </header>
 
     <form class="users-dialog-form" [formGroup]="userForm" (ngSubmit)="submitUser()" novalidate>
-      @if (!isEditing()) {
-        <div class="form-floating">
-          <select
-            id="userSourceType"
-            class="form-select th-input"
-            formControlName="sourceType"
-            [class.is-invalid]="isInvalid('sourceType')"
-            (change)="onSourceTypeChange()"
-          >
-            <option value="employee">Empleado existente</option>
-            <option value="customer">Cliente existente</option>
-          </select>
-          <label for="userSourceType">Origen</label>
-        </div>
-
-        <div class="form-floating">
-          <select
-            id="userSourceId"
-            class="form-select th-input"
-            formControlName="sourceId"
-            [class.is-invalid]="isInvalid('sourceId')"
-            (change)="onSourceEntityChange()"
-          >
-            <option value="" disabled>Selecciona una persona</option>
-            @if (selectedSourceType() === 'employee') {
-              @for (employee of filteredEmployees(); track employee.id) {
-                <option [value]="employee.id">
-                  {{ employee.name }} {{ employee.email ? '(' + employee.email + ')' : '' }}
-                </option>
-              }
-            } @else {
-              @for (customer of filteredCustomers(); track customer.id) {
-                <option [value]="customer.id">
-                  {{ customer.name }} {{ customer.email ? '(' + customer.email + ')' : '' }}
-                </option>
-              }
-            }
-          </select>
-          <label for="userSourceId">Empleado o cliente</label>
-        </div>
-      }
-
       <div class="form-floating">
         <input
           id="userFullName"
@@ -237,7 +177,6 @@
           formControlName="fullName"
           [class.is-invalid]="isInvalid('fullName')"
           placeholder="Nombre completo"
-          [readonly]="!isEditing()"
         />
         <label for="userFullName">Nombre completo</label>
       </div>
@@ -250,7 +189,6 @@
           formControlName="email"
           [class.is-invalid]="isInvalid('email')"
           placeholder="correo@tailorhub.com"
-          [readonly]="!isEditing()"
         />
         <label for="userEmail">Correo</label>
       </div>
@@ -263,7 +201,6 @@
           formControlName="phone"
           [class.is-invalid]="isInvalid('phone')"
           placeholder="+57 300 123 4567"
-          [readonly]="!isEditing()"
         />
         <label for="userPhone">Teléfono</label>
       </div>
@@ -275,15 +212,9 @@
           class="form-control th-input"
           formControlName="password"
           [class.is-invalid]="isInvalid('password')"
-          [placeholder]="isEditing() ? 'Contraseña (opcional)' : 'Contraseña'"
+          placeholder="Contraseña (opcional)"
         />
-        <label for="userPassword">
-          @if (isEditing()) {
-            Contraseña (opcional)
-          } @else {
-            Contraseña
-          }
-        </label>
+        <label for="userPassword">Contraseña (opcional)</label>
       </div>
 
       <div class="form-floating">
@@ -314,24 +245,24 @@
         <label for="userStore">Tienda</label>
       </div>
 
-      @if (isEditing()) {
-        <div class="form-check users-active-check">
-          <input id="userIsActive" type="checkbox" class="form-check-input" formControlName="isActive" />
-          <label class="form-check-label" for="userIsActive">Usuario activo</label>
-        </div>
-      }
+      <div class="form-check users-active-check">
+        <input id="userIsActive" type="checkbox" class="form-check-input" formControlName="isActive" />
+        <label class="form-check-label" for="userIsActive">Usuario activo</label>
+      </div>
 
       <div class="users-dialog-actions">
         <button type="button" class="btn users-btn-minimal users-btn-quiet" (click)="closeUserDialog()" [disabled]="savingUser()">
           Cancelar
         </button>
-        <button type="submit" class="btn users-btn-minimal users-btn-primary" [disabled]="savingUser() || loadingStores()">
+        <button
+          type="submit"
+          class="btn users-btn-minimal users-btn-primary"
+          [disabled]="savingUser() || loadingStores()"
+        >
           @if (savingUser()) {
             Guardando...
-          } @else if (isEditing()) {
-            Guardar cambios
           } @else {
-            Crear usuario
+            Guardar cambios
           }
         </button>
       </div>

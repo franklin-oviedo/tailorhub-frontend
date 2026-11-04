@@ -9,7 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -54,6 +54,7 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   private readonly invoicesService = inject(InvoicesService);
   private readonly fb = inject(FormBuilder);
   private readonly dialog = inject(MatDialog);
+  private readonly document = inject(DOCUMENT);
 
   @ViewChild('previewDocument')
   private readonly previewDocument?: ElementRef<HTMLElement>;
@@ -857,57 +858,34 @@ export class InvoiceDetailPageComponent implements OnDestroy {
       return;
     }
 
-    const popup = window.open('', '_blank', 'width=1024,height=768');
-
-    if (!popup) {
-      this.showError('Tu navegador bloqueó la ventana de impresión.');
+    if (typeof globalThis.print !== 'function') {
+      this.showError('La impresión no está disponible en este navegador.');
       return;
     }
 
-    const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-      .map((node) => node.outerHTML)
-      .join('\n');
+    const body = this.document.body;
 
-    popup.document.open();
-
-    popup.document.write(
-      `<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<base href="${document.baseURI}">
-<title>Factura</title>
-${headStyles}
-<style>
-html,body{margin:0;padding:0;background:white}
-body{padding:16px}
-@media print{body{padding:0}}
-</style>
-</head>
-<body>
-${previewElement.innerHTML}
-</body>
-</html>`,
-    );
-
-    popup.document.close();
-
-    const doPrint = () => {
-      popup.focus();
-      popup.print();
-    };
-
-    if (popup.document.readyState === 'complete') {
-      setTimeout(doPrint, 120);
-    } else {
-      popup.addEventListener('load', () => setTimeout(doPrint, 120), {
-        once: true,
-      });
+    if (!body) {
+      this.showError('No fue posible preparar el documento para impresión.');
+      return;
     }
 
-    popup.addEventListener('afterprint', () => popup.close(), {
-      once: true,
-    });
+    body.classList.add('th-print-invoice');
+
+    const cleanupPrintClass = () => {
+      body.classList.remove('th-print-invoice');
+    };
+
+    globalThis.addEventListener('afterprint', cleanupPrintClass, { once: true });
+
+    setTimeout(() => {
+      try {
+        globalThis.print();
+      } catch {
+        cleanupPrintClass();
+        this.showError('No fue posible abrir la impresión del documento.');
+      }
+    }, 120);
   }
 
   private showSuccess(message: string): void {

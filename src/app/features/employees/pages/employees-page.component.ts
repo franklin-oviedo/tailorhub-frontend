@@ -11,9 +11,11 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
-import { Store } from '../../../core/models/domain.models';
+import { Store, UserRole } from '../../../core/models/domain.models';
 import { SessionService } from '../../../core/services/session.service';
+import { ConfirmDialogComponent } from '../../../core/ui/confirm-dialog.component';
 import { StoresService } from '../../stores/data-access/stores.service';
+import { CreateUserPayload, UsersService } from '../../users/data-access/users.service';
 import {
   CreateEmployeePayload,
   EmployeeRecord,
@@ -36,6 +38,7 @@ export class EmployeesPageComponent implements OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly employeesService = inject(EmployeesService);
   private readonly storesService = inject(StoresService);
+  private readonly usersService = inject(UsersService);
   private readonly session = inject(SessionService);
 
   @ViewChild('employeeDialogTemplate')
@@ -49,6 +52,7 @@ export class EmployeesPageComponent implements OnDestroy {
   readonly saving = signal(false);
   readonly removingId = signal<string | null>(null);
   readonly loadingStores = signal(false);
+  readonly managerStoreName = signal('');
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly searchTerm = signal('');
@@ -60,6 +64,33 @@ export class EmployeesPageComponent implements OnDestroy {
   readonly currentRole = computed(() => this.session.role());
   readonly currentStoreId = computed(() => this.resolveCurrentStoreId());
   readonly isManager = computed(() => this.currentRole() === 'manager');
+  readonly isCreateMode = computed(() => this.formMode() === 'create');
+  readonly availableAccountRoles = computed<UserRole[]>(() => {
+    const role = this.currentRole();
+
+    if (role === 'super_admin' || role === 'admin') {
+      return ['admin', 'manager', 'employee'];
+    }
+
+    return ['employee'];
+  });
+  readonly managerStoreLabel = computed(() => {
+    const explicitStoreName = this.managerStoreName().trim();
+
+    if (explicitStoreName.length > 0) {
+      return explicitStoreName;
+    }
+
+    const storeId = this.currentStoreId();
+
+    if (!storeId) {
+      return 'Sin tienda asignada';
+    }
+
+    const mappedStore = this.stores().find((store) => store.id === storeId);
+
+    return mappedStore?.name ?? storeId;
+  });
   readonly filteredEmployees = computed(() => {
     const normalizedSearch = this.searchTerm().toLowerCase();
 
@@ -111,7 +142,8 @@ export class EmployeesPageComponent implements OnDestroy {
     notes: [''],
     active: [true],
     storeId: ['', Validators.required],
-    userId: ['']
+    accountRole: ['employee' as UserRole, Validators.required],
+    accountPassword: ['', [Validators.required, Validators.minLength(8)]]
   });
 
   constructor() {
@@ -169,7 +201,19 @@ export class EmployeesPageComponent implements OnDestroy {
 
     const mappedStore = this.stores().find((store) => store.id === storeId);
 
-    return mappedStore?.name ?? storeId;
+    if (mappedStore?.name) {
+      return mappedStore.name;
+    }
+
+    if (this.isManager() && storeId === this.currentStoreId()) {
+      const managerStoreName = this.managerStoreName().trim();
+
+      if (managerStoreName.length > 0) {
+        return managerStoreName;
+      }
+    }
+
+    return storeId;
   }
 
   openCreateDialog(): void {
@@ -177,6 +221,7 @@ export class EmployeesPageComponent implements OnDestroy {
     this.editingEmployeeId.set(null);
     this.resetForm();
     this.errorMessage.set('');
+    this.ensureStoresAvailable();
     this.openDialog();
   }
 
@@ -190,10 +235,12 @@ export class EmployeesPageComponent implements OnDestroy {
       notes: employee.notes ?? '',
       active: employee.active,
       storeId: employee.store?.id ?? this.currentStoreId() ?? '',
-      userId: employee.user?.id ?? ''
+      accountRole: 'employee',
+      accountPassword: ''
     });
     this.configureStoreControl();
     this.errorMessage.set('');
+    this.ensureStoresAvailable();
     this.openDialog();
   }
 
@@ -223,8 +270,7 @@ export class EmployeesPageComponent implements OnDestroy {
       ...(raw.phone.trim().length > 0 ? { phone: raw.phone.trim() } : {}),
       ...(raw.notes.trim().length > 0 ? { notes: raw.notes.trim() } : {}),
       active: raw.active,
-      ...(raw.storeId.trim().length > 0 ? { storeId: raw.storeId.trim() } : {}),
-      ...(raw.userId.trim().length > 0 ? { userId: raw.userId.trim() } : {})
+      ...(raw.storeId.trim().length > 0 ? { storeId: raw.storeId.trim() } : {})
     };
 
     if (this.formMode() === 'edit') {
@@ -253,19 +299,73 @@ export class EmployeesPageComponent implements OnDestroy {
       return;
     }
 
-    this.employeesService
-      .create(payload)
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this.successMessage.set('Empleado creado correctamente.');
-          this.closeDialog();
-          this.loadEmployees();
-        },
-        error: () => {
-          this.errorMessage.set('No fue posible crear el empleado.');
+    const userPayload: CreateUserPayload = {
+      fullName: raw.name.trim(),
+      email: raw.email.trim(),
+      phone: raw.phone.trim(),
+      password: raw.accountPassword,
+      role: raw.accountRole,
+      ...(raw.storeId.trim().length > 0 ? { storeId: raw.storeId.trim() } : {})
+    };
+
+    this.usersService.create(userPayload).subscribe({
+      next: (user) => {
+        const linkedEmployeeId = user.employee?.id?.trim() ?? '';
+
+        const employeePayload: CreateEmployeePayload = {
+          name: raw.name.trim(),
+          email: raw.email.trim(),
+          phone: raw.phone.trim(),
+          ...(raw.notes.trim().length > 0 ? { notes: raw.notes.trim() } : {}),
+          active: raw.active,
+          ...(raw.storeId.trim().length > 0 ? { storeId: raw.storeId.trim() } : {}),
+          userId: user.id
+        };
+
+        if (linkedEmployeeId.length > 0) {
+          this.employeesService
+            .update(linkedEmployeeId, employeePayload)
+            .pipe(finalize(() => this.saving.set(false)))
+            .subscribe({
+              next: () => {
+                this.successMessage.set('Empleado y usuario creados correctamente.');
+                this.closeDialog();
+                this.loadEmployees();
+              },
+              error: () => {
+                this.saving.set(false);
+                this.errorMessage.set(
+                  'La cuenta de usuario se creó, pero no se pudo actualizar su registro de empleado.'
+                );
+                this.loadEmployees();
+              }
+            });
+          return;
         }
-      });
+
+        this.employeesService
+          .create(employeePayload)
+          .pipe(finalize(() => this.saving.set(false)))
+          .subscribe({
+            next: () => {
+              this.successMessage.set('Empleado y usuario creados correctamente.');
+              this.closeDialog();
+              this.loadEmployees();
+            },
+            error: () => {
+              this.saving.set(false);
+              this.errorMessage.set(
+                'La cuenta de usuario se creó, pero no se pudo crear su registro de empleado.'
+              );
+              this.loadEmployees();
+            }
+          });
+      },
+      error: () => {
+        this.saving.set(false);
+        this.errorMessage.set('No fue posible crear la cuenta de usuario para el empleado.');
+      }
+    });
   }
 
   removeEmployee(employee: EmployeeRecord): void {
@@ -273,25 +373,40 @@ export class EmployeesPageComponent implements OnDestroy {
       return;
     }
 
-    if (!window.confirm(`¿Eliminar empleado ${employee.name}?`)) {
-      return;
-    }
-
-    this.removingId.set(employee.id);
-    this.errorMessage.set('');
-    this.successMessage.set('');
-
-    this.employeesService
-      .remove(employee.id)
-      .pipe(finalize(() => this.removingId.set(null)))
-      .subscribe({
-        next: () => {
-          this.successMessage.set('Empleado eliminado correctamente.');
-          this.loadEmployees();
-        },
-        error: () => {
-          this.errorMessage.set('No fue posible eliminar el empleado.');
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        width: 'min(420px, calc(100vw - 2rem))',
+        maxWidth: '95vw',
+        data: {
+          title: 'Eliminar empleado',
+          message: `¿Eliminar empleado ${employee.name}?`,
+          confirmText: 'Eliminar',
+          cancelText: 'Cancelar',
+          variant: 'danger'
         }
+      })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+
+        this.removingId.set(employee.id);
+        this.errorMessage.set('');
+        this.successMessage.set('');
+
+        this.employeesService
+          .remove(employee.id)
+          .pipe(finalize(() => this.removingId.set(null)))
+          .subscribe({
+            next: () => {
+              this.successMessage.set('Empleado eliminado correctamente.');
+              this.loadEmployees();
+            },
+            error: () => {
+              this.errorMessage.set('No fue posible eliminar el empleado.');
+            }
+          });
       });
   }
 
@@ -325,7 +440,8 @@ export class EmployeesPageComponent implements OnDestroy {
       notes: '',
       active: true,
       storeId: this.currentStoreId() ?? '',
-      userId: ''
+      accountRole: this.availableAccountRoles()[0] ?? 'employee',
+      accountPassword: ''
     });
     this.configureStoreControl();
   }
@@ -338,6 +454,39 @@ export class EmployeesPageComponent implements OnDestroy {
     }
 
     this.employeeForm.controls.storeId.enable({ emitEvent: false });
+
+    if (this.formMode() === 'edit') {
+      this.employeeForm.controls.email.setValidators([Validators.email]);
+      this.employeeForm.controls.email.updateValueAndValidity({ emitEvent: false });
+      this.employeeForm.controls.phone.clearValidators();
+      this.employeeForm.controls.phone.updateValueAndValidity({ emitEvent: false });
+      this.employeeForm.controls.accountRole.clearValidators();
+      this.employeeForm.controls.accountRole.updateValueAndValidity({ emitEvent: false });
+      this.employeeForm.controls.accountPassword.clearValidators();
+      this.employeeForm.controls.accountPassword.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    this.employeeForm.controls.email.setValidators([Validators.required, Validators.email]);
+    this.employeeForm.controls.email.updateValueAndValidity({ emitEvent: false });
+    this.employeeForm.controls.phone.setValidators([Validators.required, Validators.minLength(7)]);
+    this.employeeForm.controls.phone.updateValueAndValidity({ emitEvent: false });
+    this.employeeForm.controls.accountRole.setValidators([Validators.required]);
+    this.employeeForm.controls.accountRole.updateValueAndValidity({ emitEvent: false });
+    this.employeeForm.controls.accountPassword.setValidators([Validators.required, Validators.minLength(8)]);
+    this.employeeForm.controls.accountPassword.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private ensureStoresAvailable(): void {
+    if (this.isManager() || this.loadingStores()) {
+      return;
+    }
+
+    if (this.stores().length > 0) {
+      return;
+    }
+
+    this.loadStores();
   }
 
   private loadEmployees(): void {
@@ -359,22 +508,69 @@ export class EmployeesPageComponent implements OnDestroy {
 
   private loadStores(): void {
     if (this.isManager()) {
+      const sessionStoreName = this.session.user()?.store?.name?.trim() ?? '';
+      const currentStoreId = this.currentStoreId();
+
+      if (sessionStoreName.length > 0) {
+        this.managerStoreName.set(sessionStoreName);
+        this.stores.set([]);
+        return;
+      }
+
+      if (!currentStoreId) {
+        this.managerStoreName.set('');
+        this.stores.set([]);
+        return;
+      }
+
+      this.loadingStores.set(true);
+      this.storesService
+        .detail(currentStoreId)
+        .pipe(finalize(() => this.loadingStores.set(false)))
+        .subscribe({
+          next: (store) => {
+            this.managerStoreName.set(store.name?.trim() ?? '');
+          },
+          error: () => {
+            this.managerStoreName.set('');
+          }
+        });
+
       this.stores.set([]);
       return;
     }
 
     this.loadingStores.set(true);
     this.storesService
-      .list({ page: 1, limit: 200 })
+      .list({ page: 1, limit: 100 })
       .pipe(finalize(() => this.loadingStores.set(false)))
       .subscribe({
         next: (response) => {
           this.stores.set(response.data);
+          this.ensureDefaultStoreSelection();
         },
         error: () => {
           this.stores.set([]);
         }
       });
+  }
+
+  private ensureDefaultStoreSelection(): void {
+    if (this.isManager()) {
+      return;
+    }
+
+    const storeControl = this.employeeForm.controls.storeId;
+
+    if (storeControl.value.trim().length > 0) {
+      return;
+    }
+
+    const firstStore = this.stores()[0];
+
+    if (firstStore) {
+      storeControl.setValue(firstStore.id);
+    }
   }
 
   private resolveCurrentStoreId(): string | null {

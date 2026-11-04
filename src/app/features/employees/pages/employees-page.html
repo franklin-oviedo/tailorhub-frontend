@@ -212,30 +212,63 @@
             id="employeeStore"
             type="text"
             class="form-control th-input"
-            [value]="currentStoreId() || ''"
+            [value]="managerStoreLabel()"
             disabled
           />
         } @else {
-          <select id="employeeStore" class="form-select th-input" formControlName="storeId">
-            <option value="" disabled>Selecciona una tienda</option>
-            @for (store of stores(); track store.id) {
-              <option [value]="store.id">{{ store.name }}</option>
+          <select
+            id="employeeStore"
+            class="form-select th-input"
+            formControlName="storeId"
+            [class.is-invalid]="isInvalid('storeId')"
+            [disabled]="loadingStores() || stores().length === 0"
+          >
+            @if (loadingStores()) {
+              <option value="">Cargando tiendas...</option>
+            } @else if (stores().length === 0) {
+              <option value="">No hay tiendas disponibles</option>
+            } @else {
+              <option value="" disabled>Selecciona una tienda</option>
+              @for (store of stores(); track store.id) {
+                <option [value]="store.id">{{ store.name }}</option>
+              }
             }
           </select>
         }
         <label for="employeeStore">Tienda</label>
       </div>
 
-      <div class="form-floating">
-        <input
-          id="employeeUserId"
-          type="text"
-          class="form-control th-input"
-          formControlName="userId"
-          placeholder="User ID (opcional)"
-        />
-        <label for="employeeUserId">User ID (opcional)</label>
-      </div>
+      @if (!isManager() && isInvalid('storeId')) {
+        <div class="invalid-feedback d-block">Selecciona una tienda.</div>
+      }
+
+      @if (isCreateMode()) {
+        <div class="form-floating">
+          <select
+            id="employeeAccountRole"
+            class="form-select th-input"
+            formControlName="accountRole"
+            [class.is-invalid]="isInvalid('accountRole')"
+          >
+            @for (role of availableAccountRoles(); track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+          <label for="employeeAccountRole">Rol de usuario</label>
+        </div>
+
+        <div class="form-floating">
+          <input
+            id="employeeAccountPassword"
+            type="password"
+            class="form-control th-input"
+            formControlName="accountPassword"
+            [class.is-invalid]="isInvalid('accountPassword')"
+            placeholder="Contraseña de acceso"
+          />
+          <label for="employeeAccountPassword">Contraseña de usuario</label>
+        </div>
+      }
 
       <div class="form-check employees-active-check">
         <input id="employeeActive" type="checkbox" class="form-check-input" formControlName="active" />

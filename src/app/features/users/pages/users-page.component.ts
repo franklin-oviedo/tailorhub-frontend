@@ -14,15 +14,12 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { finalize } from 'rxjs';
 import { Store, User, UserRole } from '../../../core/models/domain.models';
 import { SessionService } from '../../../core/services/session.service';
-import { CustomersService, CustomerWithStore } from '../../customers/data-access/customers.service';
-import { EmployeeRecord, EmployeesService } from '../../employees/data-access/employees.service';
+import { ConfirmDialogComponent } from '../../../core/ui/confirm-dialog.component';
 import { StoresService } from '../../stores/data-access/stores.service';
-import { CreateUserPayload, UpdateUserPayload, UsersService } from '../data-access/users.service';
+import { UpdateUserPayload, UsersService } from '../data-access/users.service';
 
-type FormMode = 'create' | 'edit';
 type StatusFilter = 'all' | 'active' | 'inactive';
-type RoleFilter = 'all' | UserRole;
-type SourceType = 'employee' | 'customer';
+type RoleFilter = 'employee';
 
 @Component({
   selector: 'app-users-page',
@@ -38,8 +35,6 @@ export class UsersPageComponent implements OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly usersService = inject(UsersService);
   private readonly storesService = inject(StoresService);
-  private readonly customersService = inject(CustomersService);
-  private readonly employeesService = inject(EmployeesService);
   private readonly session = inject(SessionService);
 
   @ViewChild('userDialogTemplate')
@@ -49,10 +44,7 @@ export class UsersPageComponent implements OnDestroy {
 
   readonly users = signal<User[]>([]);
   readonly stores = signal<Store[]>([]);
-  readonly customers = signal<CustomerWithStore[]>([]);
-  readonly employees = signal<EmployeeRecord[]>([]);
   readonly loading = signal(false);
-  readonly loadingSources = signal(false);
   readonly loadingStores = signal(false);
   readonly savingUser = signal(false);
   readonly disablingUserId = signal<string | null>(null);
@@ -60,10 +52,9 @@ export class UsersPageComponent implements OnDestroy {
   readonly successMessage = signal('');
   readonly currentPage = signal(1);
   readonly totalItems = signal(0);
-  readonly formMode = signal<FormMode>('create');
   readonly editingUserId = signal<string | null>(null);
   readonly searchTerm = signal('');
-  readonly roleFilter = signal<RoleFilter>('all');
+  readonly roleFilter = signal<RoleFilter>('employee');
   readonly statusFilter = signal<StatusFilter>('all');
 
   readonly currentRole = computed(() => this.session.role());
@@ -71,67 +62,35 @@ export class UsersPageComponent implements OnDestroy {
   readonly currentStoreId = computed(() => this.resolveStoreId(this.session.user()));
   readonly isManager = computed(() => this.currentRole() === 'manager');
   readonly isEmpty = computed(() => this.users().length === 0);
-  readonly isEditing = computed(() => this.formMode() === 'edit');
   readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.totalItems() / UsersPageComponent.PAGE_SIZE))
   );
-  readonly canCreateUsers = computed(() => {
-    const role = this.currentRole();
-
-    return role === 'super_admin' || role === 'admin' || role === 'manager';
-  });
-  readonly dialogTitle = computed(() =>
-    this.isEditing() ? 'Editar usuario' : 'Crear usuario'
-  );
-  readonly selectedSourceType = computed<SourceType>(() => this.userForm.controls.sourceType.value);
-  readonly filteredEmployees = computed(() => {
-    const storeId = this.currentStoreId();
-
-    if (!this.isManager()) {
-      return this.employees().filter((employee) => employee.user === null);
-    }
-
-    return this.employees().filter(
-      (employee) => employee.user === null && employee.store?.id === storeId
-    );
-  });
-  readonly filteredCustomers = computed(() => {
-    const storeId = this.currentStoreId();
-
-    if (!this.isManager()) {
-      return this.customers();
-    }
-
-    return this.customers().filter((customer) => customer.store.id === storeId);
-  });
+  readonly dialogTitle = computed(() => 'Editar usuario');
 
   readonly availableRoles = computed<UserRole[]>(() => {
     const actorRole = this.currentRole();
 
     if (actorRole === 'super_admin') {
-      return ['admin', 'manager', 'employee', 'client'];
+      return ['admin', 'manager', 'employee'];
     }
 
     if (actorRole === 'admin') {
-      return ['admin', 'manager', 'employee', 'client'];
+      return ['admin', 'manager', 'employee'];
     }
 
-    return ['employee', 'client'];
+    return ['employee'];
   });
 
   readonly filterForm = this.fb.nonNullable.group({
     search: [''],
-    role: ['all' as RoleFilter],
     status: ['all' as StatusFilter]
   });
 
   readonly userForm = this.fb.nonNullable.group({
-    sourceType: ['employee' as SourceType, Validators.required],
-    sourceId: ['', Validators.required],
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.minLength(7)]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.minLength(8)]],
     role: ['employee' as UserRole, Validators.required],
     storeId: ['', Validators.required],
     isActive: [true]
@@ -140,7 +99,6 @@ export class UsersPageComponent implements OnDestroy {
   constructor() {
     this.resetUserForm();
     this.loadStores();
-    this.loadSources();
     this.loadUsers();
   }
 
@@ -232,7 +190,7 @@ export class UsersPageComponent implements OnDestroy {
 
     if (actorRole === 'manager') {
       return (
-        (user.role === 'employee' || user.role === 'client') &&
+        user.role === 'employee' &&
         !!actorStoreId &&
         actorStoreId === targetStoreId
       );
@@ -241,95 +199,17 @@ export class UsersPageComponent implements OnDestroy {
     return false;
   }
 
-  sourceOptionsLabel(id: string): string {
-    if (this.selectedSourceType() === 'employee') {
-      const employee = this.filteredEmployees().find((item) => item.id === id);
-
-      return employee ? `${employee.name} (${employee.email || 'sin correo'})` : id;
-    }
-
-    const customer = this.filteredCustomers().find((item) => item.id === id);
-
-    return customer ? `${customer.name} (${customer.email || 'sin correo'})` : id;
-  }
-
-  onSourceTypeChange(): void {
-    this.userForm.controls.sourceId.setValue('');
-    this.userForm.controls.fullName.setValue('');
-    this.userForm.controls.email.setValue('');
-    this.userForm.controls.phone.setValue('');
-    this.userForm.controls.storeId.setValue(this.currentStoreId() ?? '');
-    this.applySourceDefaults();
-  }
-
-  onSourceEntityChange(): void {
-    const sourceType = this.userForm.controls.sourceType.value;
-    const sourceId = this.userForm.controls.sourceId.value;
-
-    if (!sourceId) {
-      return;
-    }
-
-    if (sourceType === 'employee') {
-      const employee = this.filteredEmployees().find((item) => item.id === sourceId);
-
-      if (!employee) {
-        return;
-      }
-
-      this.userForm.controls.fullName.setValue(employee.name ?? '');
-      this.userForm.controls.email.setValue(employee.email ?? '');
-      this.userForm.controls.phone.setValue(employee.phone ?? '');
-      this.userForm.controls.role.setValue('employee');
-      this.userForm.controls.storeId.setValue(employee.store?.id ?? this.currentStoreId() ?? '');
-      return;
-    }
-
-    const customer = this.filteredCustomers().find((item) => item.id === sourceId);
-
-    if (!customer) {
-      return;
-    }
-
-    this.userForm.controls.fullName.setValue(customer.name ?? '');
-    this.userForm.controls.email.setValue(customer.email ?? '');
-    this.userForm.controls.phone.setValue(customer.phone ?? '');
-    this.userForm.controls.role.setValue('client');
-    this.userForm.controls.storeId.setValue(customer.store.id ?? this.currentStoreId() ?? '');
-  }
-
-  openCreateDialog(): void {
-    if (!this.canCreateUsers()) {
-      return;
-    }
-
-    this.formMode.set('create');
-    this.editingUserId.set(null);
-    this.resetUserForm();
-    this.errorMessage.set('');
-    this.openDialog();
-  }
-
   openEditDialog(user: User): void {
     if (!this.canManageUser(user)) {
       return;
     }
 
-    this.formMode.set('edit');
     this.editingUserId.set(user.id);
-    this.userForm.controls.password.clearValidators();
-    this.userForm.controls.password.updateValueAndValidity({ emitEvent: false });
-    this.userForm.controls.sourceType.clearValidators();
-    this.userForm.controls.sourceType.updateValueAndValidity({ emitEvent: false });
-    this.userForm.controls.sourceId.clearValidators();
-    this.userForm.controls.sourceId.updateValueAndValidity({ emitEvent: false });
 
     const roleValue = this.availableRoles().includes(user.role) ? user.role : this.availableRoles()[0] ?? 'employee';
     const defaultStoreId = this.resolveStoreId(user) ?? this.currentStoreId() ?? '';
 
     this.userForm.reset({
-      sourceType: 'employee',
-      sourceId: '',
       fullName: this.userName(user),
       email: this.userEmail(user),
       phone: this.userPhone(user),
@@ -350,7 +230,6 @@ export class UsersPageComponent implements OnDestroy {
     }
 
     this.resetUserForm();
-    this.formMode.set('create');
     this.editingUserId.set(null);
     this.closeActiveDialog();
   }
@@ -358,7 +237,6 @@ export class UsersPageComponent implements OnDestroy {
   applyFilters(): void {
     const value = this.filterForm.getRawValue();
     this.searchTerm.set(value.search.trim());
-    this.roleFilter.set(value.role);
     this.statusFilter.set(value.status);
     this.currentPage.set(1);
     this.loadUsers();
@@ -367,11 +245,10 @@ export class UsersPageComponent implements OnDestroy {
   clearFilters(): void {
     this.filterForm.reset({
       search: '',
-      role: 'all',
       status: 'all'
     });
     this.searchTerm.set('');
-    this.roleFilter.set('all');
+    this.roleFilter.set('employee');
     this.statusFilter.set('all');
     this.currentPage.set(1);
     this.loadUsers();
@@ -407,38 +284,7 @@ export class UsersPageComponent implements OnDestroy {
 
     const raw = this.userForm.getRawValue();
 
-    if (this.isEditing()) {
-      this.updateUser(raw);
-      return;
-    }
-
-    const payload: CreateUserPayload = {
-      fullName: raw.fullName.trim(),
-      email: raw.email.trim(),
-      phone: raw.phone.trim(),
-      password: raw.password,
-      role: raw.role,
-      ...(raw.storeId.trim().length > 0 ? { storeId: raw.storeId.trim() } : {})
-    };
-
-    this.usersService
-      .create(payload)
-      .pipe(
-        finalize(() => {
-          this.savingUser.set(false);
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.successMessage.set('Usuario creado correctamente.');
-          this.closeUserDialog();
-          this.loadUsers();
-          this.loadSources();
-        },
-        error: (error) => {
-          this.errorMessage.set(this.parseApiErrorMessage(error) ?? 'No fue posible crear el usuario.');
-        }
-      });
+    this.updateUser(raw);
   }
 
   disableUser(user: User): void {
@@ -446,29 +292,44 @@ export class UsersPageComponent implements OnDestroy {
       return;
     }
 
-    if (!window.confirm(`¿Seguro que deseas inhabilitar a ${this.userName(user)}?`)) {
-      return;
-    }
-
-    this.disablingUserId.set(user.id);
-    this.errorMessage.set('');
-    this.successMessage.set('');
-
-    this.usersService
-      .disable(user.id)
-      .pipe(
-        finalize(() => {
-          this.disablingUserId.set(null);
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.successMessage.set('Usuario inhabilitado correctamente.');
-          this.loadUsers();
-        },
-        error: (error) => {
-          this.errorMessage.set(this.parseApiErrorMessage(error) ?? 'No fue posible inhabilitar el usuario.');
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        width: 'min(420px, calc(100vw - 2rem))',
+        maxWidth: '95vw',
+        data: {
+          title: 'Inhabilitar usuario',
+          message: `¿Seguro que deseas inhabilitar a ${this.userName(user)}?`,
+          confirmText: 'Inhabilitar',
+          cancelText: 'Cancelar',
+          variant: 'danger'
         }
+      })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+
+        this.disablingUserId.set(user.id);
+        this.errorMessage.set('');
+        this.successMessage.set('');
+
+        this.usersService
+          .disable(user.id)
+          .pipe(
+            finalize(() => {
+              this.disablingUserId.set(null);
+            })
+          )
+          .subscribe({
+            next: () => {
+              this.successMessage.set('Usuario inhabilitado correctamente.');
+              this.loadUsers();
+            },
+            error: (error) => {
+              this.errorMessage.set(this.parseApiErrorMessage(error) ?? 'No fue posible inhabilitar el usuario.');
+            }
+          });
       });
   }
 
@@ -537,19 +398,13 @@ export class UsersPageComponent implements OnDestroy {
   }
 
   private resetUserForm(): void {
-    this.userForm.controls.password.setValidators([Validators.required, Validators.minLength(8)]);
+    this.userForm.controls.password.setValidators([Validators.minLength(8)]);
     this.userForm.controls.password.updateValueAndValidity({ emitEvent: false });
-    this.userForm.controls.sourceType.setValidators([Validators.required]);
-    this.userForm.controls.sourceType.updateValueAndValidity({ emitEvent: false });
-    this.userForm.controls.sourceId.setValidators([Validators.required]);
-    this.userForm.controls.sourceId.updateValueAndValidity({ emitEvent: false });
 
     const defaultRole = this.availableRoles()[0] ?? 'employee';
     const defaultStoreId = this.currentStoreId() ?? '';
 
     this.userForm.reset({
-      sourceType: 'employee',
-      sourceId: '',
       fullName: '',
       email: '',
       phone: '',
@@ -559,19 +414,7 @@ export class UsersPageComponent implements OnDestroy {
       isActive: true
     });
 
-    this.applySourceDefaults();
     this.configureStoreControl();
-  }
-
-  private applySourceDefaults(): void {
-    const sourceType = this.userForm.controls.sourceType.value;
-
-    if (sourceType === 'employee') {
-      this.userForm.controls.role.setValue('employee');
-      return;
-    }
-
-    this.userForm.controls.role.setValue('client');
   }
 
   private configureStoreControl(): void {
@@ -604,9 +447,7 @@ export class UsersPageComponent implements OnDestroy {
     }
 
     const selectedRole = this.roleFilter();
-    if (selectedRole !== 'all') {
-      query.role = selectedRole;
-    }
+    query.role = selectedRole;
 
     if (this.statusFilter() === 'active') {
       query.isActive = true;
@@ -634,34 +475,6 @@ export class UsersPageComponent implements OnDestroy {
       });
   }
 
-  private loadSources(): void {
-    this.loadingSources.set(true);
-
-    this.customersService
-      .listAll()
-      .subscribe({
-        next: (customers) => {
-          this.customers.set(customers);
-
-          this.employeesService.listAll().subscribe({
-            next: (employees) => {
-              this.employees.set(employees);
-              this.loadingSources.set(false);
-            },
-            error: () => {
-              this.employees.set([]);
-              this.loadingSources.set(false);
-            }
-          });
-        },
-        error: () => {
-          this.customers.set([]);
-          this.employees.set([]);
-          this.loadingSources.set(false);
-        }
-      });
-  }
-
   private loadStores(): void {
     if (this.isManager()) {
       return;
@@ -670,7 +483,7 @@ export class UsersPageComponent implements OnDestroy {
     this.loadingStores.set(true);
 
     this.storesService
-      .list({ page: 1, limit: 200 })
+      .list({ page: 1, limit: 100 })
       .pipe(
         finalize(() => {
           this.loadingStores.set(false);

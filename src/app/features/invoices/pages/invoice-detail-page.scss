@@ -978,23 +978,27 @@
   }
 }
 @media print {
-  .detail-header,
-  .feedback,
-  .form-card,
-  .history-card,
-  .financial-summary,
-  .detail-grid,
-  .items-card,
-  .preview-toolbar {
+  :host-context(body.th-print-invoice) .detail-header,
+  :host-context(body.th-print-invoice) .feedback,
+  :host-context(body.th-print-invoice) .form-card,
+  :host-context(body.th-print-invoice) .history-card,
+  :host-context(body.th-print-invoice) .financial-summary,
+  :host-context(body.th-print-invoice) .detail-grid,
+  :host-context(body.th-print-invoice) .items-card,
+  :host-context(body.th-print-invoice) .preview-toolbar,
+  :host-context(body.th-print-invoice) .preview-section {
     display: none !important;
   }
-  .preview-section {
-    display: block !important;
+
+  :host-context(body.th-print-invoice) .preview-print-host {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
   }
-  .preview-wrapper {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
+
+  :host-context(body.th-print-invoice) .invoice-print-target {
+    display: block !important;
   }
 }

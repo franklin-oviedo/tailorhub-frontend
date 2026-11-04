@@ -4,8 +4,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { CreateOrder, Order, Product } from '../../../core/models/domain.models';
+import { ConfirmDialogComponent } from '../../../core/ui/confirm-dialog.component';
 
 import { OrdersService } from '../data-access/orders.service';
 import { ProductsService } from '../../products/data-access/products.service';
@@ -15,7 +17,7 @@ import { hasFiniteOrderValues } from '../utils/order-numeric-validation.util';
 
 @Component({
   selector: 'app-orders-page',
-  imports: [DatePipe, CurrencyPipe, RouterLink, ReactiveFormsModule],
+  imports: [DatePipe, CurrencyPipe, RouterLink, ReactiveFormsModule, MatDialogModule],
   templateUrl: './orders-page.html',
   styleUrl: './orders-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,6 +29,7 @@ export class OrdersPageComponent {
   private readonly customersService = inject(CustomersService);
   private readonly invoicesService = inject(InvoicesService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
 
   // =========================================================
   // State
@@ -243,80 +246,95 @@ export class OrdersPageComponent {
       return;
     }
 
-    const includeTax = window.confirm(
-      '¿Desea incluir ITBIS en la factura?\n\nAceptar: incluir ITBIS\nCancelar: factura sin ITBIS.',
-    );
-
-    const sanitizedOrderId = orderId.trim();
-    if (!sanitizedOrderId) {
-      this.errorMessage.set('No fue posible identificar el pedido para facturar.');
-      return;
-    }
-
-    this.generatingInvoiceOrderId.set(sanitizedOrderId);
-    this.errorMessage.set('');
-    this.successMessage.set('');
-
-    this.ordersService.detail(sanitizedOrderId).subscribe({
-      next: (order) => {
-        if (!hasFiniteOrderValues(order)) {
-          this.generatingInvoiceOrderId.set(null);
-          this.errorMessage.set(
-            'Este pedido contiene cantidades o montos inválidos. Revísalo antes de facturar.',
-          );
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        width: 'min(420px, calc(100vw - 2rem))',
+        maxWidth: '95vw',
+        data: {
+          title: 'Generar factura',
+          message: '¿Desea incluir ITBIS en la factura?',
+          confirmText: 'Sí, incluir ITBIS',
+          cancelText: 'No, sin ITBIS'
+        }
+      })
+      .afterClosed()
+      .subscribe((includeTax) => {
+        if (typeof includeTax !== 'boolean') {
           return;
         }
 
-        this.invoicesService.createDraftFromOrderMinimal(sanitizedOrderId).subscribe({
-          next: (invoice) => {
-            if (includeTax) {
+        const sanitizedOrderId = orderId.trim();
+        if (!sanitizedOrderId) {
+          this.errorMessage.set('No fue posible identificar el pedido para facturar.');
+          return;
+        }
+
+        this.generatingInvoiceOrderId.set(sanitizedOrderId);
+        this.errorMessage.set('');
+        this.successMessage.set('');
+
+        this.ordersService.detail(sanitizedOrderId).subscribe({
+          next: (order) => {
+            if (!hasFiniteOrderValues(order)) {
               this.generatingInvoiceOrderId.set(null);
-              this.successMessage.set('Factura borrador generada correctamente.');
-              this.router.navigate(['/invoices', invoice.id]);
+              this.errorMessage.set(
+                'Este pedido contiene cantidades o montos inválidos. Revísalo antes de facturar.',
+              );
               return;
             }
 
-            this.invoicesService
-              .updateDraft(invoice.id, {
-                items: invoice.items.map((item) => ({
-                  id: item.id,
-                  isTaxable: false,
-                  taxRate: 0,
-                })),
-              })
-              .subscribe({
-                next: () => {
+            this.invoicesService.createDraftFromOrderMinimal(sanitizedOrderId).subscribe({
+              next: (invoice) => {
+                if (includeTax) {
                   this.generatingInvoiceOrderId.set(null);
-                  this.successMessage.set('Factura borrador generada sin ITBIS.');
+                  this.successMessage.set('Factura borrador generada correctamente.');
                   this.router.navigate(['/invoices', invoice.id]);
-                },
-                error: (error) => {
-                  this.generatingInvoiceOrderId.set(null);
-                  const backendMessage = this.parseApiErrorMessage(error);
-                  this.errorMessage.set(
-                    backendMessage ??
-                      'No fue posible aplicar la opción fiscal sin ITBIS a la factura.',
-                  );
-                },
-              });
+                  return;
+                }
+
+                this.invoicesService
+                  .updateDraft(invoice.id, {
+                    items: invoice.items.map((item) => ({
+                      id: item.id,
+                      isTaxable: false,
+                      taxRate: 0,
+                    })),
+                  })
+                  .subscribe({
+                    next: () => {
+                      this.generatingInvoiceOrderId.set(null);
+                      this.successMessage.set('Factura borrador generada sin ITBIS.');
+                      this.router.navigate(['/invoices', invoice.id]);
+                    },
+                    error: (error) => {
+                      this.generatingInvoiceOrderId.set(null);
+                      const backendMessage = this.parseApiErrorMessage(error);
+                      this.errorMessage.set(
+                        backendMessage ??
+                          'No fue posible aplicar la opción fiscal sin ITBIS a la factura.',
+                      );
+                    },
+                  });
+              },
+              error: (error) => {
+                this.generatingInvoiceOrderId.set(null);
+                const backendMessage = this.parseApiErrorMessage(error);
+                this.errorMessage.set(
+                  backendMessage ?? 'No fue posible generar la factura para el pedido.',
+                );
+              },
+            });
           },
           error: (error) => {
             this.generatingInvoiceOrderId.set(null);
             const backendMessage = this.parseApiErrorMessage(error);
             this.errorMessage.set(
-              backendMessage ?? 'No fue posible generar la factura para el pedido.',
+              backendMessage ?? 'No fue posible validar el pedido antes de facturar.',
             );
           },
         });
       },
-      error: (error) => {
-        this.generatingInvoiceOrderId.set(null);
-        const backendMessage = this.parseApiErrorMessage(error);
-        this.errorMessage.set(
-          backendMessage ?? 'No fue posible validar el pedido antes de facturar.',
-        );
-      },
-    });
+      );
   }
 
   private parseApiErrorMessage(error: unknown): string | null {
