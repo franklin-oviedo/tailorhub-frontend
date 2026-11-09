@@ -5,38 +5,46 @@
       <div class="panel-header">
         <h2>Nuevo pedido</h2>
 
-        <p>Registra un nuevo pedido para un cliente.</p>
+        @if (isClient()) {
+          <p>Selecciona lo que deseas comprar.</p>
+        } @else {
+          <p>Registra un nuevo pedido para un cliente.</p>
+        }
       </div>
 
       <form [formGroup]="form" (ngSubmit)="createOrder()" class="order-form" novalidate>
-        <!-- Customer -->
-        <div class="form-field">
-          <label for="orderCustomer" class="form-label"> Cliente </label>
+        @if (!isClient()) {
+          <!-- Customer -->
+          <div class="form-field">
+            <label for="orderCustomer" class="form-label"> Cliente </label>
 
-          <select
-            id="orderCustomer"
-            class="form-select th-input"
-            formControlName="customerId"
-            [class.is-invalid]="isInvalid('customerId')"
-            [class.is-valid]="isValid('customerId')"
-          >
-            <option value="" disabled>Selecciona un cliente</option>
+            <select
+              id="orderCustomer"
+              class="form-select th-input"
+              formControlName="customerId"
+              [class.is-invalid]="isInvalid('customerId')"
+              [class.is-valid]="isValid('customerId')"
+            >
+              <option value="" disabled>Selecciona un cliente</option>
 
-            @for (customer of customers(); track customer.id) {
-              <option [value]="customer.id">
-                {{ customer.name }}
-              </option>
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">
+                  {{ customer.name }}
+                </option>
+              }
+            </select>
+
+            @if (isInvalid('customerId')) {
+              <div class="invalid-feedback d-block">El cliente es obligatorio.</div>
             }
-          </select>
-
-          @if (isInvalid('customerId')) {
-            <div class="invalid-feedback d-block">El cliente es obligatorio.</div>
-          }
-        </div>
+          </div>
+        }
 
         <!-- Items -->
         <div class="form-field">
-          <label for="orderItems" class="form-label"> Servicio </label>
+          <label for="orderItems" class="form-label">
+            {{ isClient() ? '¿Qué deseas comprar?' : 'Servicio' }}
+          </label>
 
           <select
             id="orderItems"
@@ -77,26 +85,28 @@
           }
         </div>
 
-        <!-- Notes -->
-        <div class="form-field">
-          <label for="orderNotes" class="form-label"> Notas </label>
+        @if (!isClient()) {
+          <!-- Notes -->
+          <div class="form-field">
+            <label for="orderNotes" class="form-label"> Notas </label>
 
-          <textarea
-            id="orderNotes"
-            rows="4"
-            class="form-control th-input"
-            formControlName="notes"
-            placeholder="Agrega alguna nota para el pedido..."
-            [class.is-invalid]="isInvalid('notes')"
-            [class.is-valid]="isValid('notes')"
-          ></textarea>
+            <textarea
+              id="orderNotes"
+              rows="4"
+              class="form-control th-input"
+              formControlName="notes"
+              placeholder="Agrega alguna nota para el pedido..."
+              [class.is-invalid]="isInvalid('notes')"
+              [class.is-valid]="isValid('notes')"
+            ></textarea>
 
-          @if (isInvalid('notes')) {
-            <div class="invalid-feedback d-block">
-              Las notas no pueden exceder los 500 caracteres.
-            </div>
-          }
-        </div>
+            @if (isInvalid('notes')) {
+              <div class="invalid-feedback d-block">
+                Las notas no pueden exceder los 500 caracteres.
+              </div>
+            }
+          </div>
+        }
 
         <!-- Feedback -->
         @if (successMessage()) {
@@ -152,7 +162,9 @@
               <thead>
                 <tr>
                   <th class="order-column">Pedido</th>
-                  <th class="customer-column">Cliente</th>
+                  @if (!isClient()) {
+                    <th class="customer-column">Cliente</th>
+                  }
                   <th class="status-column">Estado</th>
                   <th class="date-column">Fecha</th>
                   <th class="amount-column">Total</th>
@@ -172,13 +184,15 @@
                         </span>
                       </div>
                     </td>
-                    <td data-label="Cliente">
-                      <div class="customer-reference">
-                        <span class="order-customer">
-                          {{ order?.customer?.name || '-' }}
-                        </span>
-                      </div>
-                    </td>
+                    @if (!isClient()) {
+                      <td data-label="Cliente">
+                        <div class="customer-reference">
+                          <span class="order-customer">
+                            {{ order?.customer?.name || '-' }}
+                          </span>
+                        </div>
+                      </td>
+                    }
                     <td data-label="Estado">
                       <span class="order-status" [class]="orderStatusClass(order.status)">
                         {{ orderStatusLabel(order.status) }}

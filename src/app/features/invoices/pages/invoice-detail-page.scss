@@ -595,10 +595,11 @@
   overflow: auto;
 }
 .preview-print-host {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: -200vw;
+  width: min(860px, calc(100vw - 2rem));
+  opacity: 0;
   pointer-events: none;
 }
 .feedback {
@@ -978,6 +979,13 @@
   }
 }
 @media print {
+  :host-context(body.th-print-invoice) .invoice-detail-page {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
   :host-context(body.th-print-invoice) .detail-header,
   :host-context(body.th-print-invoice) .feedback,
   :host-context(body.th-print-invoice) .form-card,
@@ -994,11 +1002,15 @@
     position: static !important;
     width: auto !important;
     height: auto !important;
-    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1 !important;
     pointer-events: auto !important;
   }
 
   :host-context(body.th-print-invoice) .invoice-print-target {
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }

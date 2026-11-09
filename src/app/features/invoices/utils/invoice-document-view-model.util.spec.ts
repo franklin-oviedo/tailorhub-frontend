@@ -6,6 +6,10 @@ import { PaymentMethod } from '../../../core/models/invoices/payment-method.enum
 import { buildInvoiceDocumentViewModel } from './invoice-document-view-model.util';
 
 const invoiceFixture: InvoiceDocument = {
+  company: {
+    name: 'TailorHub',
+    logoUrl: 'https://cdn.tailorhub.com/logo.png'
+  },
   id: 'inv-1',
   invoiceNumber: 'INV-000124',
   fiscalNumber: 'E3200000001',
@@ -83,5 +87,31 @@ describe('buildInvoiceDocumentViewModel', () => {
     expect(vm.customerEmail).toBe('juan@example.com');
     expect(vm.orderId).toBe('o-1');
     expect(vm.orderReference).toBe('ORD-0001');
+  });
+
+  it('uses backend company logo field when logoUrl is empty', () => {
+    const vm = buildInvoiceDocumentViewModel({
+      ...invoiceFixture,
+      company: {
+        name: 'TailorHub',
+        logoUrl: '',
+        logo: 'https://cdn.tailorhub.com/logo-from-logo-field.png'
+      }
+    });
+
+    expect(vm.logoUrl).toBe('https://cdn.tailorhub.com/logo-from-logo-field.png');
+  });
+
+  it('uses backend company seal field when available', () => {
+    const vm = buildInvoiceDocumentViewModel({
+      ...invoiceFixture,
+      company: {
+        name: 'TailorHub',
+        logoUrl: 'https://cdn.tailorhub.com/logo.png',
+        seal: 'https://cdn.tailorhub.com/seal.png'
+      }
+    });
+
+    expect(vm.sealUrl).toBe('https://cdn.tailorhub.com/seal.png');
   });
 });

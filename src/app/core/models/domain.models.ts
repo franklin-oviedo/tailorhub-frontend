@@ -33,6 +33,8 @@ export interface Store {
   email: string;
   phone: string;
   address: string;
+  logo?: string | null;
+  seal?: string | null;
   createdAt: string;
   updatedAt: string;
 }

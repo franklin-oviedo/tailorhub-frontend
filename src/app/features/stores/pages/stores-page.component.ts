@@ -25,6 +25,7 @@ export class StoresPageComponent {
   private readonly storesService = inject(StoresService);
 
   readonly stores = signal<Store[]>([]);
+  readonly uploadingAssetKey = signal<string | null>(null);
 
   readonly currentPage = signal(1);
   readonly pageSize = 8;
@@ -46,12 +47,13 @@ export class StoresPageComponent {
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
     address: ['', Validators.required],
     phone: ['']
   });
 
   isInvalid(
-    field: 'name' | 'address' | 'phone'
+    field: 'name' | 'email' | 'address' | 'phone'
   ): boolean {
     const control = this.form.controls[field];
 
@@ -62,7 +64,7 @@ export class StoresPageComponent {
   }
 
   isValid(
-    field: 'name' | 'address' | 'phone'
+    field: 'name' | 'email' | 'address' | 'phone'
   ): boolean {
     const control = this.form.controls[field];
 
@@ -87,6 +89,7 @@ export class StoresPageComponent {
       .subscribe(() => {
         this.form.reset({
           name: '',
+          email: '',
           address: '',
           phone: ''
         });
@@ -123,6 +126,48 @@ export class StoresPageComponent {
     );
   }
 
+  onLogoFileSelected(storeId: string, event: Event): void {
+    const file = this.readInputFile(event);
+    if (!file) {
+      return;
+    }
+
+    this.uploadingAssetKey.set(`${storeId}:logo`);
+
+    this.storesService.uploadLogo(storeId, file).subscribe({
+      next: (store) => {
+        this.uploadingAssetKey.set(null);
+        this.replaceStore(store);
+      },
+      error: () => {
+        this.uploadingAssetKey.set(null);
+      }
+    });
+  }
+
+  onSealFileSelected(storeId: string, event: Event): void {
+    const file = this.readInputFile(event);
+    if (!file) {
+      return;
+    }
+
+    this.uploadingAssetKey.set(`${storeId}:seal`);
+
+    this.storesService.uploadSeal(storeId, file).subscribe({
+      next: (store) => {
+        this.uploadingAssetKey.set(null);
+        this.replaceStore(store);
+      },
+      error: () => {
+        this.uploadingAssetKey.set(null);
+      }
+    });
+  }
+
+  isUploadingAsset(storeId: string, asset: 'logo' | 'seal'): boolean {
+    return this.uploadingAssetKey() === `${storeId}:${asset}`;
+  }
+
   private load(): void {
     this.storesService
       .list({
@@ -133,5 +178,22 @@ export class StoresPageComponent {
         this.stores.set(response.data);
         this.totalItems.set(response.meta.totalItems);
       });
+  }
+
+  private readInputFile(event: Event): File | null {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0] ?? null;
+
+    if (input) {
+      input.value = '';
+    }
+
+    return file;
+  }
+
+  private replaceStore(updatedStore: Store): void {
+    this.stores.update((stores) =>
+      stores.map((store) => (store.id === updatedStore.id ? updatedStore : store))
+    );
   }
 }

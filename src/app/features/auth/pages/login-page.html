@@ -38,6 +38,12 @@
           Inicia sesión para continuar
         </p>
 
+        @if (errorMessage()) {
+          <div class="auth-error" role="alert" aria-live="polite">
+            {{ errorMessage() }}
+          </div>
+        }
+
         <!-- Email -->
         <div class="form-floating mb-3">
           <input
@@ -74,14 +80,22 @@
           </label>
         </div>
 
+        <div class="auth-divider" aria-hidden="true">
+          <span>o</span>
+        </div>
+
+        <div class="google-signin-wrapper">
+          <div id="google-signin-button" aria-label="Continuar con Google"></div>
+        </div>
+
         <!-- Submit -->
         <div class="d-grid">
           <button
             type="submit"
             class="btn login-submit"
-            [disabled]="form.invalid"
+            [disabled]="form.invalid || loading()"
           >
-            Iniciar sesión
+            {{ loading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
           </button>
         </div>
 

@@ -10,6 +10,13 @@ export interface StoresQuery {
   search?: string;
 }
 
+export interface CreateStorePayload {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StoresService {
   private readonly http = inject(HttpClient);
@@ -21,7 +28,7 @@ export class StoresService {
     });
   }
 
-  create(payload: Pick<Store, 'name' | 'address' | 'phone'>): Observable<Store> {
+  create(payload: CreateStorePayload): Observable<Store> {
     return this.http.post<Store>(`${this.config.baseUrl}/stores`, payload);
   }
 
@@ -31,6 +38,20 @@ export class StoresService {
 
   update(storeId: string, payload: Partial<Store>): Observable<Store> {
     return this.http.patch<Store>(`${this.config.baseUrl}/stores/${storeId}`, payload);
+  }
+
+  uploadLogo(storeId: string, file: File): Observable<Store> {
+    const body = new FormData();
+    body.append('file', file);
+
+    return this.http.patch<Store>(`${this.config.baseUrl}/stores/${storeId}/logo`, body);
+  }
+
+  uploadSeal(storeId: string, file: File): Observable<Store> {
+    const body = new FormData();
+    body.append('file', file);
+
+    return this.http.patch<Store>(`${this.config.baseUrl}/stores/${storeId}/seal`, body);
   }
 
   remove(storeId: string): Observable<void> {

@@ -184,6 +184,38 @@
     transform 150ms ease;
 }
 
+.link-calendar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.625rem 1rem;
+  border: 1px solid #264653;
+  border-radius: 0.625rem;
+  background-color: #ffffff;
+  color: #264653;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.link-calendar-button:hover:not(:disabled) {
+  border-color: #2a9d8f;
+  color: #2a9d8f;
+  background-color: rgba(42, 157, 143, 0.06);
+}
+
+.link-calendar-button:focus-visible {
+  outline: 3px solid rgba(42, 157, 143, 0.25);
+  outline-offset: 2px;
+}
+
 .new-appointment-button,
 .appointment-primary-button {
   border: 1px solid #2a9d8f;
@@ -782,7 +814,8 @@
     font-size: 1rem;
   }
 
-  .new-appointment-button {
+  .new-appointment-button,
+  .link-calendar-button {
     width: 100%;
   }
 

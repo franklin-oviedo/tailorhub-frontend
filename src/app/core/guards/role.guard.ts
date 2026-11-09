@@ -17,5 +17,9 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     return true;
   }
 
+  if (role === 'client') {
+    return router.createUrlTree(['/orders']);
+  }
+
   return router.createUrlTree(['/login']);
 };

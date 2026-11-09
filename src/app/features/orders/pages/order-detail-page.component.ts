@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,6 +13,7 @@ import { InvoicesService } from '../../invoices/data-access/invoices.service';
 import { ProductsService } from '../../products/data-access/products.service';
 import { OrdersService } from '../data-access/orders.service';
 import { hasFiniteOrderValues } from '../utils/order-numeric-validation.util';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-order-detail-page',
@@ -26,6 +27,7 @@ export class OrderDetailPageComponent {
   private readonly ordersService = inject(OrdersService);
   private readonly invoicesService = inject(InvoicesService);
   private readonly productsService = inject(ProductsService);
+  private readonly session = inject(SessionService);
   private readonly dialog = inject(MatDialog);
 
   readonly loading = signal(false);
@@ -36,6 +38,7 @@ export class OrderDetailPageComponent {
   readonly order = signal<Order | null>(null);
   readonly invoices = signal<InvoiceDocument[]>([]);
   readonly productNamesById = signal<Record<string, string>>({});
+  readonly isClient = computed(() => this.session.role() === 'client');
 
   constructor() {
     const orderId = this.route.snapshot.paramMap.get('id');
@@ -63,6 +66,12 @@ export class OrderDetailPageComponent {
       )
       .subscribe({
         next: (order) => {
+          if (this.isClient() && !this.isOwnOrder(order)) {
+            this.errorMessage.set('No tienes permiso para ver este pedido.');
+            this.order.set(null);
+            return;
+          }
+
           this.order.set(order);
         },
         error: () => {
@@ -72,6 +81,12 @@ export class OrderDetailPageComponent {
   }
 
   loadOrderInvoices(orderId: string): void {
+    if (this.isClient()) {
+      this.invoices.set([]);
+      this.invoicesLoading.set(false);
+      return;
+    }
+
     this.invoicesLoading.set(true);
 
     this.invoicesService
@@ -92,6 +107,10 @@ export class OrderDetailPageComponent {
   }
 
   generateInvoice(): void {
+    if (this.isClient()) {
+      return;
+    }
+
     const currentOrder = this.order();
 
     if (!currentOrder || this.creatingInvoice()) {
@@ -189,6 +208,11 @@ export class OrderDetailPageComponent {
           }
         });
       });
+  }
+
+  private isOwnOrder(order: Order): boolean {
+    const customerId = this.session.user()?.customer?.id?.trim() ?? '';
+    return customerId.length > 0 && order.customer.id === customerId;
   }
 
   statusLabel(status: InvoiceStatus): string {

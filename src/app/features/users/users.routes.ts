@@ -7,6 +7,6 @@ export const USERS_ROUTES: Routes = [
     path: '',
     component: UsersPageComponent,
     canActivate: [roleGuard],
-    data: { roles: ['super_admin', 'admin', 'manager'] }
+    data: { roles: ['super_admin'] }
   }
 ];

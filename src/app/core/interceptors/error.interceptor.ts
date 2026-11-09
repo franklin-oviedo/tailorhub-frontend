@@ -16,7 +16,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const isAuthEndpoint =
         req.url.includes('/auth/login') ||
         req.url.includes('/auth/register') ||
-        req.url.includes('/auth/forgot-password');
+            req.url.includes('/auth/google') ||
+            req.url.includes('/auth/forgot-password');
 
       if (status === 401 && !isAuthEndpoint) {
         tokenService.clearToken();
@@ -30,7 +31,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           ? 'Hay datos numéricos inválidos en origen. Revisa cantidad, precio unitario o tasas en el pedido/factura y vuelve a intentar.'
           : message;
 
-        if (req.url.includes('/auth/login') || req.url.includes('/auth/register') || req.url.includes('/auth/forgot-password')) {
+        if (
+          req.url.includes('/auth/login') ||
+          req.url.includes('/auth/register') ||
+          req.url.includes('/auth/google') ||
+          req.url.includes('/auth/forgot-password')
+        ) {
           const originalErrorPayload =
             typeof error.error === 'object' && error.error !== null ? error.error : {};
 

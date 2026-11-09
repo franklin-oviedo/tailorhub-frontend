@@ -7,6 +7,7 @@ import { ApiConfigService } from '../../../core/services/api-config.service';
 export interface AppointmentsQuery {
   page?: number;
   limit?: number;
+  customerId?: string;
   status?: Appointment['status'];
   from?: string;
   to?: string;
@@ -35,6 +36,10 @@ export class AppointmentsService {
 
   update(appointmentId: string, payload: Partial<Appointment>): Observable<Appointment> {
     return this.http.patch<Appointment>(`${this.config.baseUrl}/appointments/${appointmentId}`, payload);
+  }
+
+  cancel(appointmentId: string): Observable<Appointment> {
+    return this.http.patch<Appointment>(`${this.config.baseUrl}/appointments/${appointmentId}/cancel`, {});
   }
 
   remove(appointmentId: string): Observable<void> {

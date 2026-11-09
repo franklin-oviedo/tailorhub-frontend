@@ -196,9 +196,43 @@
     color: #6b7280;
 }
 
+.store-email {
+    color: #6b7280;
+}
+
 .store-phone {
     color: #6b7280;
     white-space: nowrap;
+}
+
+.store-assets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.store-asset-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: #374151;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.store-asset-label input[type='file'] {
+    font-size: 0.75rem;
+}
+
+.store-asset-link {
+    color: #237f74;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.store-asset-link:hover {
+    text-decoration: underline;
 }
 
 /* =========================================================

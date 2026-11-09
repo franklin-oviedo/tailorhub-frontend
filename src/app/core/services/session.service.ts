@@ -12,6 +12,17 @@ export class SessionService {
 
   constructor(private readonly storeContext: StoreContextService) {}
 
+  getDefaultRoute(): string {
+    const role = this.role();
+
+    switch (role) {
+      case 'client':
+        return '/orders';
+      default:
+        return '/dashboard';
+    }
+  }
+
   setUser(user: User): void {
     const storeId = this.resolveStoreId(user);
 

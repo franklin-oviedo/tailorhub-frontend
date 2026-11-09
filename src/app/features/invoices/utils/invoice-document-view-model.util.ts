@@ -3,12 +3,18 @@ import { InvoiceDocument } from '../../../core/models/invoices/invoice.models';
 import { InvoiceDocumentViewModel } from '../models/invoice-document-view-model';
 
 const readString = (value: unknown): string | null => (typeof value === 'string' && value ? value : null);
+const readCompanyLogo = (company: InvoiceDocument['company']): string | null =>
+  readString(company.logoUrl) ?? readString(company.logo);
+const readCompanySeal = (company: InvoiceDocument['company']): string | null =>
+  readString(company.sealUrl) ?? readString(company.seal);
 
 export const buildInvoiceDocumentViewModel = (invoice: InvoiceDocument): InvoiceDocumentViewModel => {
   const customer = invoice.customerSnapshot;
   const order = invoice.orderSnapshot;
-
   return {
+    logoUrl: readCompanyLogo(invoice.company),
+    sealUrl: readCompanySeal(invoice.company),
+    companyName: invoice.company.name,
     invoiceId: invoice.id,
     invoiceNumber: invoice.invoiceNumber,
     fiscalNumber: invoice.fiscalNumber,

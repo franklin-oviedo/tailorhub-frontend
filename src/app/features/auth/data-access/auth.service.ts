@@ -5,6 +5,9 @@ import { map, Observable, switchMap, tap } from 'rxjs';
 import {
   AuthResponse,
   ForgotPasswordRequest,
+  GoogleCalendarLinkRequest,
+  GoogleCalendarLinkResponse,
+  GoogleLoginRequest,
   LoginRequest,
   RegisterRequest
 } from '../../../core/models/auth.models';
@@ -12,6 +15,7 @@ import { User } from '../../../core/models/domain.models';
 import { ApiConfigService } from '../../../core/services/api-config.service';
 import { SessionService } from '../../../core/services/session.service';
 import { TokenService } from '../../../core/services/token.service';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -31,6 +35,37 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${this.config.baseUrl}/auth/register`, payload)
       .pipe(switchMap((response) => this.applySession(response)));
+  }
+
+  googleLogin(payload: GoogleLoginRequest): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.config.baseUrl}/auth/google`, payload)
+      .pipe(switchMap((response) => this.applySession(response)));
+  }
+
+  linkGoogleCalendar(payload: GoogleCalendarLinkRequest): Observable<GoogleCalendarLinkResponse> {
+    return this.http.post<GoogleCalendarLinkResponse>(
+      `${this.config.baseUrl}/auth/google/calendar/link`,
+      payload
+    );
+  }
+
+  buildGoogleCalendarAuthorizationUrl(): string | null {
+    if (!environment.googleClientId || !environment.googleCalendarRedirectUri) {
+      return null;
+    }
+
+    const query = new URLSearchParams({
+      client_id: environment.googleClientId,
+      redirect_uri: environment.googleCalendarRedirectUri,
+      response_type: 'code',
+      scope: 'openid email profile https://www.googleapis.com/auth/calendar.events',
+      access_type: 'offline',
+      prompt: 'consent',
+      include_granted_scopes: 'true'
+    });
+
+    return `https://accounts.google.com/o/oauth2/v2/auth?${query.toString()}`;
   }
 
   forgotPassword(payload: ForgotPasswordRequest): Observable<{ message: string }> {

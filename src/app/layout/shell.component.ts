@@ -42,41 +42,8 @@ export class ShellComponent {
 
   private readonly navItems: readonly NavItem[] = [
     {
-      label: 'Dashboard',
-      path: '/dashboard',
-      roles: [
-        'client',
-        'employee',
-        'manager',
-        'admin',
-        'super_admin'
-      ]
-    },
-    {
-      label: 'Servicios',
-      path: '/services',
-      roles: [
-        'client',
-        'employee',
-        'manager',
-        'admin',
-        'super_admin'
-      ]
-    },
-    {
       label: 'Pedidos',
       path: '/orders',
-      roles: [
-        'client',
-        'employee',
-        'manager',
-        'admin',
-        'super_admin'
-      ]
-    },
-    {
-      label: 'Facturas',
-      path: '/invoices',
       roles: [
         'client',
         'employee',
@@ -97,6 +64,47 @@ export class ShellComponent {
       ]
     },
     {
+      label: 'Mi perfil',
+      path: '/profile',
+      roles: [
+        'client',
+        'employee',
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
+      label: 'Dashboard',
+      path: '/dashboard',
+      roles: [
+        'employee',
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
+      label: 'Servicios',
+      path: '/services',
+      roles: [
+        'employee',
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
+      label: 'Facturas',
+      path: '/invoices',
+      roles: [
+        'employee',
+        'manager',
+        'admin',
+        'super_admin'
+      ]
+    },
+    {
       label: 'Tiendas',
       path: '/stores',
       roles: [
@@ -107,15 +115,6 @@ export class ShellComponent {
     {
       label: 'Empleados',
       path: '/employees',
-      roles: [
-        'manager',
-        'admin',
-        'super_admin'
-      ]
-    },
-    {
-      label: 'Usuarios',
-      path: '/users',
       roles: [
         'manager',
         'admin',

@@ -1,0 +1,139 @@
+<section class="profile-page">
+  <div class="profile-card">
+    <div class="profile-header">
+      <h1>Mi información personal</h1>
+      <p>Actualiza tus datos de contacto y credenciales de acceso.</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger" role="alert" aria-live="polite">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="alert alert-success" role="alert" aria-live="polite">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-floating mb-3">
+        <input
+          id="profile-fullName"
+          type="text"
+          class="form-control"
+          formControlName="fullName"
+          placeholder="Nombre completo"
+          [class.is-invalid]="isInvalid('fullName')"
+        />
+        <label for="profile-fullName">Nombre completo</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input
+          id="profile-email"
+          type="email"
+          class="form-control"
+          formControlName="email"
+          placeholder="Correo electrónico"
+          [class.is-invalid]="isInvalid('email')"
+        />
+        <label for="profile-email">Correo electrónico</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input
+          id="profile-phone"
+          type="tel"
+          class="form-control"
+          formControlName="phone"
+          placeholder="Teléfono"
+          [class.is-invalid]="isInvalid('phone')"
+        />
+        <label for="profile-phone">Teléfono</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input
+          id="profile-password"
+          type="password"
+          class="form-control"
+          formControlName="password"
+          placeholder="Nueva contraseña"
+          [class.is-invalid]="isInvalid('password')"
+        />
+        <label for="profile-password">Nueva contraseña (opcional)</label>
+      </div>
+
+      <div class="d-grid mt-4">
+        <button type="submit" class="btn btn-primary profile-submit" [disabled]="loading() || form.invalid">
+          {{ loading() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+
+    @if (hasCustomerProfile()) {
+      <div class="profile-measurements">
+        <h2>Mis medidas</h2>
+        <p>Registra o actualiza tus medidas personales cuando lo necesites.</p>
+
+        @if (measurementErrorMessage()) {
+          <div class="alert alert-danger" role="alert" aria-live="polite">
+            {{ measurementErrorMessage() }}
+          </div>
+        }
+
+        @if (measurementSuccessMessage()) {
+          <div class="alert alert-success" role="alert" aria-live="polite">
+            {{ measurementSuccessMessage() }}
+          </div>
+        }
+
+        @if (loadingMeasurements()) {
+          <p class="profile-loading">Cargando medidas...</p>
+        }
+
+        <form [formGroup]="measurementsForm" (ngSubmit)="saveMeasurements()" novalidate>
+          <div class="measurements-grid">
+            <div class="form-floating">
+              <input id="measurement-chest" type="number" min="0.1" step="0.1" class="form-control" formControlName="chest" placeholder="Pecho" />
+              <label for="measurement-chest">Pecho</label>
+            </div>
+            <div class="form-floating">
+              <input id="measurement-waist" type="number" min="0.1" step="0.1" class="form-control" formControlName="waist" placeholder="Cintura" />
+              <label for="measurement-waist">Cintura</label>
+            </div>
+            <div class="form-floating">
+              <input id="measurement-hips" type="number" min="0.1" step="0.1" class="form-control" formControlName="hips" placeholder="Cadera" />
+              <label for="measurement-hips">Cadera</label>
+            </div>
+            <div class="form-floating">
+              <input id="measurement-neck" type="number" min="0.1" step="0.1" class="form-control" formControlName="neck" placeholder="Cuello" />
+              <label for="measurement-neck">Cuello</label>
+            </div>
+            <div class="form-floating">
+              <input id="measurement-sleeve" type="number" min="0.1" step="0.1" class="form-control" formControlName="sleeve" placeholder="Manga" />
+              <label for="measurement-sleeve">Manga</label>
+            </div>
+            <div class="form-floating">
+              <input id="measurement-inseam" type="number" min="0.1" step="0.1" class="form-control" formControlName="inseam" placeholder="Entrepierna" />
+              <label for="measurement-inseam">Entrepierna</label>
+            </div>
+          </div>
+
+          <div class="form-floating mt-3">
+            <textarea id="measurement-notes" rows="3" class="form-control" formControlName="notes" placeholder="Notas"></textarea>
+            <label for="measurement-notes">Notas (opcional)</label>
+          </div>
+
+          <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-primary profile-submit" [disabled]="savingMeasurements() || measurementsForm.invalid">
+              {{ savingMeasurements() ? 'Guardando medidas...' : 'Guardar medidas' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+  </div>
+</section>

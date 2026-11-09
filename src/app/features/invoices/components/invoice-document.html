@@ -1,8 +1,18 @@
 <article class="invoice-document">
   <header class="invoice-document-header">
     <div class="invoice-company">
-      <h2 class="invoice-company-name">Factura de Tailor Hub</h2>
+      @if (viewModel().logoUrl) {
+        <div class="invoice-logo-card">
+          <img
+            src="{{ viewModel().logoUrl }}"
+            alt="Logo de la empresa"
+            class="invoice-company-logo"
+          />
+        </div>
+        }
+      <h2 class="invoice-company-name">Factura de {{ viewModel().companyName }}</h2>
       <p class="invoice-company-row">Documento de facturación</p>
+
     </div>
 
     <div class="invoice-meta">
@@ -63,18 +73,32 @@
     </table>
   </div>
 
-  <section class="invoice-totals" aria-label="Totales de factura">
-    <p><span>Subtotal</span><strong>{{ viewModel().subtotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p><span>Descuento</span><strong>{{ viewModel().discountTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p><span>Base imponible</span><strong>{{ viewModel().taxableAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p><span>Monto exento</span><strong>{{ viewModel().exemptAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p><span>ITBIS / Impuestos</span><strong>{{ viewModel().taxTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p class="grand-total">
-      <span>Total</span>
-      <strong>{{ viewModel().grandTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong>
-    </p>
-    <p><span>Pagado</span><strong>{{ viewModel().amountPaid | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
-    <p><span>Balance</span><strong>{{ viewModel().balance | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+
+
+  <section class="invoice-summary" aria-label="Resumen de factura">
+    @if (viewModel().sealUrl) {
+      <section class="invoice-seal" aria-label="Sello de la empresa">
+        <img
+          src="{{ viewModel().sealUrl }}"
+          alt="Sello de la empresa"
+          class="invoice-seal-image"
+        />
+      </section>
+    }
+
+    <section class="invoice-totals" aria-label="Totales de factura">
+      <p><span>Subtotal</span><strong>{{ viewModel().subtotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p><span>Descuento</span><strong>{{ viewModel().discountTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p><span>Base imponible</span><strong>{{ viewModel().taxableAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p><span>Monto exento</span><strong>{{ viewModel().exemptAmount | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p><span>ITBIS / Impuestos</span><strong>{{ viewModel().taxTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p class="grand-total">
+        <span>Total</span>
+        <strong>{{ viewModel().grandTotal | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong>
+      </p>
+      <p><span>Pagado</span><strong>{{ viewModel().amountPaid | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+      <p><span>Balance</span><strong>{{ viewModel().balance | currency: viewModel().currencyCode:'symbol':'1.2-2' }}</strong></p>
+    </section>
   </section>
 
   @if (viewModel().notes) {

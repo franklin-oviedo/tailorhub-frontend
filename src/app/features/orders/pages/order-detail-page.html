@@ -18,14 +18,16 @@
     </div>
     @if (order()) {
       <div class="detail-actions">
-        <button
-          type="button"
-          class="btn th-btn-primary"
-          [disabled]="creatingInvoice()"
-          (click)="generateInvoice()"
-        >
-          {{ creatingInvoice() ? 'Generando...' : 'Generar factura' }}
-        </button>
+        @if (!isClient()) {
+          <button
+            type="button"
+            class="btn th-btn-primary"
+            [disabled]="creatingInvoice()"
+            (click)="generateInvoice()"
+          >
+            {{ creatingInvoice() ? 'Generando...' : 'Generar factura' }}
+          </button>
+        }
       </div>
     }
   </header>
@@ -111,80 +113,82 @@
       </article>
     </section>
 
-    <article class="th-card invoices-card">
-      <div class="th-card-body invoices-card-body">
-        <header class="invoices-header">
-          <div>
-            <h3>Facturas relacionadas</h3>
-            <p>
-              {{ invoices().length }} factura{{ invoices().length === 1 ? '' : 's' }} asociada{{ invoices().length === 1 ? '' : 's' }} a este pedido.
-            </p>
-          </div>
-        </header>
-
-        @if (invoicesLoading()) {
-          <div class="invoices-loading" role="status" aria-live="polite">
-            Cargando facturas...
-          </div>
-        } @else if (invoices().length > 0) {
-          <div class="th-table-shell">
-            <div class="th-table-scroll">
-              <table class="invoices-table">
-                <caption class="visually-hidden">Facturas relacionadas al pedido</caption>
-                <thead>
-                  <tr>
-                    <th class="invoice-number-column">Factura</th>
-                    <th class="status-column">Estado</th>
-                    <th class="date-column">Fecha</th>
-                    <th class="amount-column">Total</th>
-                    <th class="actions-column">
-                      <span class="visually-hidden">Acciones</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (invoice of invoices(); track invoice.id) {
-                    <tr>
-                      <td data-label="Factura">
-                        <div class="invoice-reference">
-                          <strong>{{ invoice.invoiceNumber || 'Sin número' }}</strong>
-                          <span>{{ invoice.fiscalNumber || 'Sin NCF / e-NCF' }}</span>
-                        </div>
-                      </td>
-                      <td data-label="Estado">
-                        <span [class]="invoiceStatusClass(invoice.status)">
-                          {{ statusLabel(invoice.status) }}
-                        </span>
-                      </td>
-                      <td data-label="Fecha">
-                        <time class="invoice-date">
-                          {{ invoice.issuedAt ? (invoice.issuedAt | date: 'dd/MM/yyyy') : 'Sin emitir' }}
-                        </time>
-                      </td>
-                      <td data-label="Total" class="amount-cell">
-                        <strong class="invoice-total">
-                          {{ invoice.total | currency: invoice.currency:'symbol':'1.2-2' }}
-                        </strong>
-                      </td>
-                      <td data-label="Acciones" class="actions-cell">
-                        <a [routerLink]="['/invoices', invoice.id]" class="invoice-action-link">
-                          <span>Ver</span>
-                          <span aria-hidden="true">→</span>
-                        </a>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+    @if (!isClient()) {
+      <article class="th-card invoices-card">
+        <div class="th-card-body invoices-card-body">
+          <header class="invoices-header">
+            <div>
+              <h3>Facturas relacionadas</h3>
+              <p>
+                {{ invoices().length }} factura{{ invoices().length === 1 ? '' : 's' }} asociada{{ invoices().length === 1 ? '' : 's' }} a este pedido.
+              </p>
             </div>
-          </div>
-        } @else {
-          <div class="invoices-empty">
-            <h4>Sin facturas</h4>
-            <p>Este pedido todavía no tiene facturas asociadas.</p>
-          </div>
-        }
-      </div>
-    </article>
+          </header>
+
+          @if (invoicesLoading()) {
+            <div class="invoices-loading" role="status" aria-live="polite">
+              Cargando facturas...
+            </div>
+          } @else if (invoices().length > 0) {
+            <div class="th-table-shell">
+              <div class="th-table-scroll">
+                <table class="invoices-table">
+                  <caption class="visually-hidden">Facturas relacionadas al pedido</caption>
+                  <thead>
+                    <tr>
+                      <th class="invoice-number-column">Factura</th>
+                      <th class="status-column">Estado</th>
+                      <th class="date-column">Fecha</th>
+                      <th class="amount-column">Total</th>
+                      <th class="actions-column">
+                        <span class="visually-hidden">Acciones</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (invoice of invoices(); track invoice.id) {
+                      <tr>
+                        <td data-label="Factura">
+                          <div class="invoice-reference">
+                            <strong>{{ invoice.invoiceNumber || 'Sin número' }}</strong>
+                            <span>{{ invoice.fiscalNumber || 'Sin NCF / e-NCF' }}</span>
+                          </div>
+                        </td>
+                        <td data-label="Estado">
+                          <span [class]="invoiceStatusClass(invoice.status)">
+                            {{ statusLabel(invoice.status) }}
+                          </span>
+                        </td>
+                        <td data-label="Fecha">
+                          <time class="invoice-date">
+                            {{ invoice.issuedAt ? (invoice.issuedAt | date: 'dd/MM/yyyy') : 'Sin emitir' }}
+                          </time>
+                        </td>
+                        <td data-label="Total" class="amount-cell">
+                          <strong class="invoice-total">
+                            {{ invoice.total | currency: invoice.currency:'symbol':'1.2-2' }}
+                          </strong>
+                        </td>
+                        <td data-label="Acciones" class="actions-cell">
+                          <a [routerLink]="['/invoices', invoice.id]" class="invoice-action-link">
+                            <span>Ver</span>
+                            <span aria-hidden="true">→</span>
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          } @else {
+            <div class="invoices-empty">
+              <h4>Sin facturas</h4>
+              <p>Este pedido todavía no tiene facturas asociadas.</p>
+            </div>
+          }
+        </div>
+      </article>
+    }
   }
 </section>

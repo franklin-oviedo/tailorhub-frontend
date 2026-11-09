@@ -150,6 +150,13 @@ export interface InvoiceDebitNote {
 }
 
 export interface InvoiceDocument {
+  company: {
+    name: string;
+    logoUrl: string | null;
+    logo?: string | null;
+    seal?: string | null;
+    sealUrl?: string | null;
+  };
   id: string;
   invoiceNumber: string | null;
   fiscalNumber: string | null;

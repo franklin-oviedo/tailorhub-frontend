@@ -14,6 +14,7 @@ import { ProductsService } from '../../products/data-access/products.service';
 import { CustomersService, CustomerWithStore } from '../../customers/data-access/customers.service';
 import { InvoicesService } from '../../invoices/data-access/invoices.service';
 import { hasFiniteOrderValues } from '../utils/order-numeric-validation.util';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -28,6 +29,7 @@ export class OrdersPageComponent {
   private readonly productsService = inject(ProductsService);
   private readonly customersService = inject(CustomersService);
   private readonly invoicesService = inject(InvoicesService);
+  private readonly session = inject(SessionService);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
 
@@ -43,6 +45,8 @@ export class OrdersPageComponent {
   readonly generatingInvoiceOrderId = signal<string | null>(null);
   readonly successMessage = signal('');
   readonly errorMessage = signal('');
+  readonly isClient = computed(() => this.session.role() === 'client');
+  readonly clientCustomerId = computed(() => this.session.user()?.customer?.id?.trim() ?? '');
 
   // =========================================================
   // Pagination
@@ -132,6 +136,14 @@ export class OrdersPageComponent {
   constructor() {
     this.loadOrders();
 
+    if (this.isClient()) {
+      this.form.controls.customerId.clearValidators();
+      this.form.controls.customerId.setValue(this.clientCustomerId());
+      this.form.controls.customerId.disable();
+      this.form.controls.customerId.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
     this.customersService.listAll().subscribe((customers) => {
       this.customers.set(customers);
     });
@@ -194,6 +206,7 @@ export class OrdersPageComponent {
     const raw = this.form.getRawValue();
     const selectedProduct = this.products().find((product) => product.id === raw.items);
     const quantity = Number(raw.quantity);
+    const customerId = this.isClient() ? this.clientCustomerId() : raw.customerId.trim();
 
     if (!selectedProduct || !Number.isFinite(quantity) || quantity < 1) {
       this.loading.set(false);
@@ -202,8 +215,16 @@ export class OrdersPageComponent {
       return;
     }
 
+    if (!customerId) {
+      this.loading.set(false);
+      this.errorMessage.set(
+        'No se encontró un cliente asociado a tu cuenta. Contacta al administrador.',
+      );
+      return;
+    }
+
     const payload: CreateOrder = {
-      customerId: raw.customerId.trim(),
+      customerId,
       items: [
         {
           productId: selectedProduct.id,
@@ -221,7 +242,7 @@ export class OrdersPageComponent {
         this.successMessage.set('Orden creada correctamente.');
 
         this.form.reset({
-          customerId: '',
+          customerId: this.isClient() ? this.clientCustomerId() : '',
           items: '',
           quantity: 1,
           notes: '',
@@ -366,20 +387,27 @@ export class OrdersPageComponent {
   // =========================================================
 
   private loadOrders(): void {
-    this.ordersService
-      .list({
-        page: 1,
-        limit: 20,
-      })
-      .subscribe((response) => {
-        this.orders.set(response.data);
+    const customerId = this.clientCustomerId();
 
-        // Evita quedar en una página inexistente
-        // cuando cambia la cantidad de pedidos.
-        if (this.currentPage() > this.totalPages()) {
-          this.currentPage.set(this.totalPages());
-        }
-      });
+    if (this.isClient() && !customerId) {
+      this.orders.set([]);
+    } else {
+      this.ordersService
+        .list({
+          page: 1,
+          limit: 20,
+          customerId: this.isClient() ? customerId : undefined,
+        })
+        .subscribe((response) => {
+          this.orders.set(response.data);
+
+          // Evita quedar en una página inexistente
+          // cuando cambia la cantidad de pedidos.
+          if (this.currentPage() > this.totalPages()) {
+            this.currentPage.set(this.totalPages());
+          }
+        });
+    }
 
     this.productsService
       .list({

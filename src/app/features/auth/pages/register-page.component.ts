@@ -3,6 +3,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import { SessionService } from '../../../core/services/session.service';
 import { AuthService } from '../data-access/auth.service';
 
 @Component({
@@ -19,6 +20,7 @@ import { AuthService } from '../data-access/auth.service';
 export class RegisterPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly session = inject(SessionService);
   private readonly router = inject(Router);
 
   readonly loading = signal(false);
@@ -67,7 +69,7 @@ export class RegisterPageComponent {
       )
       .subscribe({
         next: () => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigateByUrl(this.session.getDefaultRoute());
         },
         error: () => {
           this.errorMessage.set(

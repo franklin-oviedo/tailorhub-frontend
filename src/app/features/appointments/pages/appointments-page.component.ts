@@ -12,9 +12,11 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Appointment, CreateAppointment } from '../../../core/models/domain.models';
+import { SessionService } from '../../../core/services/session.service';
 import { AppointmentsService } from '../data-access/appointments.service';
 import { CustomersService, CustomerWithStore } from '../../customers/data-access/customers.service';
 import { Calendar } from '../../calendar/calendar';
+import { AuthService } from '../../auth/data-access/auth.service';
 
 type AppointmentFormField = 'customerId' | 'date' | 'time' | 'notes';
 
@@ -36,6 +38,8 @@ export class AppointmentsPageComponent implements OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly appointmentsService = inject(AppointmentsService);
   private readonly customersService = inject(CustomersService);
+  private readonly session = inject(SessionService);
+  private readonly authService = inject(AuthService);
 
   @ViewChild('appointmentDialogTemplate')
   private readonly appointmentDialogTemplate?: TemplateRef<unknown>;
@@ -54,6 +58,8 @@ export class AppointmentsPageComponent implements OnDestroy {
 
   readonly loading = signal(false);
   readonly saving = signal(false);
+  readonly isClient = computed(() => this.session.role() === 'client');
+  readonly clientCustomerId = computed(() => this.session.user()?.customer?.id?.trim() ?? '');
 
   readonly appointmentsScheduled = computed(() => {
     return this.appointments().filter((appointment) => appointment.status === 'scheduled').length;
@@ -61,6 +67,17 @@ export class AppointmentsPageComponent implements OnDestroy {
 
   readonly appointmentsCancelled = computed(() => {
     return this.appointments().filter((appointment) => appointment.status === 'cancelled').length;
+  });
+  readonly canLinkGoogleCalendar = computed(() => {
+    const user = this.session.user();
+
+    if (!user) {
+      return false;
+    }
+
+    const googleId = this.readStringField(user, 'googleId');
+
+    return !!googleId;
   });
 
   // =========================================================
@@ -156,7 +173,7 @@ export class AppointmentsPageComponent implements OnDestroy {
     const selectedDate = this.selectedDate();
 
     this.form.reset({
-      customerId: '',
+      customerId: this.isClient() ? this.clientCustomerId() : '',
       date: this.formatDateForInput(selectedDate),
       time: '',
       notes: '',
@@ -165,13 +182,27 @@ export class AppointmentsPageComponent implements OnDestroy {
     this.openDialog(this.appointmentDialogTemplate);
   }
 
+  connectGoogleCalendar(): void {
+    if (!this.canLinkGoogleCalendar()) {
+      return;
+    }
+
+    const authUrl = this.authService.buildGoogleCalendarAuthorizationUrl();
+
+    if (!authUrl) {
+      return;
+    }
+
+    globalThis.location.assign(authUrl);
+  }
+
   closeAppointmentForm(): void {
     if (this.saving()) {
       return;
     }
 
     this.form.reset({
-      customerId: '',
+      customerId: this.isClient() ? this.clientCustomerId() : '',
       date: this.formatDateForInput(this.selectedDate()),
       time: '',
       notes: '',
@@ -258,6 +289,7 @@ export class AppointmentsPageComponent implements OnDestroy {
 
     const scheduledAt = this.buildScheduledAt(raw.date, raw.time);
     const minimumAllowed = new Date(now.getTime() + 60 * 60 * 1000);
+    const customerId = this.isClient() ? this.clientCustomerId() : raw.customerId.trim();
 
     if (scheduledAt < minimumAllowed) {
       this.addControlError('time', 'minLeadTime');
@@ -265,8 +297,13 @@ export class AppointmentsPageComponent implements OnDestroy {
       return;
     }
 
+    if (!customerId) {
+      this.addControlError('customerId', 'required');
+      return;
+    }
+
     const payload: CreateAppointment = {
-      customerId: raw.customerId,
+      customerId,
       scheduledAt,
       status: 'scheduled',
       notes: raw.notes.trim(),
@@ -283,7 +320,7 @@ export class AppointmentsPageComponent implements OnDestroy {
         this.closeActiveDialog();
 
         this.form.reset({
-          customerId: '',
+          customerId: this.isClient() ? this.clientCustomerId() : '',
           date: raw.date,
           time: '',
           notes: '',
@@ -308,13 +345,13 @@ export class AppointmentsPageComponent implements OnDestroy {
       return;
     }
 
-    this.appointmentsService.remove(id).subscribe({
+    this.appointmentsService.cancel(id).subscribe({
       next: () => {
         this.currentPage.set(1);
         this.loadAppointments();
       },
       error: (error) => {
-        console.error('Error al eliminar la cita:', error);
+        console.error('Error al cancelar la cita:', error);
       },
     });
   }
@@ -348,12 +385,22 @@ export class AppointmentsPageComponent implements OnDestroy {
   }
 
   private loadAppointments(): void {
+    const customerId = this.clientCustomerId();
+    if (this.isClient() && !customerId) {
+      this.allAppointments.set([]);
+      this.appointments.set([]);
+      this.loading.set(false);
+      this.saving.set(false);
+      return;
+    }
+
     this.loading.set(true);
 
     this.appointmentsService
       .list({
         page: 1,
         limit: 100,
+        customerId: this.isClient() ? customerId : undefined,
       })
       .subscribe({
         next: (response) => {
@@ -378,6 +425,11 @@ export class AppointmentsPageComponent implements OnDestroy {
   }
 
   private loadCustomers(): void {
+    if (this.isClient()) {
+      this.customers.set([]);
+      return;
+    }
+
     this.customersService
       .listAll()
       .subscribe({
@@ -418,6 +470,15 @@ export class AppointmentsPageComponent implements OnDestroy {
     if (this.currentPage() > this.totalPages()) {
       this.currentPage.set(this.totalPages());
     }
+  }
+
+  private readStringField(source: unknown, key: string): string | null {
+    if (typeof source !== 'object' || source === null) {
+      return null;
+    }
+
+    const value = (source as Record<string, unknown>)[key];
+    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
   }
 
   private isSameDate(firstDate: Date, secondDate: Date): boolean {

@@ -261,6 +261,41 @@ mat-card {
 	border-width: 2px !important;
 }
 
+@media print {
+	@page {
+		margin: 8mm;
+	}
+
+	body.th-print-invoice .sidenav,
+	body.th-print-invoice .toolbar,
+	body.th-print-invoice .sidebar-backdrop {
+		display: none !important;
+	}
+
+	body.th-print-invoice .layout-container {
+		display: block !important;
+		grid-template-columns: none !important;
+		min-height: auto !important;
+		background: #ffffff !important;
+	}
+
+	body.th-print-invoice .main-panel,
+	body.th-print-invoice .content {
+		background: #ffffff !important;
+	}
+
+	body.th-print-invoice .content {
+		max-width: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	body.th-print-invoice {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+}
+
 .mat-mdc-form-field.mat-focused .mdc-text-field--outlined {
 	background-color: #ffffff;
 	box-shadow: 0 0 0 4px color-mix(in srgb, var(--th-secondary) 20%, transparent 80%);

@@ -72,6 +72,16 @@
         </h2>
       </div>
 
+      @if (canLinkGoogleCalendar()) {
+        <button
+          type="button"
+          class="link-calendar-button"
+          (click)="connectGoogleCalendar()"
+        >
+          Vincular Google Calendar
+        </button>
+      }
+
       <button
         type="button"
         class="new-appointment-button"
@@ -294,40 +304,42 @@
     >
       <div class="appointment-form-grid">
         <!-- Customer -->
-        <div class="appointment-form-field">
-          <label
-            class="appointment-form-label"
-            for="appointment-customer"
-          >
-            Cliente
-            <span aria-hidden="true">*</span>
-          </label>
+        @if (!isClient()) {
+          <div class="appointment-form-field">
+            <label
+              class="appointment-form-label"
+              for="appointment-customer"
+            >
+              Cliente
+              <span aria-hidden="true">*</span>
+            </label>
 
-          <select
-            id="appointment-customer"
-            class="appointment-form-control"
-            formControlName="customerId"
-            [class.is-invalid]="isInvalid('customerId')"
-            [class.is-valid]="isValid('customerId')"
-            [attr.aria-describedby]="isInvalid('customerId') ? 'appointment-customer-error' : null"
-          >
-            <option value="">
-              Selecciona un cliente
-            </option>
-
-            @for (customer of customers(); track customer.id) {
-              <option [value]="customer.id">
-                {{ customer.name }}
+            <select
+              id="appointment-customer"
+              class="appointment-form-control"
+              formControlName="customerId"
+              [class.is-invalid]="isInvalid('customerId')"
+              [class.is-valid]="isValid('customerId')"
+              [attr.aria-describedby]="isInvalid('customerId') ? 'appointment-customer-error' : null"
+            >
+              <option value="">
+                Selecciona un cliente
               </option>
-            }
-          </select>
 
-          @if (isInvalid('customerId')) {
-            <span id="appointment-customer-error" class="appointment-form-error" role="status" aria-live="polite">
-              Debes seleccionar un cliente.
-            </span>
-          }
-        </div>
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">
+                  {{ customer.name }}
+                </option>
+              }
+            </select>
+
+            @if (isInvalid('customerId')) {
+              <span id="appointment-customer-error" class="appointment-form-error" role="status" aria-live="polite">
+                Debes seleccionar un cliente.
+              </span>
+            }
+          </div>
+        }
 
         <!-- Date -->
         <div class="appointment-form-field">

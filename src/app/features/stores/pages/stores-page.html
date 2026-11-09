@@ -27,6 +27,33 @@
         <div class="form-field">
 
           <label
+            for="store-email"
+            class="form-label"
+          >
+            Email
+          </label>
+
+          <input
+            id="store-email"
+            type="email"
+            class="form-control th-input"
+            formControlName="email"
+            placeholder="correo@tienda.com"
+            [class.is-invalid]="isInvalid('email')"
+            [class.is-valid]="isValid('email')"
+          />
+
+          @if (isInvalid('email')) {
+            <div class="invalid-feedback d-block">
+              Debes ingresar un correo válido para la tienda.
+            </div>
+          }
+
+        </div>
+
+        <div class="form-field">
+
+          <label
             for="store-name"
             class="form-label"
           >
@@ -169,9 +196,53 @@
                   </td>
 
                   <td>
+                    <span class="store-email">
+                      {{ store.email || '-' }}
+                    </span>
+                  </td>
+
+                  <td>
                     <span class="store-phone">
                       {{ store.phone || '-' }}
                     </span>
+                  </td>
+
+                  <td>
+                    <div class="store-assets">
+                      <label class="store-asset-label">
+                        <span>Logo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          [disabled]="isUploadingAsset(store.id, 'logo')"
+                          (change)="onLogoFileSelected(store.id, $event)"
+                        />
+                      </label>
+                      @if (store.logo) {
+                        <a class="store-asset-link" [href]="store.logo" target="_blank" rel="noopener noreferrer">
+                          Ver logo
+                        </a>
+                      }
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="store-assets">
+                      <label class="store-asset-label">
+                        <span>Sello</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          [disabled]="isUploadingAsset(store.id, 'seal')"
+                          (change)="onSealFileSelected(store.id, $event)"
+                        />
+                      </label>
+                      @if (store.seal) {
+                        <a class="store-asset-link" [href]="store.seal" target="_blank" rel="noopener noreferrer">
+                          Ver sello
+                        </a>
+                      }
+                    </div>
                   </td>
 
                 </tr>

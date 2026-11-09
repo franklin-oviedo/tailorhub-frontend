@@ -12,7 +12,10 @@ export interface InvoiceDocumentLineViewModel {
 }
 
 export interface InvoiceDocumentViewModel {
-  invoiceId: string;
+  logoUrl: string | null;
+  sealUrl: string | null;
+  companyName: string;
+  invoiceId: string;  
   invoiceNumber: string | null;
   fiscalNumber: string | null;
   orderId: string | null;

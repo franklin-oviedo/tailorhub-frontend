@@ -723,9 +723,16 @@ export class InvoiceDetailPageComponent implements OnDestroy {
   }
 
   exportPdf(): void {
-    this.printDocumentOnly();
+    const shouldDelayPrint = this.activeDialogRef !== null;
 
-    this.showSuccess('Selecciona "Guardar como PDF" en la ventana de impresión.');
+    if (shouldDelayPrint) {
+      this.closeActiveDialog();
+    }
+
+    setTimeout(() => {
+      this.printDocumentOnly();
+      this.showSuccess('Selecciona "Guardar como PDF" en la ventana de impresión.');
+    }, shouldDelayPrint ? 220 : 0);
   }
 
   statusLabel(status: InvoiceStatus): string {
@@ -878,14 +885,36 @@ export class InvoiceDetailPageComponent implements OnDestroy {
 
     globalThis.addEventListener('afterprint', cleanupPrintClass, { once: true });
 
-    setTimeout(() => {
-      try {
-        globalThis.print();
-      } catch {
-        cleanupPrintClass();
-        this.showError('No fue posible abrir la impresión del documento.');
-      }
-    }, 120);
+    this.waitForPrintableAssets(previewElement).then(() => {
+      setTimeout(() => {
+        try {
+          globalThis.print();
+        } catch {
+          cleanupPrintClass();
+          this.showError('No fue posible abrir la impresión del documento.');
+        }
+      }, 120);
+    });
+  }
+
+  private waitForPrintableAssets(rootElement: HTMLElement): Promise<void> {
+    const images = Array.from(rootElement.querySelectorAll('img'));
+
+    if (images.length === 0) {
+      return Promise.resolve();
+    }
+
+    const pendingImages = images
+      .filter((image) => !image.complete)
+      .map(
+        (image) =>
+          new Promise<void>((resolve) => {
+            image.addEventListener('load', () => resolve(), { once: true });
+            image.addEventListener('error', () => resolve(), { once: true });
+          }),
+      );
+
+    return pendingImages.length > 0 ? Promise.all(pendingImages).then(() => undefined) : Promise.resolve();
   }
 
   private showSuccess(message: string): void {
