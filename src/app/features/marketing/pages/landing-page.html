@@ -1,0 +1,264 @@
+<main class="landing-page">
+	<header class="hero section">
+		<div class="hero__content">
+			<p class="kicker">
+				Plataforma integral para sastrerías y confección
+			</p>
+
+			<h1>
+				Tecnología que da forma a cada creación.
+			</h1>
+
+			<p class="hero__subtitle">
+				Controla clientes, medidas, pedidos, producción e inventario desde un solo lugar.
+				Escala tu operación con procesos ordenados, entregas más puntuales y decisiones basadas en datos.
+			</p>
+
+			<div class="hero__actions">
+				<a
+					class="btn btn-primary btn-cta"
+					href="mailto:ventas@tailorhub.app?subject=Solicitud%20de%20Demo%20-%20Tailor%20Hub"
+				>
+					Solicitar Demo
+				</a>
+
+				<a
+					class="btn btn-outline-primary"
+					href="#funcionalidades"
+				>
+					Conocer Más
+				</a>
+			</div>
+
+			<ul class="hero__stats" aria-label="Resultados operativos">
+				@for (metric of heroMetrics; track metric.label) {
+					<li>
+						<span class="value">{{ metric.value }}</span>
+						<span class="label">{{ metric.label }}</span>
+					</li>
+				}
+			</ul>
+		</div>
+
+		<div class="hero__visual">
+			<img
+				ngSrc="manage-orders.png"
+				width="1080"
+				height="675"
+				priority
+				alt="Panel operativo de Tailor Hub con seguimiento de pedidos"
+				class="hero__mockup"
+			/>
+		</div>
+	</header>
+
+	<section class="section problem" aria-labelledby="problema-title">
+		<div class="section__head">
+			<p class="kicker">Problema</p>
+			<h2 id="problema-title">La operación crece, pero el control no siempre acompaña</h2>
+			<p>
+				En muchos talleres y sastrerías, los procesos críticos aún dependen de registros manuales.
+				Eso limita el crecimiento y afecta la experiencia del cliente final.
+			</p>
+		</div>
+
+		<div class="card-grid card-grid--five">
+			@for (problem of problems; track problem.title) {
+				<article class="info-card">
+					<h3>{{ problem.title }}</h3>
+					<p>{{ problem.description }}</p>
+				</article>
+			}
+		</div>
+	</section>
+
+	<section class="section solution" aria-labelledby="solucion-title">
+		<div class="section__head">
+			<p class="kicker">Solución</p>
+			<h2 id="solucion-title">Todo tu negocio textil centralizado en Tailor Hub</h2>
+			<p>
+				Tailor Hub integra clientes, medidas, pedidos, producción, inventario y reportes en una
+				sola plataforma. Tu equipo trabaja con la misma información, en tiempo real y con trazabilidad completa.
+			</p>
+		</div>
+	</section>
+
+	<section id="funcionalidades" class="section features" aria-labelledby="features-title">
+		<div class="section__head">
+			<p class="kicker">Funcionalidades principales</p>
+			<h2 id="features-title">Herramientas diseñadas para operar con precisión</h2>
+		</div>
+
+		<div class="card-grid card-grid--four">
+			@for (feature of features; track feature.title) {
+				<article class="feature-card">
+					<h3>{{ feature.title }}</h3>
+					<p>{{ feature.description }}</p>
+				</article>
+			}
+		</div>
+	</section>
+
+	<section class="section benefits" aria-labelledby="benefits-title">
+		<div class="section__head">
+			<p class="kicker">Beneficios</p>
+			<h2 id="benefits-title">Resultados concretos desde la primera etapa de adopción</h2>
+		</div>
+
+		<div class="card-grid card-grid--five">
+			@for (benefit of benefits; track benefit.title) {
+				<article class="benefit-card">
+					<h3>{{ benefit.title }}</h3>
+					<p>{{ benefit.description }}</p>
+				</article>
+			}
+		</div>
+	</section>
+
+	<section class="section process" aria-labelledby="process-title">
+		<div class="section__head">
+			<p class="kicker">Cómo funciona</p>
+			<h2 id="process-title">Un flujo claro para tu operación diaria</h2>
+		</div>
+
+		<ol class="process-steps">
+			@for (step of steps; track step.title) {
+				<li class="process-step">
+					<h3>{{ step.title }}</h3>
+					<p>{{ step.description }}</p>
+				</li>
+			}
+		</ol>
+	</section>
+
+	<section class="section screenshots" aria-labelledby="screenshots-title">
+		<div class="section__head">
+			<p class="kicker">Capturas del sistema</p>
+			<h2 id="screenshots-title">Visualiza el dashboard y módulos clave de Tailor Hub</h2>
+		</div>
+
+		<div class="card-grid card-grid--two">
+			@for (screen of screenshots; track screen.src) {
+				<article class="screenshot-card">
+					<img
+						[ngSrc]="screen.src"
+						width="1080"
+						height="675"
+						[alt]="screen.alt"
+					/>
+					<div class="screenshot-card__body">
+						<h3>{{ screen.title }}</h3>
+						<p>{{ screen.description }}</p>
+					</div>
+				</article>
+			}
+		</div>
+	</section>
+
+	<section class="section testimonials" aria-labelledby="testimonials-title">
+		<div class="section__head">
+			<p class="kicker">Testimonios</p>
+			<h2 id="testimonials-title">Negocios que ya transformaron su operación</h2>
+		</div>
+
+		<div class="card-grid card-grid--three">
+			@for (testimonial of testimonials; track testimonial.name) {
+				<article class="testimonial-card">
+					<p class="quote">“{{ testimonial.quote }}”</p>
+					<p class="author">
+						{{ testimonial.name }}
+					</p>
+					<p class="meta">
+						{{ testimonial.role }} · {{ testimonial.company }}
+					</p>
+				</article>
+			}
+		</div>
+	</section>
+
+	<section class="section faq" aria-labelledby="faq-title">
+		<div class="section__head">
+			<p class="kicker">Preguntas frecuentes</p>
+			<h2 id="faq-title">Resolvemos tus dudas antes de tu demo</h2>
+		</div>
+
+		<div class="faq-list">
+			@for (faq of faqs; track faq.question) {
+				<details class="faq-item">
+					<summary>{{ faq.question }}</summary>
+					<p>{{ faq.answer }}</p>
+				</details>
+			}
+		</div>
+	</section>
+
+	<section class="section final-cta" aria-labelledby="cta-title">
+		<h2 id="cta-title">Lleva tu sastrería al siguiente nivel con una operación inteligente</h2>
+		<p>
+			Solicita una demostración y descubre cómo Tailor Hub puede optimizar tu negocio
+			desde el primer día.
+		</p>
+
+		<div class="hero__actions">
+			<a
+				class="btn btn-primary btn-cta"
+				href="mailto:ventas@tailorhub.app?subject=Solicitud%20de%20Demo%20-%20Tailor%20Hub"
+			>
+				Solicitar Demo
+			</a>
+			<a
+				class="btn btn-outline-primary"
+				routerLink="/register"
+			>
+				Crear cuenta
+			</a>
+		</div>
+	</section>
+
+	<footer class="footer">
+		<div class="footer__brand">
+			<img
+				ngSrc="tailorhub.png"
+				width="180"
+				height="46"
+				alt="Logo de Tailor Hub"
+			/>
+			<p>
+				Tailor Hub · Plataforma de gestión para sastrerías, talleres de confección y negocios de ropa a medida.
+			</p>
+		</div>
+
+		<div class="footer__links">
+			<h3>Contacto</h3>
+			<ul>
+				<li><a href="mailto:ventas@tailorhub.app">ventas@tailorhub.app</a></li>
+				<li><a href="mailto:soporte@tailorhub.app">soporte@tailorhub.app</a></li>
+			</ul>
+		</div>
+
+		<div class="footer__links">
+			<h3>Redes sociales</h3>
+			<ul>
+				<li><a href="https://www.linkedin.com" rel="noreferrer" target="_blank">LinkedIn</a></li>
+				<li><a href="https://www.instagram.com" rel="noreferrer" target="_blank">Instagram</a></li>
+				<li><a href="https://www.facebook.com" rel="noreferrer" target="_blank">Facebook</a></li>
+			</ul>
+		</div>
+
+		<div class="footer__links">
+			<h3>Políticas</h3>
+			<ul>
+				<li>
+					<a href="mailto:legal@tailorhub.app?subject=Solicitud%20de%20Pol%C3%ADtica%20de%20Privacidad">
+						Política de privacidad
+					</a>
+				</li>
+				<li>
+					<a href="mailto:legal@tailorhub.app?subject=Solicitud%20de%20T%C3%A9rminos%20y%20Condiciones">
+						Términos y condiciones
+					</a>
+				</li>
+			</ul>
+		</div>
+	</footer>
+</main>

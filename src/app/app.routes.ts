@@ -6,6 +6,14 @@ import { ShellComponent } from './layout/shell.component';
 
 export const routes: Routes = [
 	{
+		path: '',
+		pathMatch: 'full',
+		loadComponent: () =>
+			import('./features/marketing/pages/landing-page.component').then(
+				(m) => m.LandingPageComponent
+			)
+	},
+	{
 		path: 'login',
 		loadComponent: () =>
 			import('./features/auth/pages/login-page.component').then((m) => m.LoginPageComponent)
