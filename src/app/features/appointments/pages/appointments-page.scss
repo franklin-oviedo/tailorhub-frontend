@@ -540,7 +540,7 @@
 
 .appointments-table {
   width: 100%;
-  min-width: 620px;
+  min-width: 760px;
   margin: 0;
   border-collapse: collapse;
 }
@@ -625,6 +625,44 @@
 .appointment-status--cancelled {
   background-color: rgba(220, 38, 38, 0.1);
   color: #b91c1c;
+}
+
+.appointment-actions-cell {
+  text-align: right;
+}
+
+.appointment-cancel-button {
+  min-height: 34px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #b91c1c;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.appointment-cancel-button:hover:not(:disabled) {
+  border-color: #ef4444;
+  background-color: #fee2e2;
+}
+
+.appointment-cancel-button:focus-visible {
+  outline: 3px solid rgba(239, 68, 68, 0.3);
+  outline-offset: 2px;
+}
+
+.appointment-cancel-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* =========================================================
@@ -892,6 +930,10 @@
 
   .appointments-table td:nth-child(4)::before {
     content: 'Estado';
+  }
+
+  .appointments-table td:nth-child(5)::before {
+    content: 'Acciones';
   }
 
   .appointments-pagination {

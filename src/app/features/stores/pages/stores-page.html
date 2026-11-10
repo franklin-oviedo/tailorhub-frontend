@@ -124,15 +124,168 @@
 
         </div>
 
+        <div class="form-field">
+
+          <label
+            for="store-manager"
+            class="form-label"
+          >
+            Manager (opcional)
+          </label>
+
+          <select
+            id="store-manager"
+            class="form-select th-input"
+            formControlName="managerId"
+            [disabled]="loadingManagers()"
+          >
+            <option value="">Sin manager asignado</option>
+            @for (manager of managers(); track manager.id) {
+              <option [value]="manager.id">
+                {{ managerLabel(manager) }}
+              </option>
+            }
+          </select>
+
+        </div>
+
+        @if (createStoreSuccess()) {
+          <div class="feedback feedback-success" role="status">
+            {{ createStoreSuccess() }}
+          </div>
+        }
+
+        @if (createStoreError()) {
+          <div class="feedback feedback-error" role="status" aria-live="polite">
+            {{ createStoreError() }}
+          </div>
+        }
+
         <button
           type="submit"
           class="btn th-btn-primary submit-button"
-          [disabled]="form.invalid"
+          [disabled]="form.invalid || creatingStore()"
         >
-          Crear tienda
+          @if (creatingStore()) {
+            Creando tienda...
+          } @else {
+            Crear tienda
+          }
         </button>
 
       </form>
+
+      <div class="manager-invitation-panel">
+        <h3>Invitar manager</h3>
+        <p>Genera un enlace para que el manager acepte su acceso con Google.</p>
+
+        <form
+          [formGroup]="managerInvitationForm"
+          (ngSubmit)="inviteManager()"
+          class="store-form store-form--compact"
+          novalidate
+        >
+          <div class="form-field">
+            <label for="invite-store" class="form-label">Tienda</label>
+            <select
+              id="invite-store"
+              class="form-select th-input"
+              formControlName="storeId"
+              [class.is-invalid]="isManagerInviteInvalid('storeId')"
+              [disabled]="stores().length === 0"
+            >
+              @for (store of stores(); track store.id) {
+                <option [value]="store.id">{{ store.name }}</option>
+              }
+            </select>
+            @if (isManagerInviteInvalid('storeId')) {
+              <div class="invalid-feedback d-block">
+                Debes seleccionar una tienda.
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="invite-manager-email" class="form-label">Correo del manager</label>
+            <input
+              id="invite-manager-email"
+              type="email"
+              class="form-control th-input"
+              formControlName="email"
+              [class.is-invalid]="isManagerInviteInvalid('email')"
+              placeholder="manager@correo.com"
+            />
+            @if (isManagerInviteInvalid('email')) {
+              <div class="invalid-feedback d-block">
+                Debes ingresar un correo válido.
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="invite-manager-hours" class="form-label">Expira en horas</label>
+            <input
+              id="invite-manager-hours"
+              type="number"
+              class="form-control th-input"
+              formControlName="expiresInHours"
+              min="1"
+              max="720"
+            />
+            @if (isManagerInviteInvalid('expiresInHours')) {
+              <div class="invalid-feedback d-block">
+                El valor debe estar entre 1 y 720 horas.
+              </div>
+            }
+          </div>
+
+          @if (managerInvitationSuccess()) {
+            <div class="feedback feedback-success" role="status">
+              {{ managerInvitationSuccess() }}
+            </div>
+          }
+
+          @if (managerInvitationError()) {
+            <div class="feedback feedback-error" role="status" aria-live="polite">
+              {{ managerInvitationError() }}
+            </div>
+          }
+
+          <button
+            type="submit"
+            class="btn th-btn-primary submit-button"
+            [disabled]="managerInvitationForm.invalid || invitingManager() || stores().length === 0"
+          >
+            @if (invitingManager()) {
+              Generando invitación...
+            } @else {
+              Invitar manager
+            }
+          </button>
+        </form>
+
+        @if (managerInvitationLink()) {
+          <div class="invitation-link-box" role="status" aria-live="polite">
+            <label for="manager-invitation-link" class="form-label">Enlace de invitación</label>
+            <div class="invitation-link-actions">
+              <input
+                id="manager-invitation-link"
+                type="text"
+                class="form-control th-input invitation-link-input"
+                [value]="managerInvitationLink()"
+                readonly
+              />
+              <button
+                type="button"
+                class="btn invitation-copy-button"
+                (click)="copyManagerInvitationLink()"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
 
     </aside>
 

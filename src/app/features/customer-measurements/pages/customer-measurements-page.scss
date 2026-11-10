@@ -1,0 +1,301 @@
+.customer-measurements-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.customer-measurements-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.customer-measurements-title {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.customer-measurements-subtitle {
+  margin: 0.25rem 0 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.customer-measurements-guide-card p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.customer-measurements-btn {
+  min-height: 42px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.customer-measurements-btn-primary {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.customer-measurements-btn-primary:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.customer-measurements-btn-quiet:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.feedback {
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+}
+
+.feedback-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.feedback-success {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.customer-measurements-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1000;
+}
+
+.customer-measurements-modal {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(1040px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+  z-index: 1001;
+}
+
+.customer-measurements-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.customer-measurements-modal-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.customer-measurements-modal-header p {
+  margin: 0.3rem 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.customer-measurements-modal-close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  color: #374151;
+  font-size: 1.35rem;
+  line-height: 1;
+  background: transparent;
+  border-radius: 0.5rem;
+}
+
+.customer-measurements-modal-close:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.customer-selector-form {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.customer-selector-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.customer-selected-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.customer-selected-header > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.customer-selected-label {
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.customer-selected-header strong {
+  color: #111827;
+  font-size: 1rem;
+}
+
+.customer-selected-header span {
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.measurement-view-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.measurement-view-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.measurement-view-group h3 {
+  margin: 0 0 0.625rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.measurement-view-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.measurement-view-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.measurement-view-value {
+  display: block;
+  color: #111827;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.measurement-view-notes {
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.measurement-view-notes p {
+  margin: 0.35rem 0 0;
+  color: #334155;
+  font-size: 0.875rem;
+}
+
+.measurement-view-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.customer-measurements-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.customer-measurements-form-full {
+  grid-column: 1 / -1;
+}
+
+.customer-measurements-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  margin: 0;
+}
+
+.customer-measurements-group legend {
+  padding: 0 0.35rem;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.customer-measurements-group-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.customer-measurements-notes-input {
+  min-height: 104px;
+  resize: vertical;
+}
+
+.customer-measurements-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+  .measurement-view-grid,
+  .customer-measurements-form,
+  .customer-measurements-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .customer-measurements-header {
+    flex-direction: column;
+  }
+
+  .customer-selector-actions,
+  .measurement-view-actions,
+  .customer-measurements-form-actions {
+    flex-direction: column;
+  }
+
+  .measurement-view-grid,
+  .customer-measurements-form,
+  .customer-measurements-group-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-measurements-modal {
+    inset: 0;
+    transform: none;
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}

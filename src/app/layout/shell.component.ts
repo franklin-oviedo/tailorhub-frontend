@@ -130,6 +130,14 @@ export class ShellComponent {
         'admin',
         'super_admin'
       ]
+    },
+    {
+      label: 'Medidas',
+      path: '/customer-measurements',
+      roles: [
+        'employee',
+        'manager'
+      ]
     }
   ];
 

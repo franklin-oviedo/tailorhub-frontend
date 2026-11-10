@@ -15,6 +15,22 @@ export interface CreateStorePayload {
   email: string;
   phone: string;
   address: string;
+  managerId?: string;
+}
+
+export interface CreateManagerInvitationPayload {
+  email: string;
+  expiresInHours?: number;
+}
+
+export interface StoreManagerInvitationResponse {
+  id?: string;
+  email?: string;
+  invitationToken?: string;
+  invitationLink?: string;
+  status?: string;
+  expiresAt?: string;
+  message?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,5 +72,15 @@ export class StoresService {
 
   remove(storeId: string): Observable<void> {
     return this.http.delete<void>(`${this.config.baseUrl}/stores/${storeId}`);
+  }
+
+  createManagerInvitation(
+    storeId: string,
+    payload: CreateManagerInvitationPayload
+  ): Observable<StoreManagerInvitationResponse> {
+    return this.http.post<StoreManagerInvitationResponse>(
+      `${this.config.baseUrl}/stores/${storeId}/manager-invitations`,
+      payload
+    );
   }
 }

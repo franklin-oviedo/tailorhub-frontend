@@ -149,6 +149,25 @@
                       {{ appointment.status }}
                     </span>
                   </td>
+
+                  @if (isClient()) {
+                    <td class="appointment-actions-cell">
+                      @if (canCancel(appointment)) {
+                        <button
+                          type="button"
+                          class="appointment-cancel-button"
+                          [disabled]="cancellingAppointmentId() === appointment.id"
+                          (click)="cancelAppointment(appointment.id)"
+                        >
+                          @if (cancellingAppointmentId() === appointment.id) {
+                            Cancelando...
+                          } @else {
+                            Cancelar cita
+                          }
+                        </button>
+                      }
+                    </td>
+                  }
                 </tr>
               }
             </tbody>

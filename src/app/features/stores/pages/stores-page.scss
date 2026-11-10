@@ -49,6 +49,10 @@
     gap: 1.25rem;
 }
 
+.store-form--compact {
+    gap: 0.9rem;
+}
+
 .form-field {
     display: flex;
     flex-direction: column;
@@ -70,9 +74,78 @@
     font-size: 0.75rem;
 }
 
+.feedback {
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+}
+
+.feedback-success {
+    color: #065f46;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+}
+
+.feedback-error {
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
 .submit-button {
     width: 100%;
     min-height: 42px;
+}
+
+.manager-invitation-panel {
+    margin-top: 1.5rem;
+    padding: 1.1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+}
+
+.manager-invitation-panel h3 {
+    margin: 0 0 0.4rem;
+    color: #263238;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.manager-invitation-panel p {
+    margin: 0 0 0.9rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.invitation-link-box {
+    margin-top: 1rem;
+}
+
+.invitation-link-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+}
+
+.invitation-link-input {
+    font-size: 0.8125rem;
+    color: #334155;
+}
+
+.invitation-copy-button {
+    min-height: 42px;
+    padding: 0.625rem 0.9rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.625rem;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.invitation-copy-button:hover {
+    background: #f1f5f9;
 }
 
 /* =========================================================
@@ -390,6 +463,10 @@
 
     .create-panel {
         padding: 1.25rem;
+    }
+
+    .invitation-link-actions {
+        grid-template-columns: 1fr;
     }
 
     .stores-title {

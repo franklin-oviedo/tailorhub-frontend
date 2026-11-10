@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, Observable, switchMap, tap } from 'rxjs';
 import {
+  AcceptGoogleInvitationRequest,
   AuthResponse,
   ForgotPasswordRequest,
   GoogleCalendarLinkRequest,
@@ -40,6 +41,12 @@ export class AuthService {
   googleLogin(payload: GoogleLoginRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.config.baseUrl}/auth/google`, payload)
+      .pipe(switchMap((response) => this.applySession(response)));
+  }
+
+  acceptGoogleInvitation(payload: AcceptGoogleInvitationRequest): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.config.baseUrl}/auth/google/invitations/accept`, payload)
       .pipe(switchMap((response) => this.applySession(response)));
   }
 

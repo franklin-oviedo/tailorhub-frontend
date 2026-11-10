@@ -23,6 +23,12 @@ export interface GoogleLoginRequest {
   phone?: string;
 }
 
+export interface AcceptGoogleInvitationRequest {
+  invitationToken: string;
+  credential: string;
+  phone?: string;
+}
+
 export interface GoogleCalendarLinkRequest {
   authorizationCode: string;
   redirectUri: string;

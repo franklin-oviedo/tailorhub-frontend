@@ -30,6 +30,48 @@ export const routes: Routes = [
 			)
 	},
 	{
+		path: 'auth/invitations/accept',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
+		path: 'auth/invitations/accept/:token',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
+		path: 'auth/invitation/accept',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
+		path: 'auth/invitation/accept/:token',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
+		path: 'invitations/accept',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
+		path: 'invitations/accept/:token',
+		loadComponent: () =>
+			import('./features/auth/pages/accept-google-invitation-page.component').then(
+				(m) => m.AcceptGoogleInvitationPageComponent
+			)
+	},
+	{
 		path: 'auth',
 		pathMatch: 'full',
 		redirectTo: 'login'
@@ -67,6 +109,15 @@ export const routes: Routes = [
 				data: { roles: ['employee', 'manager', 'admin', 'super_admin'] },
 				loadChildren: () =>
 					import('./features/customers/customers.routes').then((m) => m.CUSTOMERS_ROUTES)
+			},
+			{
+				path: 'customer-measurements',
+				canActivate: [roleGuard],
+				data: { roles: ['employee', 'manager'] },
+				loadChildren: () =>
+					import('./features/customer-measurements/customer-measurements.routes').then(
+						(m) => m.CUSTOMER_MEASUREMENTS_ROUTES
+					)
 			},
 			{
 				path: 'stores',

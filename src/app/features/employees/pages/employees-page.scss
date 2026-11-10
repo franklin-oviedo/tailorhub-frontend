@@ -23,6 +23,83 @@
   font-size: 0.95rem;
 }
 
+.feedback {
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+}
+
+.feedback-success {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.feedback-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.employees-invitation-card {
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.employees-invitation-title {
+  margin: 0;
+  color: #111827;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.employees-invitation-subtitle {
+  margin: 0.3rem 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.employees-invitation-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 0.75rem;
+}
+
+.employees-invitation-form .invalid-feedback {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+}
+
+.invitation-link-box {
+  margin-top: 0.5rem;
+}
+
+.invitation-link-box label {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.invitation-link-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+
+.invitation-link-input {
+  font-size: 0.8125rem;
+  color: #334155;
+}
+
+.invitation-copy-button {
+  min-height: 42px;
+  padding-inline: 0.9rem;
+}
+
 .employees-filters-form {
   display: grid;
   grid-template-columns: 2fr 1fr auto;
@@ -235,6 +312,14 @@
   }
 
   .employees-filters-form {
+    grid-template-columns: 1fr;
+  }
+
+  .employees-invitation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .invitation-link-actions {
     grid-template-columns: 1fr;
   }
 

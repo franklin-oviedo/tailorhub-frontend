@@ -17,25 +17,25 @@ export interface CreateCustomerPayload {
 
 export interface CustomerMeasurement {
   id: string;
-  chest: number;
-  waist: number;
-  hips: number;
-  neck: number;
-  sleeve: number;
-  inseam: number;
+  chest: number | null;
+  waist: number | null;
+  hips: number | null;
+  neck: number | null;
+  sleeve: number | null;
+  inseam: number | null;
   notes: string | null;
   customer: Pick<Customer, 'id' | 'name' | 'email' | 'phone'>;
 }
 
 export interface CreateCustomerMeasurementPayload {
   customerId: string;
-  chest: number;
-  waist: number;
-  hips: number;
-  neck: number;
-  sleeve: number;
-  inseam: number;
-  notes: string;
+  chest?: number | null;
+  waist?: number | null;
+  hips?: number | null;
+  neck?: number | null;
+  sleeve?: number | null;
+  inseam?: number | null;
+  notes?: string;
 }
 
 export type UpdateCustomerPayload = CreateCustomerPayload;

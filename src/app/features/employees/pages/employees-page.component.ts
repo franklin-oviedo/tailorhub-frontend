@@ -17,6 +17,7 @@ import { ConfirmDialogComponent } from '../../../core/ui/confirm-dialog.componen
 import { StoresService } from '../../stores/data-access/stores.service';
 import { CreateUserPayload, UsersService } from '../../users/data-access/users.service';
 import {
+  CreateEmployeeInvitationPayload,
   CreateEmployeePayload,
   EmployeeRecord,
   EmployeesService
@@ -55,6 +56,10 @@ export class EmployeesPageComponent implements OnDestroy {
   readonly managerStoreName = signal('');
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+  readonly invitationErrorMessage = signal('');
+  readonly invitationSuccessMessage = signal('');
+  readonly invitationLink = signal('');
+  readonly invitingEmployee = signal(false);
   readonly searchTerm = signal('');
   readonly activeFilter = signal<'all' | 'active' | 'inactive'>('all');
   readonly currentPage = signal(1);
@@ -146,6 +151,11 @@ export class EmployeesPageComponent implements OnDestroy {
     accountPassword: ['', [Validators.required, Validators.minLength(8)]]
   });
 
+  readonly invitationForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    expiresInHours: [72, [Validators.required, Validators.min(1), Validators.max(720)]]
+  });
+
   constructor() {
     this.resetForm();
     this.loadStores();
@@ -174,6 +184,67 @@ export class EmployeesPageComponent implements OnDestroy {
     this.searchTerm.set('');
     this.activeFilter.set('all');
     this.currentPage.set(1);
+  }
+
+  inviteEmployee(): void {
+    if (this.invitationForm.invalid || this.invitingEmployee()) {
+      this.invitationForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.invitationForm.getRawValue();
+    const payload: CreateEmployeeInvitationPayload = {
+      email: raw.email.trim(),
+      expiresInHours: Number(raw.expiresInHours)
+    };
+
+    this.invitingEmployee.set(true);
+    this.invitationErrorMessage.set('');
+    this.invitationSuccessMessage.set('');
+    this.invitationLink.set('');
+
+    this.employeesService
+      .createInvitation(payload)
+      .pipe(finalize(() => this.invitingEmployee.set(false)))
+      .subscribe({
+        next: (response) => {
+          const invitationLink = response.invitationLink?.trim() ?? '';
+          this.invitationLink.set(invitationLink);
+          this.invitationSuccessMessage.set('Invitación de empleado creada correctamente.');
+          this.invitationForm.controls.email.setValue('');
+        },
+        error: () => {
+          this.invitationErrorMessage.set('No fue posible crear la invitación de empleado.');
+        }
+      });
+  }
+
+  copyInvitationLink(): void {
+    const link = this.invitationLink().trim();
+
+    if (!link) {
+      return;
+    }
+
+    const clipboard = globalThis.navigator?.clipboard;
+    if (clipboard?.writeText) {
+      clipboard.writeText(link).then(
+        () => {
+          this.invitationSuccessMessage.set('Enlace copiado al portapapeles.');
+        },
+        () => {
+          this.copyLinkWithFallback(link);
+        }
+      );
+      return;
+    }
+
+    this.copyLinkWithFallback(link);
+  }
+
+  isInvitationInvalid(field: 'email' | 'expiresInHours'): boolean {
+    const control = this.invitationForm.controls[field];
+    return control.invalid && (control.touched || control.dirty);
   }
 
   nextPage(): void {
@@ -589,5 +660,26 @@ export class EmployeesPageComponent implements OnDestroy {
     }
 
     return null;
+  }
+
+  private copyLinkWithFallback(link: string): void {
+    const textArea = document.createElement('textarea');
+    textArea.value = link;
+    textArea.setAttribute('readonly', 'true');
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    if (copied) {
+      this.invitationSuccessMessage.set('Enlace copiado al portapapeles.');
+      return;
+    }
+
+    this.invitationErrorMessage.set('No se pudo copiar automáticamente. Copia el enlace manualmente.');
   }
 }

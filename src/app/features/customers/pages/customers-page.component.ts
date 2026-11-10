@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import {
   CreateCustomerMeasurementPayload,
@@ -141,6 +142,7 @@ const MEASUREMENT_GROUPS: readonly MeasurementGroupDefinition[] = [
 export class CustomersPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly customersService = inject(CustomersService);
+  private readonly router = inject(Router);
 
   readonly customers = signal<CustomerWithStore[]>([]);
   readonly loading = signal(true);
@@ -343,80 +345,9 @@ export class CustomersPageComponent {
 
   openCustomerDetails(customer: CustomerWithStore): void {
     this.selectedCustomer.set(customer);
-    this.customerMeasurement.set(null);
-    this.canCreateMeasurement.set(false);
-    this.measurementCreateSuccessMessage.set('');
-    this.measurementCreateErrorMessage.set('');
-    this.measurementFormOpen.set(false);
     this.detailsErrorMessage.set('');
-    this.createMeasurementForm.reset({
-      pantsWaist: null,
-      pantsBasinet: null,
-      pantsTotalLength: null,
-      pantsKneeWidth: null,
-      pantsHemWidth: null,
-      pantsRiseHeight: null,
-      shirtBackLength: null,
-      shirtTorsoLength: null,
-      shirtTotalLength: null,
-      shirtChestWidth: null,
-      shirtWaistWidth: null,
-      shirtBasinetWidth: null,
-      shirtSleeveTotalLength: null,
-      shirtArmWidth: null,
-      shirtCuffWidth: null,
-      shirtFrontChest: null,
-      shirtNeckWidth: null,
-      shirtFrontPart: null,
-      shirtBackPart: null,
-      jacketBackLength: null,
-      jacketTorsoLength: null,
-      jacketTotalLength: null,
-      jacketChestWidthBust: null,
-      jacketWaistWidth: null,
-      jacketBasinetWidthHip: null,
-      jacketSleeveTotalLength: null,
-      jacketSleeveWidth: null,
-      jacketSleeveOpeningWidth: null,
-      dressBackLength: null,
-      dressTorsoLength: null,
-      dressTotalLength: null,
-      dressBustCircumference: null,
-      dressWaistCircumference: null,
-      dressHipCircumference: null,
-      dressBustSeparation: null,
-      dressHipHeight: null,
-      dressBackHipHeight: null,
-      dressBustToNippleHeight: null,
-      dressFullBustHeight: null,
-      dressArmholeWidth: null,
-      notes: ''
-    });
     this.detailsModalOpen.set(true);
-    this.detailsLoading.set(true);
-
-    this.customersService.measurement(customer.id).subscribe({
-      next: (measurement) => {
-        this.customerMeasurement.set(measurement);
-        this.canCreateMeasurement.set(false);
-        this.detailsLoading.set(false);
-      },
-      error: (error: unknown) => {
-        const message = this.resolveErrorMessage(
-          error,
-          'No fue posible cargar las medidas del cliente.'
-        );
-
-        if (this.isMeasurementNotFoundError(message)) {
-          this.canCreateMeasurement.set(true);
-          this.detailsErrorMessage.set('');
-        } else {
-          this.detailsErrorMessage.set(message);
-        }
-
-        this.detailsLoading.set(false);
-      }
-    });
+    this.detailsLoading.set(false);
   }
 
   editSelectedCustomer(): void {
@@ -428,6 +359,13 @@ export class CustomersPageComponent {
 
     this.closeCustomerDetails();
     this.startEdit(customer);
+  }
+
+  goToMeasurementsModule(customerId: string): void {
+    this.closeCustomerDetails();
+    this.router.navigate(['/customer-measurements'], {
+      queryParams: { customerId },
+    });
   }
 
   closeCustomerDetails(): void {

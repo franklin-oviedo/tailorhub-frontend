@@ -18,6 +18,91 @@
     <div class="feedback feedback-error" role="status" aria-live="polite">{{ errorMessage() }}</div>
   }
 
+  <section class="th-card employees-invitation-card" aria-label="Invitación de empleados">
+    <div class="th-card-body">
+      <h2 class="employees-invitation-title">Invitar empleado</h2>
+      <p class="employees-invitation-subtitle">
+        Genera un enlace para que el empleado complete su ingreso con Google.
+      </p>
+
+      <form class="employees-invitation-form" [formGroup]="invitationForm" (ngSubmit)="inviteEmployee()" novalidate>
+        <div class="form-floating">
+          <input
+            id="employeeInvitationEmail"
+            type="email"
+            class="form-control th-input"
+            formControlName="email"
+            [class.is-invalid]="isInvitationInvalid('email')"
+            placeholder="correo@empleado.com"
+          />
+          <label for="employeeInvitationEmail">Correo del empleado</label>
+          @if (isInvitationInvalid('email')) {
+            <div class="invalid-feedback d-block">Debes ingresar un correo válido.</div>
+          }
+        </div>
+
+        <div class="form-floating">
+          <input
+            id="employeeInvitationExpires"
+            type="number"
+            class="form-control th-input"
+            formControlName="expiresInHours"
+            [class.is-invalid]="isInvitationInvalid('expiresInHours')"
+            min="1"
+            max="720"
+            placeholder="72"
+          />
+          <label for="employeeInvitationExpires">Expira en horas</label>
+          @if (isInvitationInvalid('expiresInHours')) {
+            <div class="invalid-feedback d-block">El valor debe estar entre 1 y 720 horas.</div>
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="btn employees-btn-minimal employees-btn-primary"
+          [disabled]="invitationForm.invalid || invitingEmployee()"
+        >
+          @if (invitingEmployee()) {
+            Generando...
+          } @else {
+            Crear invitación
+          }
+        </button>
+      </form>
+
+      @if (invitationSuccessMessage()) {
+        <div class="feedback feedback-success" role="status">{{ invitationSuccessMessage() }}</div>
+      }
+
+      @if (invitationErrorMessage()) {
+        <div class="feedback feedback-error" role="status" aria-live="polite">{{ invitationErrorMessage() }}</div>
+      }
+
+      @if (invitationLink()) {
+        <div class="invitation-link-box" role="status" aria-live="polite">
+          <label for="employee-invitation-link">Enlace de invitación</label>
+          <div class="invitation-link-actions">
+            <input
+              id="employee-invitation-link"
+              type="text"
+              class="form-control th-input invitation-link-input"
+              [value]="invitationLink()"
+              readonly
+            />
+            <button
+              type="button"
+              class="btn employees-btn-minimal employees-btn-primary invitation-copy-button"
+              (click)="copyInvitationLink()"
+            >
+              Copiar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
   <section class="th-card employees-filters-card" aria-label="Filtros de empleados">
     <div class="th-card-body">
       <form class="employees-filters-form" [formGroup]="filterForm" (ngSubmit)="applyFilters()">

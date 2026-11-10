@@ -191,12 +191,12 @@ export class ProfilePageComponent {
 
   private patchMeasurementsForm(measurement: CustomerMeasurement): void {
     this.measurementsForm.reset({
-      chest: measurement.chest,
-      waist: measurement.waist,
-      hips: measurement.hips,
-      neck: measurement.neck,
-      sleeve: measurement.sleeve,
-      inseam: measurement.inseam,
+      chest: measurement.chest ?? 0,
+      waist: measurement.waist ?? 0,
+      hips: measurement.hips ?? 0,
+      neck: measurement.neck ?? 0,
+      sleeve: measurement.sleeve ?? 0,
+      inseam: measurement.inseam ?? 0,
       notes: measurement.notes ?? ''
     });
   }

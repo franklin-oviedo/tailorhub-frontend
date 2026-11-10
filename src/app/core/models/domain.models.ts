@@ -109,7 +109,7 @@ export interface Appointment {
   customerPhone?: string;
   scheduledAt: string;
   startsAt: string;
-  status: 'scheduled' | 'cancelled';
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   storeId: string;
 }
 

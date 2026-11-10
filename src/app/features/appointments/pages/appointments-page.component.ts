@@ -58,7 +58,9 @@ export class AppointmentsPageComponent implements OnDestroy {
 
   readonly loading = signal(false);
   readonly saving = signal(false);
+  readonly cancellingAppointmentId = signal<string | null>(null);
   readonly isClient = computed(() => this.session.role() === 'client');
+  readonly isManager = computed(() => this.session.role() === 'manager');
   readonly clientCustomerId = computed(() => this.session.user()?.customer?.id?.trim() ?? '');
 
   readonly appointmentsScheduled = computed(() => {
@@ -69,15 +71,11 @@ export class AppointmentsPageComponent implements OnDestroy {
     return this.appointments().filter((appointment) => appointment.status === 'cancelled').length;
   });
   readonly canLinkGoogleCalendar = computed(() => {
-    const user = this.session.user();
-
-    if (!user) {
+    if (!this.isManager()) {
       return false;
     }
 
-    const googleId = this.readStringField(user, 'googleId');
-
-    return !!googleId;
+    return !!this.authService.buildGoogleCalendarAuthorizationUrl();
   });
 
   // =========================================================
@@ -337,21 +335,29 @@ export class AppointmentsPageComponent implements OnDestroy {
   }
 
   // =========================================================
-  // Remove
+  // Cancel appointment
   // =========================================================
 
-  remove(id: string): void {
-    if (!id) {
+  canCancel(appointment: Appointment): boolean {
+    return this.isClient() && appointment.status === 'scheduled';
+  }
+
+  cancelAppointment(appointmentId: string): void {
+    if (!appointmentId || this.cancellingAppointmentId()) {
       return;
     }
 
-    this.appointmentsService.cancel(id).subscribe({
+    this.cancellingAppointmentId.set(appointmentId);
+
+    this.appointmentsService.cancel(appointmentId).subscribe({
       next: () => {
         this.currentPage.set(1);
+        this.cancellingAppointmentId.set(null);
         this.loadAppointments();
       },
       error: (error) => {
-        console.error('Error al cancelar la cita:', error);
+        console.error('Error al cancelar la cita y sincronizar Google Calendar:', error);
+        this.cancellingAppointmentId.set(null);
       },
     });
   }
@@ -401,6 +407,7 @@ export class AppointmentsPageComponent implements OnDestroy {
         page: 1,
         limit: 100,
         customerId: this.isClient() ? customerId : undefined,
+        status: this.isManager() ? 'scheduled' : undefined,
       })
       .subscribe({
         next: (response) => {
@@ -470,15 +477,6 @@ export class AppointmentsPageComponent implements OnDestroy {
     if (this.currentPage() > this.totalPages()) {
       this.currentPage.set(this.totalPages());
     }
-  }
-
-  private readStringField(source: unknown, key: string): string | null {
-    if (typeof source !== 'object' || source === null) {
-      return null;
-    }
-
-    const value = (source as Record<string, unknown>)[key];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
   }
 
   private isSameDate(firstDate: Date, secondDate: Date): boolean {

@@ -19,8 +19,12 @@ export class AppointmentsService {
   private readonly config = inject(ApiConfigService);
 
   list(query: AppointmentsQuery = {}): Observable<PaginatedResponse<Appointment>> {
+    const params = Object.fromEntries(
+      Object.entries(query).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
+
     return this.http.get<PaginatedResponse<Appointment>>(`${this.config.baseUrl}/appointments`, {
-      params: query as never
+      params: params as never
     });
   }
 

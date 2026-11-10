@@ -1,0 +1,240 @@
+<article class="customer-measurements-page">
+  <header class="customer-measurements-header">
+    <div>
+      <h1 class="customer-measurements-title">Medidas de clientes</h1>
+      <p class="customer-measurements-subtitle">
+        Módulo para consultar y actualizar las medidas registradas de un cliente.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="btn customer-measurements-btn customer-measurements-btn-primary"
+      (click)="openSelectorModal()"
+    >
+      Elegir cliente
+    </button>
+  </header>
+
+  <section class="th-card customer-measurements-guide-card" aria-label="Guía de uso">
+    <div class="th-card-body">
+      <p>
+        Primero selecciona un cliente en el popup. Luego podrás ver sus medidas y actualizarlas si es necesario.
+      </p>
+    </div>
+  </section>
+
+  @if (modalOpen()) {
+    <div class="customer-measurements-modal-backdrop" (click)="closeModal()" aria-hidden="true"></div>
+    <section
+      class="customer-measurements-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="measurements-modal-title"
+      aria-describedby="measurements-modal-description"
+    >
+      <div class="customer-measurements-modal-header">
+        <div>
+          <h2 id="measurements-modal-title">
+            @if (!viewingSelectedCustomer()) {
+              Seleccionar cliente
+            } @else if (editing()) {
+              Actualizar medidas
+            } @else {
+              Medidas del cliente
+            }
+          </h2>
+          <p id="measurements-modal-description">
+            @if (!viewingSelectedCustomer()) {
+              Selecciona un cliente para consultar sus medidas.
+            } @else if (editing()) {
+              Actualiza las medidas necesarias. Todos los campos son opcionales.
+            } @else {
+              Visualiza las medidas guardadas y actualízalas cuando lo necesites.
+            }
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="customer-measurements-modal-close"
+          [disabled]="saving()"
+          (click)="closeModal()"
+          aria-label="Cerrar popup de medidas"
+        >
+          ×
+        </button>
+      </div>
+
+      @if (!viewingSelectedCustomer()) {
+        <form class="customer-selector-form" [formGroup]="selectCustomerForm" (ngSubmit)="viewSelectedCustomerMeasurements()">
+          <div class="form-floating">
+            <select
+              id="measurementCustomer"
+              class="form-select th-input"
+              formControlName="customerId"
+              [disabled]="loadingCustomers() || customers().length === 0 || loadingMeasurement()"
+              [class.is-invalid]="isSelectCustomerInvalid()"
+            >
+              <option value="" disabled>Selecciona un cliente</option>
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">{{ customerLabel(customer) }}</option>
+              }
+            </select>
+            <label for="measurementCustomer">Cliente</label>
+            @if (isSelectCustomerInvalid()) {
+              <div class="invalid-feedback d-block">Debes seleccionar un cliente.</div>
+            }
+          </div>
+
+          <div class="customer-selector-actions">
+            <button
+              type="button"
+              class="btn customer-measurements-btn customer-measurements-btn-quiet"
+              (click)="closeModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn customer-measurements-btn customer-measurements-btn-primary"
+              [disabled]="selectCustomerForm.invalid || loadingMeasurement() || customers().length === 0"
+            >
+              @if (loadingMeasurement()) {
+                Cargando...
+              } @else {
+                Ver medidas
+              }
+            </button>
+          </div>
+        </form>
+      } @else {
+        <div class="customer-selected-header">
+          <div>
+            <span class="customer-selected-label">Cliente seleccionado</span>
+            <strong>{{ selectedCustomer()?.name || 'Cliente' }}</strong>
+            <span>{{ selectedCustomer()?.email || 'Sin correo' }}</span>
+          </div>
+          <button
+            type="button"
+            class="btn customer-measurements-btn customer-measurements-btn-quiet"
+            [disabled]="saving()"
+            (click)="chooseAnotherCustomer()"
+          >
+            Cambiar cliente
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="feedback feedback-error" role="status" aria-live="polite">
+            {{ errorMessage() }}
+          </div>
+        } @else if (!editing()) {
+          <section class="measurement-view-section">
+            @for (group of displayGroups(); track group.title) {
+              <div class="measurement-view-group">
+                <h3>{{ group.title }}</h3>
+                <div class="measurement-view-grid">
+                  @for (item of group.values; track item.label) {
+                    <div>
+                      <span class="measurement-view-label">{{ item.label }}</span>
+                      <span class="measurement-view-value">{{ item.value }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="measurement-view-notes">
+              <span class="measurement-view-label">Notas</span>
+              <p>{{ measurementNotes() }}</p>
+            </div>
+
+            <div class="measurement-view-actions">
+              <button
+                type="button"
+                class="btn customer-measurements-btn customer-measurements-btn-primary"
+                (click)="startEditing()"
+              >
+                Actualizar medidas
+              </button>
+            </div>
+          </section>
+        } @else {
+          <form class="customer-measurements-form" [formGroup]="measurementForm" (ngSubmit)="updateMeasurement()" novalidate>
+            @for (group of measurementGroups; track group.title) {
+              <fieldset class="customer-measurements-group customer-measurements-form-full">
+                <legend>{{ group.title }}</legend>
+
+                <div class="customer-measurements-group-grid">
+                  @for (field of group.fields; track field.key) {
+                    <div class="form-floating">
+                      <input
+                        [id]="'measurement-' + field.key"
+                        type="number"
+                        class="form-control th-input"
+                        [formControlName]="field.key"
+                        min="0.1"
+                        step="0.1"
+                        [class.is-invalid]="isMeasurementInvalid(field.key)"
+                        [placeholder]="field.label"
+                      />
+                      <label [for]="'measurement-' + field.key">{{ field.label }}</label>
+                    </div>
+                  }
+                </div>
+              </fieldset>
+            }
+
+            <div class="form-floating customer-measurements-form-full">
+              <textarea
+                id="measurementNotes"
+                class="form-control th-input customer-measurements-notes-input"
+                formControlName="notes"
+                rows="3"
+                maxlength="3000"
+                placeholder="Notas adicionales"
+                [class.is-invalid]="isMeasurementInvalid('notes')"
+              ></textarea>
+              <label for="measurementNotes">Notas (opcional)</label>
+            </div>
+
+            @if (saveSuccessMessage()) {
+              <div class="feedback feedback-success customer-measurements-form-full" role="status">
+                {{ saveSuccessMessage() }}
+              </div>
+            }
+
+            @if (saveErrorMessage()) {
+              <div class="feedback feedback-error customer-measurements-form-full" role="status" aria-live="polite">
+                {{ saveErrorMessage() }}
+              </div>
+            }
+
+            <div class="customer-measurements-form-actions customer-measurements-form-full">
+              <button
+                type="button"
+                class="btn customer-measurements-btn customer-measurements-btn-quiet"
+                [disabled]="saving()"
+                (click)="cancelEditing()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                class="btn customer-measurements-btn customer-measurements-btn-primary"
+                [disabled]="measurementForm.invalid || saving()"
+              >
+                @if (saving()) {
+                  Guardando...
+                } @else {
+                  Guardar cambios
+                }
+              </button>
+            </div>
+          </form>
+        }
+      }
+    </section>
+  }
+</article>

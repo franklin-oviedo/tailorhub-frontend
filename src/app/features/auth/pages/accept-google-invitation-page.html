@@ -1,0 +1,38 @@
+<section class="invitation-page" aria-live="polite">
+  <div class="invitation-card">
+    <h1 class="invitation-title">Invitación de TailorHub</h1>
+    <p class="invitation-subtitle">
+      Completa tu ingreso como colaborador usando tu cuenta de Google.
+    </p>
+
+    @if (errorMessage()) {
+      <p class="auth-error" role="alert">
+        {{ errorMessage() }}
+      </p>
+    }
+
+    <form [formGroup]="form" novalidate>
+      <label class="field-label" for="invitation-phone">
+        Teléfono (opcional)
+      </label>
+      <input
+        id="invitation-phone"
+        type="tel"
+        class="field-control"
+        formControlName="phone"
+        placeholder="Ej. (809) 555-0000"
+        autocomplete="tel"
+      />
+    </form>
+
+    <div
+      id="google-invitation-button"
+      class="google-button-wrapper"
+      aria-label="Continuar con Google para aceptar invitación"
+    ></div>
+
+    @if (loading()) {
+      <p class="loading-text">Procesando invitación...</p>
+    }
+  </div>
+</section>
