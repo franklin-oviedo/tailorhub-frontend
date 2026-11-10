@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prebuild": "node tools/prepare-env.mjs",
     "start": "ng serve",
     "start:4201": "ng serve --port 4201",
     "build": "ng build",

@@ -36,6 +36,18 @@ Tipografia institucional:
 
 El build de produccion usa `fileReplacements` en `angular.json`.
 
+### Variables para Vercel
+
+Este frontend ahora genera `src/environments/environment.prod.ts` durante `npm run build` usando `tools/prepare-env.mjs`.
+
+Configura estas variables en Vercel (Production y Preview):
+
+- `TH_API_URL` (ejemplo: `https://tu-backend.onrender.com/api`)
+- `TH_GOOGLE_CLIENT_ID`
+- `TH_GOOGLE_CALENDAR_REDIRECT_URI` (ejemplo: `https://tu-app.vercel.app/auth/google/callback`)
+
+Compatibilidad: tambien se aceptan `API_URL`, `GOOGLE_CLIENT_ID` y `GOOGLE_CALENDAR_REDIRECT_URI`.
+
 ## Scripts
 
 ```bash
